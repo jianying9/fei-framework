@@ -12,5 +12,7 @@ public interface ModuleContext
     public String getName();
 
     public void init(Set<Class<?>> classSet);
+    
+    public void build();
 
 }

@@ -1,17 +1,17 @@
 package com.fei.test.component;
 
-import com.fei.framework.bean.Autowired;
 import com.fei.module.Component;
+import com.fei.framework.bean.Resource;
 
 /**
  *
  * @author jianying9
  */
 @Component
-public class TestAutowired
+public class TestResource
 {
 
-    @Autowired
+    @Resource
     private TestComponent testComponent;
 
     public void info()

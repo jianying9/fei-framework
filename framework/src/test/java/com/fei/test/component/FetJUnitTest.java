@@ -9,6 +9,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -41,16 +42,16 @@ public class FetJUnitTest
     {
     }
 
-//    @Test
+    @Test
     public void init()
     {
-        AppContext.CONTEXT.addPackage("com.fei.test");
+        AppContext.CONTEXT.addScanPackage("com.fei.test");
         Map<String, String> parameterMap = new HashMap();
         AppContextBuilder appContextBuilder = new AppContextBuilder(parameterMap);
         appContextBuilder.build();
         //
         BeanContext beanContext = AppContext.CONTEXT.getBeanContext();
-        TestAutowired testAutowired = beanContext.get("component", TestAutowired.class);
+        TestResource testAutowired = beanContext.get("component", TestResource.class);
         testAutowired.info();
     }
 }

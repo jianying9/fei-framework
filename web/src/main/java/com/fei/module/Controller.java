@@ -6,12 +6,27 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 普通对象
+ * 接口
  *
  * @author jianying9
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Component
+public @interface Controller
 {
+
+    /**
+     * 路径
+     *
+     * @return
+     */
+    public String value();
+
+    /**
+     * 名称
+     *
+     * @return
+     */
+    public String name();
+
 }

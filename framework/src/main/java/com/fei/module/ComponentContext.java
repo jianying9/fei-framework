@@ -35,7 +35,7 @@ public class ComponentContext implements ModuleContext
     {
         List<Object> beanList = new ArrayList();
         Object bean;
-        BeanContext resourceContext = AppContext.CONTEXT.getBeanContext();
+        BeanContext beanContext = AppContext.CONTEXT.getBeanContext();
         try {
             for (Class<?> clazz : classSet) {
                 if (clazz.isAnnotationPresent(Component.class)) {
@@ -44,13 +44,18 @@ public class ComponentContext implements ModuleContext
                     //
                     beanList.add(bean);
                     //
-                    resourceContext.add(this.name, bean);
+                    beanContext.add(this.name, bean);
                 }
             }
         } catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException | InstantiationException | IllegalAccessException ex) {
             throw new RuntimeException(ex);
         }
         ClassUtil.removeClass(classSet, beanList);
+    }
+
+    @Override
+    public void build()
+    {
     }
 
 }

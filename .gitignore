@@ -2,3 +2,7 @@
 /framework/nbproject/
 /nbactions.xml
 /nb-configuration.xml
+/web/target/
+/jetty-embed-api/target/
+/demo-app/target/
+/demo-app/nbproject/

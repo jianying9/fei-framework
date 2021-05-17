@@ -15,7 +15,7 @@ public final class AppContext
 
     private final Set<String> packageNameSet = new HashSet();
 
-    private final BeanContext resourceContext = new BeanContext();
+    private final BeanContext beanContext = new BeanContext();
 
     private boolean ready = false;
 
@@ -46,14 +46,20 @@ public final class AppContext
         return packageNameSet;
     }
 
-    public void addPackage(String packageName)
+    public void addScanPackage(String packageName)
     {
         this.packageNameSet.add(packageName);
     }
 
+    public void addScanPackage(Class<?> clazz)
+    {
+
+        this.packageNameSet.add(clazz.getPackageName());
+    }
+
     public BeanContext getBeanContext()
     {
-        return resourceContext;
+        return beanContext;
     }
 
 }

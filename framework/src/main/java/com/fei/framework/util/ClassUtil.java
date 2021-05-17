@@ -90,7 +90,7 @@ public final class ClassUtil
             if (index > -1) {
                 String jarUrlName = urlName.substring(0, index + 4);
                 URL jarUrl = new URL(jarUrlName);
-                findClassInJar(classNameSet, jarUrl);
+                findClassInJar(classNameSet, jarUrl, packageName);
             } else {
                 findClassInDirectory(classNameSet, classloader, url, packageName);
             }
@@ -152,7 +152,7 @@ public final class ClassUtil
      * @param jarUrlName
      * @param resourceList
      */
-    private static void findClassInJar(final Set<String> classNameSet, final URL url) throws IOException, ClassNotFoundException
+    private static void findClassInJar(final Set<String> classNameSet, final URL url, final String packageName) throws IOException, ClassNotFoundException
     {
         InputStream is = null;
         try {
@@ -167,7 +167,9 @@ public final class ClassUtil
                     if (entryName.endsWith(".class")) {
                         classPath = entryName.substring(0, entryName.length() - 6);
                         className = getPackageName(classPath);
-                        classNameSet.add(className);
+                        if (className.startsWith(packageName)) {
+                            classNameSet.add(className);
+                        }
                     }
                 }
             }
@@ -196,9 +198,10 @@ public final class ClassUtil
 
     /**
      * 根据方法名获取方法
+     *
      * @param clazz
      * @param name
-     * @return 
+     * @return
      */
     public static Method getMethodByName(Class<?> clazz, String name)
     {
