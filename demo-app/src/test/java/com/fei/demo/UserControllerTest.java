@@ -1,6 +1,8 @@
 package com.fei.demo;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.fei.demo.controller.UserController;
 import com.fei.demo.controller.UserController.UserDto;
@@ -29,10 +31,13 @@ public class UserControllerTest
 
     private static RouterMock routerMock;
 
+    private static ResourceMock resourceMock;
+
     @BeforeClass
     public static void setUpClass()
     {
         routerMock = new RouterMock(UserController.class);
+        resourceMock = new ResourceMock(UserController.class);
     }
 
     @AfterClass
@@ -43,7 +48,7 @@ public class UserControllerTest
     @Before
     public void setUp()
     {
-        ResourceMock resourceMock = new ResourceMock(UserController.class);
+        //注入
         resourceMock.resource(this);
     }
 
@@ -62,6 +67,20 @@ public class UserControllerTest
         userGetDto.userId = "1";
         UserDto userDto = this.userController.get(userGetDto);
         System.out.println(JSON.toJSONString(userDto, SerializerFeature.PrettyFormat));
+    }
+
+    @Test
+    public void batchGet()
+    {
+        JSONObject input = new JSONObject();
+        input.put("userId", "1");
+        input.put("userId", "1");
+        JSONArray array = new JSONArray();
+        array.add("2");
+        array.add("1");
+        input.put("userIdArray", array);
+        JSONObject output = routerMock.perform("/user/batchGet", input);
+        System.out.println(output.toString(SerializerFeature.PrettyFormat));
     }
 
 }

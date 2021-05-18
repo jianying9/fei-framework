@@ -2,6 +2,7 @@ package com.fei.web.router.handler;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.util.TypeUtils;
 import com.fei.web.request.Request;
 import com.fei.web.response.Response;
 import com.fei.web.router.RouterContext;
@@ -9,6 +10,7 @@ import com.fei.web.router.RouterException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.Collection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,6 +37,28 @@ public class ControlHandlerImpl implements RouteHandler
         this.controller = controller;
         this.method = method;
         this.parameters = this.method.getParameters();
+        //规则校验-输入对象和输出对象只能是
+        Class<?> paramClass;
+        String paramName;
+        for (Parameter parameter : this.parameters) {
+            paramClass = parameter.getType();
+            paramName = parameter.getName();
+            if (Collection.class.isAssignableFrom(paramClass)) {
+                this.logger.error("{}:{}:{} unsupport Collection parameter", controller.getClass().getName(), method.getName(), paramName);
+                throw new RuntimeException(paramName + " unsupport Collection parameter");
+            } else if (paramClass.isArray()) {
+                this.logger.error("{}:{}:{} unsupport Array parameter", controller.getClass().getName(), method.getName(), paramName);
+                throw new RuntimeException(paramName + " unsupport Array parameter");
+            }
+        }
+        Class<?> returnType = this.method.getReturnType();
+        if (Collection.class.isAssignableFrom(returnType)) {
+            this.logger.error("{}:{} unsupport Collection returnType", controller.getClass().getName(), method.getName());
+            throw new RuntimeException(method.getName() + " unsupport Collection returnType");
+        } else if (returnType.isArray()) {
+            this.logger.error("{}:{} unsupport Array returnType", controller.getClass().getName(), method.getName());
+            throw new RuntimeException(method.getName() + " unsupport Array returnType");
+        }
     }
 
     @Override
@@ -43,18 +67,10 @@ public class ControlHandlerImpl implements RouteHandler
         Response response = new Response(request.getRoute());
         //注入请求参数
         Class<?> paramClass;
-        String paramName;
-        String paramJson;
         Object[] params = new Object[this.parameters.length];
         for (int index = 0; index < this.parameters.length; index++) {
             paramClass = this.parameters[index].getType();
-            paramName = this.parameters[index].getName();
-            if (paramClass == String.class && paramName.equals("auth")) {
-                params[index] = request.getAuth();
-            } else {
-                paramJson = request.getData().toJSONString();
-                params[index] = JSON.parseObject(paramJson, paramClass);
-            }
+            params[index] = TypeUtils.castToJavaBean(request.getData(), paramClass);
         }
         //调用并处理结果
         try {
