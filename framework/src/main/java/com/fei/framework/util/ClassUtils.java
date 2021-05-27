@@ -19,7 +19,7 @@ import org.apache.logging.log4j.Logger;
  *
  * @author jianying9
  */
-public final class ClassUtil
+public final class ClassUtils
 {
 
     /**
@@ -31,7 +31,7 @@ public final class ClassUtil
      */
     public static Set<String> findClass(final ClassLoader classloader, final Set<String> packageNameList)
     {
-        Logger logger = LogManager.getLogger(ClassUtil.class);
+        Logger logger = LogManager.getLogger(ClassUtils.class);
         final Set<String> classNameSet = new HashSet(200);
         Enumeration<URL> eUrl;
         try {

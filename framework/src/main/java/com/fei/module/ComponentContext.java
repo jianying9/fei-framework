@@ -4,7 +4,7 @@ import com.fei.framework.context.AppContext;
 import com.fei.framework.module.Module;
 import com.fei.framework.module.ModuleContext;
 import com.fei.framework.bean.BeanContext;
-import com.fei.framework.util.ClassUtil;
+import com.fei.framework.util.ClassUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +50,7 @@ public class ComponentContext implements ModuleContext
         } catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException | InstantiationException | IllegalAccessException ex) {
             throw new RuntimeException(ex);
         }
-        ClassUtil.removeClass(classSet, beanList);
+        ClassUtils.removeClass(classSet, beanList);
     }
 
     @Override

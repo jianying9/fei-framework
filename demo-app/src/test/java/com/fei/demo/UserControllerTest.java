@@ -5,11 +5,13 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.fei.demo.controller.UserController;
+import com.fei.demo.controller.UserController.UserAddDto;
 import com.fei.demo.controller.UserController.UserDto;
 import com.fei.demo.controller.UserController.UserGetDto;
 import com.fei.framework.bean.Resource;
 import com.fei.framework.test.ResourceMock;
 import com.fei.web.test.RouterMock;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -52,15 +54,21 @@ public class UserControllerTest
         resourceMock.resource(this);
     }
 
-    @Test
+    @After
+    public void tearDown()
+    {
+    }
+
+//    @Test
     public void get()
     {
         UserGetDto userGetDto = new UserGetDto();
         userGetDto.userId = "2";
-        routerMock.perform("/user/get", userGetDto);
+        JSONObject output = routerMock.perform("/user/get", userGetDto);
+        System.out.println(output.toString(SerializerFeature.PrettyFormat));
     }
 
-    @Test
+//    @Test
     public void get2()
     {
         UserGetDto userGetDto = new UserGetDto();
@@ -69,7 +77,7 @@ public class UserControllerTest
         System.out.println(JSON.toJSONString(userDto, SerializerFeature.PrettyFormat));
     }
 
-    @Test
+//    @Test
     public void batchGet()
     {
         JSONObject input = new JSONObject();
@@ -80,6 +88,17 @@ public class UserControllerTest
         array.add("1");
         input.put("userIdArray", array);
         JSONObject output = routerMock.perform("/user/batchGet", input);
+        System.out.println(output.toString(SerializerFeature.PrettyFormat));
+    }
+
+    @Test
+    public void add()
+    {
+        UserAddDto userAddDto = new UserAddDto();
+        userAddDto.userName = "4399";
+        userAddDto.desc = "xxx";
+        userAddDto.sex = "男";
+        JSONObject output = routerMock.perform("/user/add", userAddDto);
         System.out.println(output.toString(SerializerFeature.PrettyFormat));
     }
 

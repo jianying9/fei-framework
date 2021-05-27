@@ -1,10 +1,12 @@
 package com.fei.framework.util;
 
+import com.alibaba.fastjson.JSON;
+
 /**
  * @author aladdin
  *
  */
-public final class ToolUtil
+public final class ToolUtils
 {
 
     /**
@@ -32,4 +34,11 @@ public final class ToolUtil
         }
         return result;
     }
+
+    public static <O> O copy(Object from, Class<O> toClazz)
+    {
+        String text = JSON.toJSONString(from);
+        return JSON.parseObject(text, toClazz);
+    }
+
 }

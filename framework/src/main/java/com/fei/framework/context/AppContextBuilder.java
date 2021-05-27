@@ -1,7 +1,7 @@
 package com.fei.framework.context;
 
 import com.fei.framework.bean.BeanContext;
-import com.fei.framework.util.ClassUtil;
+import com.fei.framework.util.ClassUtils;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -89,7 +89,7 @@ public class AppContextBuilder
             Set<Class<?>> classSet = new HashSet();
             AppContext.CONTEXT.addScanPackage("com.fei.module");
             final ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-            Set<String> classNameSet = ClassUtil.findClass(classloader, AppContext.CONTEXT.getPackageNameSet());
+            Set<String> classNameSet = ClassUtils.findClass(classloader, AppContext.CONTEXT.getPackageNameSet());
             Set<Class<?>> packageClassSet = this.loadClass(classloader, classNameSet);
             packageClassSet.addAll(this.initPackageClassSet);
             //确定包含annotation的类
@@ -123,7 +123,7 @@ public class AppContextBuilder
             } catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException | InstantiationException | IllegalAccessException ex) {
                 throw new RuntimeException(ex);
             }
-            ClassUtil.removeClass(classSet, moduleContextList);
+            ClassUtils.removeClass(classSet, moduleContextList);
             //初始化module
             for (ModuleContext ctx : moduleContextList) {
                 this.logger.info("init Module class:{},name:{}.", ctx.getClass().getName(), ctx.getName());
