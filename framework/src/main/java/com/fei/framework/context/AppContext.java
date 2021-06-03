@@ -1,7 +1,9 @@
 package com.fei.framework.context;
 
 import com.fei.framework.bean.BeanContext;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -16,6 +18,8 @@ public final class AppContext
     private final Set<String> packageNameSet = new HashSet();
 
     private final BeanContext beanContext = new BeanContext();
+
+    private final Map<String, String> parameterMap = new HashMap();
 
     private boolean ready = false;
 
@@ -60,6 +64,16 @@ public final class AppContext
     public BeanContext getBeanContext()
     {
         return beanContext;
+    }
+
+    public String getParameter(String name)
+    {
+        return this.parameterMap.get(name);
+    }
+
+    public void addAll(Map<String, String> parameterMap)
+    {
+        this.parameterMap.putAll(parameterMap);
     }
 
 }

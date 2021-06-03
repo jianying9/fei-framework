@@ -35,10 +35,48 @@ public final class ToolUtils
         return result;
     }
 
-    public static <O> O copy(Object from, Class<O> toClazz)
+    /**
+     * 对象复制
+     *
+     * @param <T>
+     * @param from
+     * @param toClazz
+     * @return
+     */
+    public static <T> T copy(Object from, Class<T> toClazz)
     {
         String text = JSON.toJSONString(from);
         return JSON.parseObject(text, toClazz);
+    }
+
+    /**
+     * 根据类获取数据库表明,大写转小写，并且家下划线.UserEntity->user_entity
+     *
+     * @param clazz
+     * @return
+     */
+    public static String getTableName(Class<?> clazz)
+    {
+        String tableName = clazz.getName();
+        int index = tableName.lastIndexOf(".");
+        if (index > 0) {
+            tableName = tableName.substring(index);
+        }
+        //大小写转换
+        StringBuilder sb = new StringBuilder();
+        char[] charArray = tableName.toCharArray();
+        for (char c : charArray) {
+            if (c >= 'A' && c <= 'Z') {
+                if (sb.length() == 0) {
+                    sb.append(c);
+                } else {
+                    sb.append('_').append(c);
+                }
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 
 }

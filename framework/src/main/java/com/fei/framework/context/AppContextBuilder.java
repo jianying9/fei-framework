@@ -23,17 +23,11 @@ public class AppContextBuilder
 {
 
     private final Logger logger = LogManager.getLogger(AppContext.class);
-    private final Map<String, String> parameterMap;
     private final Set<Class<?>> initPackageClassSet = new HashSet();
 
     public AppContextBuilder(Map<String, String> parameterMap)
     {
-        this.parameterMap = parameterMap;
-    }
-
-    public final String getParameter(String name)
-    {
-        return this.parameterMap.get(name);
+        AppContext.CONTEXT.addAll(parameterMap);
     }
 
     public void addPackageClass(Class<?> clazz)
@@ -81,7 +75,7 @@ public class AppContextBuilder
     {
         if (AppContext.CONTEXT.isReady() == false) {
             //将运行参数保存至全局上下文对象
-            String debug = this.getParameter("debug");
+            String debug = AppContext.CONTEXT.getParameter("debug");
             if (debug != null && debug.equals("true")) {
                 AppContext.CONTEXT.setDebug(true);
             }
