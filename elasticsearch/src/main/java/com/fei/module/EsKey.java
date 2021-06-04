@@ -6,21 +6,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 用于描述entity中各个field的信息
+ * 用于描述entity的主键
  *
  * @author jianying9
  */
 @Target(value = {ElementType.FIELD})
 @Retention(value = RetentionPolicy.RUNTIME)
-public @interface EsColumn
+public @interface EsKey
 {
-
-    /**
-     * 查询时,如果字段不存在,则返回默认值
-     *
-     * @return
-     */
-    public String defaultValue() default "";
 
     /**
      * 描述
@@ -30,9 +23,9 @@ public @interface EsColumn
     public String desc();
 
     /**
-     * 是否分词
+     * 新增时,如果主键不存在自动生成主键
      *
      * @return
      */
-    public boolean analyzer() default false;
+    public boolean auto() default false;
 }

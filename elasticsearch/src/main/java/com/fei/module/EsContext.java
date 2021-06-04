@@ -145,41 +145,58 @@ public class EsContext implements ModuleContext
 
     private void createDao(Class<?> clazz)
     {
-        //根据类型获取索引名称
-        String type = ToolUtils.getTableName(clazz);
-        String index;
-        if (this.database.isEmpty()) {
-            index = type;
+        String dbName;
+        EsEntity esEntity = clazz.getAnnotation(EsEntity.class);
+        if (esEntity.database().isEmpty()) {
+            dbName = this.database;
         } else {
-            index = this.database + "_" + type;
+            dbName = esEntity.database();
+        }
+        //根据类型获取索引名称
+        String index;
+        if (esEntity.index().isEmpty()) {
+            index = ToolUtils.getTableName(clazz);
+        } else {
+            index = esEntity.index();
+        }
+        if (dbName.isEmpty() == false) {
+            index = dbName + "_" + index;
+        }
+        String type = "_doc";
+        if (esEntity.type().isEmpty() == false) {
+            type = esEntity.type();
         }
         //获取该实体所有字段集合
-        //ColumnHandler
-        EsColumnHandler keyHandler = null;
-        //column
+        EsKeyHandler keyHandler = null;
         List<EsColumnHandler> columnHandlerList = new ArrayList(0);
         Field[] fieldArray = clazz.getDeclaredFields();
         String fieldName;
         EsColumn esColumn;
+        EsKey esKey;
         EsColumnType columnType;
         for (Field field : fieldArray) {
             if (Modifier.isStatic(field.getModifiers()) == false) {
                 //非静态字段
                 fieldName = field.getName();
+                
                 if (field.isAnnotationPresent(EsColumn.class)) {
                     //
                     esColumn = field.getAnnotation(EsColumn.class);
                     columnType = this.getColumnType(clazz, field, esColumn);
-                    if (esColumn.key()) {
-                        if (keyHandler == null) {
-                            keyHandler = new EsColumnHandler(fieldName, columnType, esColumn.defaultValue());
+                    EsColumnHandler columnHandler = new EsColumnHandler(fieldName, columnType, esColumn.defaultValue());
+                    columnHandlerList.add(columnHandler);
+                } else if (field.isAnnotationPresent(EsKey.class)) {
+                    if (keyHandler == null) {
+                        esKey = field.getAnnotation(EsKey.class);
+                        if (field.getType().equals(String.class)) {
+                            keyHandler = new EsKeyHandler(fieldName, esKey.auto(), field);
                         } else {
-                            this.logger.error("{} EsColumn multy keys", clazz.getName());
-                            throw new RuntimeException("EsColumn multy keys");
+                            this.logger.error("{} EsColumn key must String.class", clazz.getName());
+                            throw new RuntimeException("EsColumn key must String.class");
                         }
                     } else {
-                        EsColumnHandler columnHandler = new EsColumnHandler(fieldName, columnType, esColumn.defaultValue());
-                        columnHandlerList.add(columnHandler);
+                        this.logger.error("{} EsColumn multy keys", clazz.getName());
+                        throw new RuntimeException("EsColumn multy keys");
                     }
                 }
             }

@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.util.TypeUtils;
 import com.fei.elasticsearch.index.query.QueryBuilder;
 import com.fei.elasticsearch.search.sort.SortBuilder;
+import com.fei.framework.util.ToolUtils;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,16 +27,16 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
 {
 
     private final Logger logger = LogManager.getLogger(EsContext.class);
-    protected final EsColumnHandler keyHandler;
-    protected final List<EsColumnHandler> columnHandlerList;
-    protected final Class<T> clazz;
-    protected final String index;
-    protected final String type;
+    private final EsKeyHandler keyHandler;
+    private final List<EsColumnHandler> columnHandlerList;
+    private final Class<T> clazz;
+    private final String index;
+    private final String type;
 
     public EsEntityDaoImpl(
             String index,
             String type,
-            EsColumnHandler keyHandler,
+            EsKeyHandler keyHandler,
             List<EsColumnHandler> columnHandlerList,
             Class<T> clazz)
     {
@@ -76,6 +77,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
             result = hitsJson.getIntValue("total");
         } catch (IOException ex) {
             this.logger.error(ex);
+            throw new RuntimeException("unknown es error");
         }
         return result;
     }
@@ -94,6 +96,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
             exist = responseJson.containsKey("_source");
         } catch (IOException ex) {
             this.logger.error(ex);
+            throw new RuntimeException("unknown es error");
         }
         return exist;
     }
@@ -115,6 +118,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
             t = TypeUtils.castToJavaBean(entityJson, this.clazz);
         } catch (IOException ex) {
             this.logger.error(ex);
+            throw new RuntimeException("unknown es error");
         }
         return t;
     }
@@ -124,6 +128,17 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     {
         JSONObject tJson = JSON.parseObject(JSON.toJSONString(t));
         Object keyValue = tJson.get(this.keyHandler.getName());
+        if (keyValue == null) {
+            if (this.keyHandler.isAuto()) {
+                keyValue = ToolUtils.getAutomicId();
+                tJson.put(this.keyHandler.getName(), keyValue);
+                this.keyHandler.setValue(t, keyValue);
+            }
+        }
+        if (keyValue == null) {
+            this.logger.error("{} insert miss keyValue:{}", clazz.getName(), this.keyHandler.getName());
+            throw new RuntimeException("insert miss keyValue");
+        }
         String id = keyValue.toString();
         String path = "/" + index + "/" + type + "/" + id + "?refresh=true";
         Request request = new Request("PUT", path);
@@ -132,6 +147,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
             EsContext.CONTEXT.getRestClient().performRequest(request);
         } catch (IOException ex) {
             this.logger.error(ex);
+            throw new RuntimeException("unknown es error");
         }
     }
 
@@ -150,6 +166,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
             EsContext.CONTEXT.getRestClient().performRequest(request);
         } catch (IOException ex) {
             this.logger.error(ex);
+            throw new RuntimeException("unknown es error");
         }
     }
 
@@ -177,6 +194,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
                 EsContext.CONTEXT.getRestClient().performRequest(request);
             } catch (IOException ex) {
                 this.logger.error(ex);
+                throw new RuntimeException("unknown es error");
             }
         }
     }
@@ -197,6 +215,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
             EsContext.CONTEXT.getRestClient().performRequest(request);
         } catch (IOException ex) {
             this.logger.error(ex);
+            throw new RuntimeException("unknown es error");
         }
     }
 
@@ -210,6 +229,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
             EsContext.CONTEXT.getRestClient().performRequest(request);
         } catch (IOException ex) {
             this.logger.error(ex);
+            throw new RuntimeException("unknown es error");
         }
     }
 
@@ -268,6 +288,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
             }
         } catch (IOException ex) {
             this.logger.error(ex);
+            throw new RuntimeException("unknown es error");
         }
         return tList;
     }
@@ -312,6 +333,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
             }
         } catch (IOException ex) {
             this.logger.error(ex);
+            throw new RuntimeException("unknown es error");
         }
         return tList;
     }

@@ -14,4 +14,26 @@ import java.lang.annotation.Target;
 @Retention(value = RetentionPolicy.RUNTIME)
 public @interface EsEntity
 {
+
+    /**
+     * 虚拟表空间(es不存在表空间,会自动加在index的前缀.例如:database_user_entity),用于区分不同环境.默认使用EsConfig.DATABASE全局定义,可以指定表空间
+     *
+     * @return
+     */
+    public String database() default "";
+
+    /**
+     * index名称,默认为类名格式转换后结果.例如:UserEntity.class -> user_entity
+     *
+     * @return
+     */
+    public String index() default "";
+
+    /**
+     * 默认为_doc,建议使用默认值
+     *
+     * @return
+     */
+    public String type() default "";
+
 }

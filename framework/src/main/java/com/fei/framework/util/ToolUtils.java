@@ -1,6 +1,9 @@
 package com.fei.framework.util;
 
 import com.alibaba.fastjson.JSON;
+import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.UUID;
 
 /**
  * @author aladdin
@@ -77,6 +80,49 @@ public final class ToolUtils
             }
         }
         return sb.toString();
+    }
+
+    //base64编码去除数字0,1,大写字母I,O,小写字母l,符号+,/
+    private final static char[] base57 = "23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".toCharArray();
+
+    /**
+     * 生成唯一id
+     *
+     * @return
+     */
+    public final static String getAutomicId()
+    {
+        String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+        BigInteger uuidNumber = new BigInteger(uuid, 16);
+        BigInteger baseSize = BigInteger.valueOf(base57.length);
+        StringBuilder automicId = new StringBuilder();
+        BigInteger[] fracAndRemainder;
+        while (uuidNumber.compareTo(BigInteger.ZERO) > 0) {
+            fracAndRemainder = uuidNumber.divideAndRemainder(baseSize);
+            automicId.append(base57[fracAndRemainder[1].intValue()]);
+            uuidNumber = fracAndRemainder[0];
+        }
+        if (automicId.length() < 22) {
+            //小于22位,补充base57[0]
+            int padding = 22 - automicId.length();
+            for (int i = 0; i < padding; i++) {
+                automicId.append(base57[0]);
+            }
+        }
+        return automicId.toString();
+    }
+
+    public final static String decodeAutomicId(String id)
+    {
+        char[] idArray = id.toCharArray();
+        BigInteger sum = BigInteger.ZERO;
+        BigInteger baseSize = BigInteger.valueOf(base57.length);
+        for (int i = 0; i < idArray.length; i++) {
+            BigInteger n = baseSize.pow(i).multiply(BigInteger.valueOf(Arrays.binarySearch(base57, idArray[i])));
+            sum = sum.add(n);
+        }
+        String str = sum.toString(16);
+        return str;
     }
 
 }
