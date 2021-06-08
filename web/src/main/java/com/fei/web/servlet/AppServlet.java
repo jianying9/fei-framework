@@ -52,7 +52,7 @@ public class AppServlet extends HttpServlet
         response.addHeader("Access-Control-Allow-Origin", "*");
         //
         String route = request.getPathInfo();
-        Router router = RouterContext.CONTEXT.get(route);
+        Router router = RouterContext.INSTANCE.get(route);
         if (router == null) {
             //route不存在
             JSONObject output = Response.createNotfound(route);

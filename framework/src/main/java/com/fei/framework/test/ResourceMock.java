@@ -22,6 +22,14 @@ public class ResourceMock
         appContextBuilder.build();
     }
 
+    public ResourceMock(Class<?> component, Map<String, String> parameterMap)
+    {
+        parameterMap.put("debug", "true");
+        AppContextBuilder appContextBuilder = new AppContextBuilder(parameterMap);
+        appContextBuilder.addPackageClass(component);
+        appContextBuilder.build();
+    }
+
     public void resource(Object obj)
     {
         BeanContext beanContext = AppContext.CONTEXT.getBeanContext();

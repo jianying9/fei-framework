@@ -61,6 +61,11 @@ public class BeanContext
         return (B) result;
     }
 
+    public Map<String, Object> get(String group)
+    {
+        return beanGroupMap.get(group);
+    }
+
     /**
      * 初始化所有资源
      */

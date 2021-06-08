@@ -65,7 +65,7 @@ public class ControllerContext implements ModuleContext
         Controller control;
         RequestMapping requestMapping;
         String route;
-        RouterContext routerContext = RouterContext.CONTEXT;
+        RouterContext routerContext = RouterContext.INSTANCE;
         for (Object controller : this.controllerList) {
             clazz = controller.getClass();
             control = clazz.getAnnotation(Controller.class);

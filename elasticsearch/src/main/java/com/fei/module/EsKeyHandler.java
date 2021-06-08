@@ -1,5 +1,6 @@
 package com.fei.module;
 
+import com.alibaba.fastjson.JSONObject;
 import java.lang.reflect.Field;
 
 /**
@@ -48,5 +49,12 @@ public class EsKeyHandler
         } catch (IllegalArgumentException | IllegalAccessException ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    public JSONObject getProperty()
+    {
+        JSONObject propertyJson = new JSONObject();
+        propertyJson.put("type", this.columnType.name().toLowerCase());
+        return propertyJson;
     }
 }

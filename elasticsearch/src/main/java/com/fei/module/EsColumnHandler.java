@@ -1,5 +1,7 @@
 package com.fei.module;
 
+import com.alibaba.fastjson.JSONObject;
+
 /**
  *
  * @author jianying9
@@ -33,6 +35,16 @@ public class EsColumnHandler
     public Object getDefaultValue()
     {
         return defaultValue;
+    }
+
+    public JSONObject getProperty()
+    {
+        JSONObject propertyJson = new JSONObject();
+        propertyJson.put("type", this.columnType.name().toLowerCase());
+        if (this.columnType.equals(EsColumnType.TEXT)) {
+            propertyJson.put("analyzer", "ik_max_word");
+        }
+        return propertyJson;
     }
 
 }

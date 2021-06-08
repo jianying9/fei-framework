@@ -41,7 +41,7 @@ public class RouterContext
 
     private final Logger logger = LogManager.getLogger(RouterContext.class);
 
-    public final static RouterContext CONTEXT = new RouterContext();
+    public final static RouterContext INSTANCE = new RouterContext();
 
     private final List<Class<?>> currClassLinkList = new ArrayList();
 

@@ -30,7 +30,7 @@ public @interface EsColumn
     public String desc();
 
     /**
-     * 是否分词
+     * 如果是String类型,配置是否要分词。如果要分词，则不能为keyword
      *
      * @return
      */

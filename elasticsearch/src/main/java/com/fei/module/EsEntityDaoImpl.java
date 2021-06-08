@@ -63,14 +63,14 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     public int total()
     {
         int result = 0;
-        String path = "/" + index + "/" + type + "/_search";
+        String path = index + "/" + type + "/_search";
         JSONObject requestJson = new JSONObject();
         requestJson.put("from", 0);
         requestJson.put("size", 1);
         Request request = new Request("POST", path);
         request.setJsonEntity(requestJson.toJSONString());
         try {
-            Response response = EsContext.CONTEXT.getRestClient().performRequest(request);
+            Response response = EsContext.INSTANCE.getRestClient().performRequest(request);
             String responseBody = EntityUtils.toString(response.getEntity());
             JSONObject responseJson = JSON.parseObject(responseBody);
             JSONObject hitsJson = responseJson.getJSONObject("hits");
@@ -87,10 +87,10 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     {
         boolean exist = false;
         String id = keyValue.toString();
-        String path = "/" + index + "/" + type + "/" + id;
+        String path = index + "/" + type + "/" + id;
         try {
             Request request = new Request("GET", path);
-            Response response = EsContext.CONTEXT.getRestClient().performRequest(request);
+            Response response = EsContext.INSTANCE.getRestClient().performRequest(request);
             String responseBody = EntityUtils.toString(response.getEntity());
             JSONObject responseJson = JSON.parseObject(responseBody);
             exist = responseJson.containsKey("_source");
@@ -106,10 +106,10 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     {
         T t = null;
         String id = keyValue.toString();
-        String path = "/" + index + "/" + type + "/" + id;
+        String path = index + "/" + type + "/" + id;
         try {
             Request request = new Request("GET", path);
-            Response response = EsContext.CONTEXT.getRestClient().performRequest(request);
+            Response response = EsContext.INSTANCE.getRestClient().performRequest(request);
             String responseBody = EntityUtils.toString(response.getEntity());
             JSONObject responseJson = JSON.parseObject(responseBody);
             JSONObject entityJson = responseJson.getJSONObject("_source");
@@ -140,11 +140,11 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
             throw new RuntimeException("insert miss keyValue");
         }
         String id = keyValue.toString();
-        String path = "/" + index + "/" + type + "/" + id + "?refresh=true";
+        String path = index + "/" + type + "/" + id + "?refresh=true";
         Request request = new Request("PUT", path);
         request.setJsonEntity(tJson.toJSONString());
         try {
-            EsContext.CONTEXT.getRestClient().performRequest(request);
+            EsContext.INSTANCE.getRestClient().performRequest(request);
         } catch (IOException ex) {
             this.logger.error(ex);
             throw new RuntimeException("unknown es error");
@@ -156,14 +156,15 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     {
         JSONObject tJson = JSON.parseObject(JSON.toJSONString(t));
         Object keyValue = tJson.get(this.keyHandler.getName());
+        tJson.remove(this.keyHandler.getName());
         JSONObject requestJson = new JSONObject();
         requestJson.put("doc", tJson);
         String id = keyValue.toString();
-        String path = "/" + index + "/" + type + "/" + id + "/_update?refresh=true";
+        String path = index + "/" + type + "/" + id + "/_update?refresh=true";
         try {
             Request request = new Request("POST", path);
             request.setJsonEntity(requestJson.toJSONString());
-            EsContext.CONTEXT.getRestClient().performRequest(request);
+            EsContext.INSTANCE.getRestClient().performRequest(request);
         } catch (IOException ex) {
             this.logger.error(ex);
             throw new RuntimeException("unknown es error");
@@ -187,11 +188,11 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
             JSONObject requestJson = new JSONObject();
             requestJson.put("doc", tJson);
             String id = keyValue.toString();
-            String path = "/" + index + "/" + type + "/" + id + "/_update?refresh=true";
+            String path = index + "/" + type + "/" + id + "/_update?refresh=true";
             try {
                 Request request = new Request("POST", path);
                 request.setJsonEntity(requestJson.toJSONString());
-                EsContext.CONTEXT.getRestClient().performRequest(request);
+                EsContext.INSTANCE.getRestClient().performRequest(request);
             } catch (IOException ex) {
                 this.logger.error(ex);
                 throw new RuntimeException("unknown es error");
@@ -208,11 +209,11 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
         JSONObject requestJson = new JSONObject();
         requestJson.put("doc", tJson);
         requestJson.put("doc_as_upsert", true);
-        String path = "/" + index + "/" + type + "/" + id + "/_update?refresh=true";
+        String path = index + "/" + type + "/" + id + "/_update?refresh=true";
         try {
             Request request = new Request("POST", path);
             request.setJsonEntity(requestJson.toJSONString());
-            EsContext.CONTEXT.getRestClient().performRequest(request);
+            EsContext.INSTANCE.getRestClient().performRequest(request);
         } catch (IOException ex) {
             this.logger.error(ex);
             throw new RuntimeException("unknown es error");
@@ -223,10 +224,10 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     public void delete(Object keyValue)
     {
         String id = keyValue.toString();
-        String path = "/" + index + "/" + type + "/" + id + "?refresh=true";
+        String path = index + "/" + type + "/" + id + "?refresh=true";
         try {
             Request request = new Request("DELETE", path);
-            EsContext.CONTEXT.getRestClient().performRequest(request);
+            EsContext.INSTANCE.getRestClient().performRequest(request);
         } catch (IOException ex) {
             this.logger.error(ex);
             throw new RuntimeException("unknown es error");
@@ -254,7 +255,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     public List<T> search(QueryBuilder queryBuilder, SortBuilder sort, int from, int size)
     {
         List<T> tList = Collections.EMPTY_LIST;
-        String path = "/" + index + "/" + type + "/_search";
+        String path = index + "/" + type + "/_search";
         JSONObject requestJson = new JSONObject();
         if (queryBuilder != null) {
             requestJson.put("query", queryBuilder.toJSONObject());
@@ -269,7 +270,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
         try {
             Request request = new Request("POST", path);
             request.setJsonEntity(requestJson.toJSONString());
-            Response response = EsContext.CONTEXT.getRestClient().performRequest(request);
+            Response response = EsContext.INSTANCE.getRestClient().performRequest(request);
             String responseBody = EntityUtils.toString(response.getEntity());
             JSONObject responseJson = JSON.parseObject(responseBody);
             JSONObject hitsJson = responseJson.getJSONObject("hits");
@@ -297,7 +298,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     public List<T> search(QueryBuilder queryBuilder, List<SortBuilder> sortList, int from, int size)
     {
         List<T> tList = Collections.EMPTY_LIST;
-        String path = "/" + index + "/" + type + "/_search";
+        String path = index + "/" + type + "/_search";
         JSONObject requestJson = new JSONObject();
         if (queryBuilder != null) {
             requestJson.put("query", queryBuilder.toJSONObject());
@@ -314,7 +315,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
         try {
             Request request = new Request("POST", path);
             request.setJsonEntity(requestJson.toJSONString());
-            Response response = EsContext.CONTEXT.getRestClient().performRequest(request);
+            Response response = EsContext.INSTANCE.getRestClient().performRequest(request);
             String responseBody = EntityUtils.toString(response.getEntity());
             JSONObject responseJson = JSON.parseObject(responseBody);
             JSONObject hitsJson = responseJson.getJSONObject("hits");
@@ -365,6 +366,89 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
         int from = 0;
         SortBuilder sort = null;
         return this.search(queryBuilder, sort, from, size);
+    }
+
+    private boolean exist()
+    {
+        boolean exist = false;
+        String path = this.index;
+        Request request = new Request("HEAD", path);
+        Response response;
+        try {
+            response = EsContext.INSTANCE.getRestClient().performRequest(request);
+            int code = response.getStatusLine().getStatusCode();
+            if (code == 200) {
+                exist = true;
+            }
+        } catch (IOException ex) {
+            this.logger.error(ex);
+            throw new RuntimeException("unknown es error");
+        }
+        return exist;
+    }
+
+    private void createIndex()
+    {
+        //settints
+        JSONObject settingsJson = new JSONObject();
+        settingsJson.put("max_result_window", 60000);
+        //mappings
+        JSONObject propertiesJson = new JSONObject();
+        propertiesJson.put(this.keyHandler.getName(), this.keyHandler.getProperty());
+        for (EsColumnHandler esColumnHandler : columnHandlerList) {
+            propertiesJson.put(esColumnHandler.getName(), esColumnHandler.getProperty());
+        }
+        //关闭_all
+        JSONObject allJson = new JSONObject();
+        allJson.put("enabled", false);
+        //
+        JSONObject docJson = new JSONObject();
+        docJson.put("properties", propertiesJson);
+        docJson.put("_all", allJson);
+        //
+        JSONObject mappingsJson = new JSONObject();
+        mappingsJson.put(this.type, docJson);
+        //
+        JSONObject requestJson = new JSONObject();
+        requestJson.put("settings", settingsJson);
+        requestJson.put("mappings", mappingsJson);
+
+        String path = index;
+        Request request = new Request("PUT", path);
+        request.setJsonEntity(requestJson.toJSONString());
+        try {
+            EsContext.INSTANCE.getRestClient().performRequest(request);
+        } catch (IOException ex) {
+            this.logger.error(ex);
+            throw new RuntimeException("unknown es error");
+        }
+    }
+
+    public void updateMapping()
+    {
+        boolean exist = this.exist();
+        if (exist == false) {
+            this.createIndex();
+        } else {
+            //properties
+            JSONObject propertiesJson = new JSONObject();
+            propertiesJson.put(this.keyHandler.getName(), this.keyHandler.getProperty());
+            for (EsColumnHandler esColumnHandler : columnHandlerList) {
+                propertiesJson.put(esColumnHandler.getName(), esColumnHandler.getProperty());
+            }
+            JSONObject requestJson = new JSONObject();
+            requestJson.put("properties", propertiesJson);
+            //
+            String path = index + "/_mapping/" + this.type;
+            Request request = new Request("PUT", path);
+            request.setJsonEntity(requestJson.toJSONString());
+            try {
+                EsContext.INSTANCE.getRestClient().performRequest(request);
+            } catch (IOException ex) {
+                this.logger.error(ex);
+                throw new RuntimeException("unknown es error");
+            }
+        }
     }
 
 }

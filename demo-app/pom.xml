@@ -12,6 +12,11 @@
     <dependencies>
         <dependency>
             <groupId>com.fei</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fei</groupId>
             <artifactId>web</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -23,7 +28,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.13</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

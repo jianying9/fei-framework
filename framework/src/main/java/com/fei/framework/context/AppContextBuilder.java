@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Set;
 import com.fei.framework.module.ModuleContext;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.HashSet;
 
 /**
@@ -71,6 +73,27 @@ public class AppContextBuilder
         }
     }
 
+    private ModuleContext createModuleContext(Class<?> clazz)
+    {
+        ModuleContext moduleContext = null;
+        try {
+            Field field = clazz.getField("INSTANCE");
+            if (Modifier.isStatic(field.getModifiers())) {
+                field.setAccessible(true);
+                moduleContext = (ModuleContext) field.get(clazz);
+            }
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
+        }
+        if (moduleContext == null) {
+            try {
+                moduleContext = (ModuleContext) clazz.getDeclaredConstructor().newInstance();
+            } catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException | InstantiationException | IllegalAccessException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+        return moduleContext;
+    }
+
     public final void build()
     {
         if (AppContext.CONTEXT.isReady() == false) {
@@ -105,17 +128,13 @@ public class AppContextBuilder
             //查找module
             ModuleContext moduleContext;
             List<ModuleContext> moduleContextList = new ArrayList();
-            try {
-                for (Class<?> clazz : classSet) {
-                    if (clazz.isAnnotationPresent(Module.class)) {
-                        this.logger.info("find Module class:{}.", clazz.getName());
-                        moduleContext = (ModuleContext) clazz.getDeclaredConstructor().newInstance();
-                        //
-                        moduleContextList.add(moduleContext);
-                    }
+            for (Class<?> clazz : classSet) {
+                if (clazz.isAnnotationPresent(Module.class)) {
+                    this.logger.info("find Module class:{}.", clazz.getName());
+                    moduleContext = this.createModuleContext(clazz);
+                    //
+                    moduleContextList.add(moduleContext);
                 }
-            } catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException | InstantiationException | IllegalAccessException ex) {
-                throw new RuntimeException(ex);
             }
             ClassUtils.removeClass(classSet, moduleContextList);
             //初始化module

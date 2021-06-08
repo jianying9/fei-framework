@@ -32,7 +32,7 @@ public class RouterMock
 
     public JSONObject perform(String route, JSONObject input)
     {
-        Router router = RouterContext.CONTEXT.get(route);
+        Router router = RouterContext.INSTANCE.get(route);
         JSONObject output;
         if (router == null) {
             output = Response.createNotfound(route);
@@ -45,7 +45,7 @@ public class RouterMock
 
     public JSONObject perform(String route, Object dto)
     {
-        Router router = RouterContext.CONTEXT.get(route);
+        Router router = RouterContext.INSTANCE.get(route);
         JSONObject input = JSON.parseObject(JSON.toJSONString(dto));
         JSONObject output;
         if (router == null) {

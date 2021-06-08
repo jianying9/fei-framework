@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -44,7 +45,7 @@ import org.elasticsearch.client.RestClientBuilder;
 public class EsContext implements ModuleContext
 {
 
-    public final static EsContext CONTEXT = new EsContext();
+    public final static EsContext INSTANCE = new EsContext();
 
     private final String name = "esEntityDao";
 
@@ -178,7 +179,7 @@ public class EsContext implements ModuleContext
             if (Modifier.isStatic(field.getModifiers()) == false) {
                 //非静态字段
                 fieldName = field.getName();
-                
+
                 if (field.isAnnotationPresent(EsColumn.class)) {
                     //
                     esColumn = field.getAnnotation(EsColumn.class);
@@ -245,6 +246,7 @@ public class EsContext implements ModuleContext
     @Override
     public void build()
     {
+        this.updateMapping();
     }
 
     public String getHost()
@@ -265,6 +267,15 @@ public class EsContext implements ModuleContext
     public RestClient getRestClient()
     {
         return restClient;
+    }
+
+    public void updateMapping()
+    {
+        BeanContext beanContext = AppContext.CONTEXT.getBeanContext();
+        Map<String, Object> entityDaoMap = beanContext.get(this.name);
+        for (Object value : entityDaoMap.values()) {
+            ((EsEntityDaoImpl) value).updateMapping();
+        }
     }
 
 }

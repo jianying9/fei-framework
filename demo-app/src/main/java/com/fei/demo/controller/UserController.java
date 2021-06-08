@@ -64,7 +64,7 @@ public class UserController
         public List<String> tagList;
 
         @RequestParam(desc = "小孩", notNull = false)
-        public List<UserAddDto> childList;
+        public List<UserDto> childList;
 
     }
 

@@ -20,10 +20,4 @@ public class EsConfig {
     
     public static final String HTTP_CERTIFICATE = "elasticsearch.http.certificate";
 
-    public static final String SSL_KEY = "elasticsearch.ssl.key";
-
-    public static final String SSL_CERTIFICATE = "elasticsearch.ssl.certificate";
-
-    public static final String SSL_CERTIFICATE_AUTHORITIES = "elasticsearch.ssl.certificate.authorities";
-
 }

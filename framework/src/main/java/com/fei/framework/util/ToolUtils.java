@@ -62,14 +62,15 @@ public final class ToolUtils
     {
         String tableName = clazz.getName();
         int index = tableName.lastIndexOf(".");
-        if (index > 0) {
-            tableName = tableName.substring(index);
+        if (index >= 0) {
+            tableName = tableName.substring(index + 1);
         }
         //大小写转换
         StringBuilder sb = new StringBuilder();
         char[] charArray = tableName.toCharArray();
         for (char c : charArray) {
             if (c >= 'A' && c <= 'Z') {
+                c = (char) (c + 32);
                 if (sb.length() == 0) {
                     sb.append(c);
                 } else {
