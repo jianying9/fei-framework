@@ -69,26 +69,26 @@ public class EsContext implements ModuleContext
     public void init(Set<Class<?>> classSet)
     {
         //初始化es配置
-        host = AppContext.CONTEXT.getParameter(EsConfig.HOST);
-        String portStr = AppContext.CONTEXT.getParameter(EsConfig.PORT);
+        host = AppContext.INSTANCE.getParameter(EsConfig.HOST);
+        String portStr = AppContext.INSTANCE.getParameter(EsConfig.PORT);
         if (portStr != null) {
             port = Integer.parseInt(portStr);
         }
         //
-        database = AppContext.CONTEXT.getParameter(EsConfig.DATABASE);
+        database = AppContext.INSTANCE.getParameter(EsConfig.DATABASE);
         if (database == null) {
             database = "";
         }
         //
-        String user = AppContext.CONTEXT.getParameter(EsConfig.USER);
+        String user = AppContext.INSTANCE.getParameter(EsConfig.USER);
         if (user == null) {
             user = "";
         }
-        String passowrd = AppContext.CONTEXT.getParameter(EsConfig.PASSWORD);
+        String passowrd = AppContext.INSTANCE.getParameter(EsConfig.PASSWORD);
         if (passowrd == null) {
             passowrd = "";
         }
-        String httpCa = AppContext.CONTEXT.getParameter(EsConfig.HTTP_CERTIFICATE);
+        String httpCa = AppContext.INSTANCE.getParameter(EsConfig.HTTP_CERTIFICATE);
         if (httpCa == null) {
             httpCa = "";
         }
@@ -209,7 +209,7 @@ public class EsContext implements ModuleContext
             //实例化dao
             EsEntityDao esEntityDao = new EsEntityDaoImpl(index, type, keyHandler, columnHandlerList, clazz);
             //注册到bean
-            BeanContext beanContext = AppContext.CONTEXT.getBeanContext();
+            BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
             beanContext.add(this.name, clazz.getName(), esEntityDao);
         }
     }
@@ -271,7 +271,7 @@ public class EsContext implements ModuleContext
 
     public void updateMapping()
     {
-        BeanContext beanContext = AppContext.CONTEXT.getBeanContext();
+        BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
         Map<String, Object> entityDaoMap = beanContext.get(this.name);
         for (Object value : entityDaoMap.values()) {
             ((EsEntityDaoImpl) value).updateMapping();

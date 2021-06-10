@@ -1,6 +1,9 @@
 package com.fei.framework.util;
 
 import com.alibaba.fastjson.JSON;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.UUID;
@@ -81,6 +84,33 @@ public final class ToolUtils
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * 获取class的示例
+     *
+     * @param clazz
+     * @return
+     */
+    public static <T> T create(Class<?> clazz)
+    {
+        T t = null;
+        try {
+            Field field = clazz.getField("INSTANCE");
+            if (Modifier.isStatic(field.getModifiers())) {
+                field.setAccessible(true);
+                t = (T) field.get(clazz);
+            }
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
+        }
+        if (t == null) {
+            try {
+                t = (T) clazz.getDeclaredConstructor().newInstance();
+            } catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException | InstantiationException | IllegalAccessException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+        return t;
     }
 
     //base64编码去除数字0,1,大写字母I,O,小写字母l,符号+,/

@@ -45,12 +45,12 @@ public class FetJUnitTest
     @Test
     public void init()
     {
-        AppContext.CONTEXT.addScanPackage("com.fei.test");
+        AppContext.INSTANCE.addScanPackage("com.fei.test");
         Map<String, String> parameterMap = new HashMap();
         AppContextBuilder appContextBuilder = new AppContextBuilder(parameterMap);
         appContextBuilder.build();
         //
-        BeanContext beanContext = AppContext.CONTEXT.getBeanContext();
+        BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
         TestResource testAutowired = beanContext.get("component", TestResource.class);
         testAutowired.info();
     }

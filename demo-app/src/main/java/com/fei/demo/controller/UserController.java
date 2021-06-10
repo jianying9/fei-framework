@@ -12,7 +12,7 @@ import com.fei.module.RequestParam;
  *
  * @author jianying9
  */
-@Controller(value = "/user", name = "用户")
+@Controller(value = "/user", name = "用户", auth = true)
 public class UserController
 {
 

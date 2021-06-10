@@ -29,7 +29,7 @@ public class JettyStart
             port = ServerBuilder.getPort(args);
         }
         //框架初始化
-        AppContext.CONTEXT.addScanPackage(JettyStart.class);
+        AppContext.INSTANCE.addScanPackage(JettyStart.class);
         Map<String, String> parameterMap = new HashMap();
         AppContextBuilder appContextBuilder = new AppContextBuilder(parameterMap);
         appContextBuilder.build();

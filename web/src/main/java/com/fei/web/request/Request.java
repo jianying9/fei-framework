@@ -1,6 +1,7 @@
 package com.fei.web.request;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fei.web.component.Session;
 
 /**
  * 请求信息
@@ -12,14 +13,14 @@ public class Request
 
     private final String route;
 
-    private final String auth;
+    private final Session session;
 
     private final JSONObject data;
 
-    public Request(String route, String auth, JSONObject data)
+    public Request(String route, Session session, JSONObject data)
     {
         this.route = route;
-        this.auth = auth;
+        this.session = session;
         this.data = data;
     }
 
@@ -28,9 +29,9 @@ public class Request
         return route;
     }
 
-    public String getAuth()
+    public Session getSession()
     {
-        return auth;
+        return session;
     }
 
     public JSONObject getData()

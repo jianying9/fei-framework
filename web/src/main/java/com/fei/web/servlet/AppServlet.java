@@ -94,7 +94,12 @@ public class AppServlet extends HttpServlet
             if (input == null) {
                 input = new JSONObject();
             }
-            JSONObject output = router.processRequest(input);
+            //获取auth信息
+            String auth = request.getHeader("Authorization");
+            if (auth == null) {
+                auth = input.getString("_auth");
+            }
+            JSONObject output = router.processRequest(input, auth);
             //响应
             this.toWrite(response, output.toJSONString());
         }

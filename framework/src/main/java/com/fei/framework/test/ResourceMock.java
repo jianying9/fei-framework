@@ -32,7 +32,7 @@ public class ResourceMock
 
     public void resource(Object obj)
     {
-        BeanContext beanContext = AppContext.CONTEXT.getBeanContext();
+        BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
         beanContext.resource(obj);
     }
 }

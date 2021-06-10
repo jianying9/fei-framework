@@ -30,20 +30,20 @@ public class RouterMock
         appContextBuilder.build();
     }
 
-    public JSONObject perform(String route, JSONObject input)
+    public JSONObject perform(String route, JSONObject input, String auth)
     {
         Router router = RouterContext.INSTANCE.get(route);
         JSONObject output;
         if (router == null) {
             output = Response.createNotfound(route);
         } else {
-            output = router.processRequest(input);
+            output = router.processRequest(input, auth);
         }
         this.logger.info(output.toString(SerializerFeature.PrettyFormat));
         return output;
     }
 
-    public JSONObject perform(String route, Object dto)
+    public JSONObject perform(String route, Object dto, String auth)
     {
         Router router = RouterContext.INSTANCE.get(route);
         JSONObject input = JSON.parseObject(JSON.toJSONString(dto));
@@ -51,7 +51,7 @@ public class RouterMock
         if (router == null) {
             output = Response.createNotfound(route);
         } else {
-            output = router.processRequest(input);
+            output = router.processRequest(input, auth);
         }
         this.logger.info(output.toString(SerializerFeature.PrettyFormat));
         return output;

@@ -13,7 +13,7 @@ import java.util.Set;
 public final class AppContext
 {
 
-    public final static AppContext CONTEXT = new AppContext();
+    public final static AppContext INSTANCE = new AppContext();
 
     private final Set<String> packageNameSet = new HashSet();
 

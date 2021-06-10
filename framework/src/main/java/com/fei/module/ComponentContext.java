@@ -5,7 +5,7 @@ import com.fei.framework.module.Module;
 import com.fei.framework.module.ModuleContext;
 import com.fei.framework.bean.BeanContext;
 import com.fei.framework.util.ClassUtils;
-import java.lang.reflect.InvocationTargetException;
+import com.fei.framework.util.ToolUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -35,20 +35,16 @@ public class ComponentContext implements ModuleContext
     {
         List<Object> beanList = new ArrayList();
         Object bean;
-        BeanContext beanContext = AppContext.CONTEXT.getBeanContext();
-        try {
-            for (Class<?> clazz : classSet) {
-                if (clazz.isAnnotationPresent(Component.class)) {
-                    this.logger.info("find Component class:{}.", clazz.getName());
-                    bean = clazz.getDeclaredConstructor().newInstance();
-                    //
-                    beanList.add(bean);
-                    //
-                    beanContext.add(this.name, bean);
-                }
+        BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
+        for (Class<?> clazz : classSet) {
+            if (clazz.isAnnotationPresent(Component.class)) {
+                this.logger.info("find Component class:{}.", clazz.getName());
+                bean = ToolUtils.create(clazz);
+                //
+                beanList.add(bean);
+                //
+                beanContext.add(this.name, bean);
             }
-        } catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException | InstantiationException | IllegalAccessException ex) {
-            throw new RuntimeException(ex);
         }
         ClassUtils.removeClass(classSet, beanList);
     }

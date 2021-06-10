@@ -29,4 +29,11 @@ public @interface Controller
      */
     public String name();
 
+    /**
+     * 用户验证,如果为true,则该controller下所有的接口都需要用户验证
+     *
+     * @return
+     */
+    public boolean auth() default false;
+
 }

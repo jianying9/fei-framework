@@ -14,6 +14,7 @@ import java.lang.annotation.Target;
 @Retention(value = RetentionPolicy.RUNTIME)
 public @interface RequestMapping
 {
+
     /**
      * 路径
      *
@@ -22,11 +23,11 @@ public @interface RequestMapping
     public String value();
 
     /**
-     * 用户验证
+     * 用户验证，在controller的auth=false时,该设置有效
      *
      * @return
      */
-    public boolean auth() default true;
+    public boolean auth() default false;
 
     /**
      * 描述

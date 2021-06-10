@@ -39,7 +39,7 @@ public class ControllerContext implements ModuleContext
     public void init(Set<Class<?>> classSet)
     {
         Object bean;
-        BeanContext beanContext = AppContext.CONTEXT.getBeanContext();
+        BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
         try {
             for (Class<?> clazz : classSet) {
                 if (clazz.isAnnotationPresent(Controller.class)) {
@@ -65,6 +65,7 @@ public class ControllerContext implements ModuleContext
         Controller control;
         RequestMapping requestMapping;
         String route;
+        boolean auth;
         RouterContext routerContext = RouterContext.INSTANCE;
         for (Object controller : this.controllerList) {
             clazz = controller.getClass();
@@ -74,7 +75,11 @@ public class ControllerContext implements ModuleContext
                 if (Modifier.isStatic(method.getModifiers()) == false && method.isAnnotationPresent(RequestMapping.class)) {
                     requestMapping = method.getAnnotation(RequestMapping.class);
                     route = control.value() + requestMapping.value();
-                    routerContext.add(route, controller, method);
+                    auth = control.auth();
+                    if (auth == false) {
+                        auth = requestMapping.auth();
+                    }
+                    routerContext.add(route, controller, method, auth);
                 }
             }
         }

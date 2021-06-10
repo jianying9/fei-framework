@@ -6,14 +6,12 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.fei.framework.module.Module;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import com.fei.framework.module.ModuleContext;
+import com.fei.framework.util.ToolUtils;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.HashSet;
 
 /**
@@ -29,7 +27,7 @@ public class AppContextBuilder
 
     public AppContextBuilder(Map<String, String> parameterMap)
     {
-        AppContext.CONTEXT.addAll(parameterMap);
+        AppContext.INSTANCE.addAll(parameterMap);
     }
 
     public void addPackageClass(Class<?> clazz)
@@ -73,44 +71,23 @@ public class AppContextBuilder
         }
     }
 
-    private ModuleContext createModuleContext(Class<?> clazz)
-    {
-        ModuleContext moduleContext = null;
-        try {
-            Field field = clazz.getField("INSTANCE");
-            if (Modifier.isStatic(field.getModifiers())) {
-                field.setAccessible(true);
-                moduleContext = (ModuleContext) field.get(clazz);
-            }
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
-        }
-        if (moduleContext == null) {
-            try {
-                moduleContext = (ModuleContext) clazz.getDeclaredConstructor().newInstance();
-            } catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException | InstantiationException | IllegalAccessException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-        return moduleContext;
-    }
-
     public final void build()
     {
-        if (AppContext.CONTEXT.isReady() == false) {
+        if (AppContext.INSTANCE.isReady() == false) {
             //将运行参数保存至全局上下文对象
-            String debug = AppContext.CONTEXT.getParameter("debug");
+            String debug = AppContext.INSTANCE.getParameter("debug");
             if (debug != null && debug.equals("true")) {
-                AppContext.CONTEXT.setDebug(true);
+                AppContext.INSTANCE.setDebug(true);
             }
             //增加扫描包
             Set<Class<?>> classSet = new HashSet();
-            AppContext.CONTEXT.addScanPackage("com.fei.module");
+            AppContext.INSTANCE.addScanPackage("com.fei.module");
             final ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-            Set<String> classNameSet = ClassUtils.findClass(classloader, AppContext.CONTEXT.getPackageNameSet());
+            Set<String> classNameSet = ClassUtils.findClass(classloader, AppContext.INSTANCE.getPackageNameSet());
             Set<Class<?>> packageClassSet = this.loadClass(classloader, classNameSet);
             packageClassSet.addAll(this.initPackageClassSet);
             //确定包含annotation的类
-            BeanContext beanContext = AppContext.CONTEXT.getBeanContext();
+            BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
             Annotation[] annotationArray;
             for (Class<?> clazz : packageClassSet) {
                 if (clazz.isAnnotation() == false) {
@@ -131,7 +108,7 @@ public class AppContextBuilder
             for (Class<?> clazz : classSet) {
                 if (clazz.isAnnotationPresent(Module.class)) {
                     this.logger.info("find Module class:{}.", clazz.getName());
-                    moduleContext = this.createModuleContext(clazz);
+                    moduleContext = ToolUtils.create(clazz);
                     //
                     moduleContextList.add(moduleContext);
                 }
@@ -143,14 +120,14 @@ public class AppContextBuilder
                 ctx.init(classSet);
             }
             //初始化所有bean
-            AppContext.CONTEXT.getBeanContext().build();
+            AppContext.INSTANCE.getBeanContext().build();
             //构件所有module
             for (ModuleContext ctx : moduleContextList) {
                 this.logger.info("build Module class:{},name:{}.", ctx.getClass().getName(), ctx.getName());
                 ctx.build();
             }
             //初始化完成
-            AppContext.CONTEXT.setReady(true);
+            AppContext.INSTANCE.setReady(true);
         }
     }
 

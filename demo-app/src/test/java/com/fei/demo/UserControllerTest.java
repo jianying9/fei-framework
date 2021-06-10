@@ -59,12 +59,14 @@ public class UserControllerTest
     {
     }
 
+    private String auth = "";
+
 //    @Test
     public void get()
     {
         UserGetDto userGetDto = new UserGetDto();
         userGetDto.userId = "2";
-        JSONObject output = routerMock.perform("/user/get", userGetDto);
+        JSONObject output = routerMock.perform("/user/get", userGetDto, this.auth);
         System.out.println(output.toString(SerializerFeature.PrettyFormat));
     }
 
@@ -87,7 +89,7 @@ public class UserControllerTest
         array.add("2");
         array.add("1");
         input.put("userIdArray", array);
-        JSONObject output = routerMock.perform("/user/batchGet", input);
+        JSONObject output = routerMock.perform("/user/batchGet", input, this.auth);
         System.out.println(output.toString(SerializerFeature.PrettyFormat));
     }
 
@@ -98,7 +100,7 @@ public class UserControllerTest
         userAddDto.userName = "4399";
         userAddDto.desc = "xxx";
         userAddDto.sex = "男";
-        JSONObject output = routerMock.perform("/user/add", userAddDto);
+        JSONObject output = routerMock.perform("/user/add", userAddDto, this.auth);
         System.out.println(output.toString(SerializerFeature.PrettyFormat));
     }
 

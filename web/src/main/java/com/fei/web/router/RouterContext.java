@@ -28,6 +28,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.fei.module.RequestParam;
+import com.fei.web.router.handler.AuthHandlerImpl;
 
 /**
  * 路由对象上下文
@@ -51,15 +52,15 @@ public class RouterContext
 
     private Parameter currParameter = null;
 
-    public void add(String route, Object controller, Method method)
+    public void add(String route, Object controller, Method method, boolean auth)
     {
-        Router router = this.create(route, controller, method);
+        Router router = this.create(route, controller, method, auth);
         //注册到bean
-        BeanContext beanContext = AppContext.CONTEXT.getBeanContext();
+        BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
         beanContext.add(this.name, router.getRoute(), router);
     }
 
-    private Router create(String route, Object controller, Method method)
+    private Router create(String route, Object controller, Method method, boolean auth)
     {
         this.currController = controller;
         this.currMethod = method;
@@ -91,6 +92,10 @@ public class RouterContext
         RouteHandler routeHandler = new ControlHandlerImpl(route, controller, method);
         //参数验证
         routeHandler = this.createRequestValidationHandlerImpl(routeHandler, method);
+        //用户验证
+        if (auth) {
+            routeHandler = new AuthHandlerImpl(routeHandler);
+        }
         //
         Router router = new Router(routeHandler);
         return router;
@@ -190,7 +195,7 @@ public class RouterContext
 
     public Router get(String route)
     {
-        BeanContext beanContext = AppContext.CONTEXT.getBeanContext();
+        BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
         return beanContext.get(this.name, route);
     }
 

@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -63,7 +64,11 @@ public class BeanContext
 
     public Map<String, Object> get(String group)
     {
-        return beanGroupMap.get(group);
+        Map<String, Object> map = beanGroupMap.get(group);
+        if (map == null) {
+            map = Collections.EMPTY_MAP;
+        }
+        return map;
     }
 
     /**

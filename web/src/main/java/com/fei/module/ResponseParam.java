@@ -6,22 +6,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 请求参数
+ * 响应参数
  *
  * @author jianying9
  */
 @Target(value = {ElementType.TYPE, ElementType.FIELD})
 @Retention(value = RetentionPolicy.RUNTIME)
-public @interface RequestParam
+public @interface ResponseParam
 {
-
-    public boolean notNull() default true;
-
-    public long max() default Long.MAX_VALUE;
-
-    public long min() default 0;
-
-    public String regexp() default "";
 
     public String desc();
 
