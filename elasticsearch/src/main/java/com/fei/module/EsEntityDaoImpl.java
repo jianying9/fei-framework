@@ -74,7 +74,8 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
             String responseBody = EntityUtils.toString(response.getEntity());
             JSONObject responseJson = JSON.parseObject(responseBody);
             JSONObject hitsJson = responseJson.getJSONObject("hits");
-            result = hitsJson.getIntValue("total");
+            JSONObject totalJson = hitsJson.getJSONObject("total");
+            result = totalJson.getIntValue("value");
         } catch (IOException ex) {
             this.logger.error(ex);
             throw new RuntimeException("unknown es error");
