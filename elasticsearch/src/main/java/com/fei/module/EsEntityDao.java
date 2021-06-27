@@ -16,8 +16,6 @@ public interface EsEntityDao<T>
 
     public String getIndex();
 
-    public String getType();
-
     /**
      * 判断主键是否存在
      *
@@ -65,9 +63,10 @@ public interface EsEntityDao<T>
     /**
      * 更新
      *
+     * @param keyValue
      * @param updateMap
      */
-    public void update(Object keyValue, Map<String, Object> updateMap);
+    public void update(String keyValue, Map<String, Object> updateMap);
 
     /**
      * 更新或插入

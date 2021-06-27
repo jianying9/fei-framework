@@ -1,19 +1,24 @@
-package com.fei.framework.util;
+package com.fei.framework.utils;
 
 import com.alibaba.fastjson.JSON;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.math.BigInteger;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.UUID;
 
 /**
- * @author aladdin
+ * @author jianying9
  *
  */
-public final class ToolUtils
+public final class ToolUtil
 {
+
+    public static String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     /**
      * 过滤前后全角半角空格
@@ -89,6 +94,7 @@ public final class ToolUtils
     /**
      * 获取class的示例
      *
+     * @param <T>
      * @param clazz
      * @return
      */
@@ -154,6 +160,32 @@ public final class ToolUtils
         }
         String str = sum.toString(16);
         return str;
+    }
+
+    public static String format(Date date)
+    {
+        return format(date, DATE_FORMAT);
+    }
+
+    public static String format(Date date, String format)
+    {
+        SimpleDateFormat sdf = new SimpleDateFormat(format);
+        return sdf.format(date);
+    }
+
+    public static Date parse(String date)
+    {
+        return parse(date, DATE_FORMAT);
+    }
+
+    public static Date parse(String date, String format)
+    {
+        SimpleDateFormat sdf = new SimpleDateFormat(format);
+        try {
+            return sdf.parse(date);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

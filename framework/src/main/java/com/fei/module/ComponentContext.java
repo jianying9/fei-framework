@@ -4,8 +4,8 @@ import com.fei.framework.context.AppContext;
 import com.fei.framework.module.Module;
 import com.fei.framework.module.ModuleContext;
 import com.fei.framework.bean.BeanContext;
-import com.fei.framework.util.ClassUtils;
-import com.fei.framework.util.ToolUtils;
+import com.fei.framework.utils.ClassUtil;
+import com.fei.framework.utils.ToolUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -39,14 +39,14 @@ public class ComponentContext implements ModuleContext
         for (Class<?> clazz : classSet) {
             if (clazz.isAnnotationPresent(Component.class)) {
                 this.logger.info("find Component class:{}.", clazz.getName());
-                bean = ToolUtils.create(clazz);
+                bean = ToolUtil.create(clazz);
                 //
                 beanList.add(bean);
                 //
                 beanContext.add(this.name, bean);
             }
         }
-        ClassUtils.removeClass(classSet, beanList);
+        ClassUtil.removeClass(classSet, beanList);
     }
 
     @Override

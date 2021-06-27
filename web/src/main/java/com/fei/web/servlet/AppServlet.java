@@ -3,7 +3,7 @@ package com.fei.web.servlet;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
-import com.fei.framework.util.ToolUtils;
+import com.fei.framework.utils.ToolUtil;
 import com.fei.web.response.Response;
 import com.fei.web.router.Router;
 import com.fei.web.router.RouterContext;
@@ -86,7 +86,7 @@ public class AppServlet extends HttpServlet
                 while (names.hasMoreElements()) {
                     name = names.nextElement();
                     value = request.getParameter(name);
-                    value = ToolUtils.trim(value);
+                    value = ToolUtil.trim(value);
                     input.put(name, value);
                 }
             }

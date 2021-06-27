@@ -43,7 +43,10 @@ public class EsColumnHandler
         propertyJson.put("type", this.columnType.name().toLowerCase());
         if (this.columnType.equals(EsColumnType.TEXT)) {
             propertyJson.put("analyzer", "ik_max_word");
+        } else if(this.columnType.equals(EsColumnType.DATE)) {
+            propertyJson.put("format", "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis");
         }
+        
         return propertyJson;
     }
 

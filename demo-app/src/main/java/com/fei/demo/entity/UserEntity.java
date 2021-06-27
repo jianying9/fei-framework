@@ -3,6 +3,7 @@ package com.fei.demo.entity;
 import com.fei.module.EsColumn;
 import com.fei.module.EsEntity;
 import com.fei.module.EsKey;
+import java.util.Date;
 
 /**
  *
@@ -25,6 +26,6 @@ public class UserEntity
     public boolean kid;
 
     @EsColumn(desc = "创建时间")
-    public long createTime;
+    public Date createTime;
 
 }

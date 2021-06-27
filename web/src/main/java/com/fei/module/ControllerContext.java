@@ -4,7 +4,7 @@ import com.fei.framework.context.AppContext;
 import com.fei.framework.module.Module;
 import com.fei.framework.module.ModuleContext;
 import com.fei.framework.bean.BeanContext;
-import com.fei.framework.util.ClassUtils;
+import com.fei.framework.utils.ClassUtil;
 import com.fei.web.router.RouterContext;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -54,7 +54,7 @@ public class ControllerContext implements ModuleContext
         } catch (NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException | InstantiationException | IllegalAccessException ex) {
             throw new RuntimeException(ex);
         }
-        ClassUtils.removeClass(classSet, controllerList);
+        ClassUtil.removeClass(classSet, controllerList);
     }
 
     @Override

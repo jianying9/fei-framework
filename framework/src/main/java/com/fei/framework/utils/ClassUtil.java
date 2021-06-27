@@ -1,4 +1,4 @@
-package com.fei.framework.util;
+package com.fei.framework.utils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,7 +19,7 @@ import org.apache.logging.log4j.Logger;
  *
  * @author jianying9
  */
-public final class ClassUtils
+public final class ClassUtil
 {
 
     /**
@@ -31,7 +31,7 @@ public final class ClassUtils
      */
     public static Set<String> findClass(final ClassLoader classloader, final Set<String> packageNameList)
     {
-        Logger logger = LogManager.getLogger(ClassUtils.class);
+        Logger logger = LogManager.getLogger(ClassUtil.class);
         final Set<String> classNameSet = new HashSet(200);
         Enumeration<URL> eUrl;
         try {

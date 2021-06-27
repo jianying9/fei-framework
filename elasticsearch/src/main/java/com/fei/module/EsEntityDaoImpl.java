@@ -6,10 +6,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.util.TypeUtils;
 import com.fei.elasticsearch.index.query.QueryBuilder;
 import com.fei.elasticsearch.search.sort.SortBuilder;
-import com.fei.framework.util.ToolUtils;
+import com.fei.framework.utils.ToolUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import org.apache.http.util.EntityUtils;
@@ -31,11 +32,9 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     private final List<EsColumnHandler> columnHandlerList;
     private final Class<T> clazz;
     private final String index;
-    private final String type;
 
     public EsEntityDaoImpl(
             String index,
-            String type,
             EsKeyHandler keyHandler,
             List<EsColumnHandler> columnHandlerList,
             Class<T> clazz)
@@ -43,7 +42,6 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
         this.columnHandlerList = columnHandlerList;
         this.keyHandler = keyHandler;
         this.index = index;
-        this.type = type;
         this.clazz = clazz;
     }
 
@@ -54,16 +52,10 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     }
 
     @Override
-    public String getType()
-    {
-        return this.type;
-    }
-
-    @Override
     public int total()
     {
         int result = 0;
-        String path = index + "/" + type + "/_search";
+        String path = index + "/_search";
         JSONObject requestJson = new JSONObject();
         requestJson.put("from", 0);
         requestJson.put("size", 1);
@@ -88,7 +80,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     {
         boolean exist = false;
         String id = keyValue.toString();
-        String path = index + "/" + type + "/" + id;
+        String path = index + "/_doc/" + id;
         try {
             Request request = new Request("GET", path);
             Response response = EsContext.INSTANCE.getRestClient().performRequest(request);
@@ -107,7 +99,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     {
         T t = null;
         String id = keyValue.toString();
-        String path = index + "/" + type + "/" + id;
+        String path = index + "/_doc/" + id;
         try {
             Request request = new Request("GET", path);
             Response response = EsContext.INSTANCE.getRestClient().performRequest(request);
@@ -127,21 +119,21 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     @Override
     public void insert(T t)
     {
-        JSONObject tJson = JSON.parseObject(JSON.toJSONString(t));
+        JSONObject tJson = JSON.parseObject(JSON.toJSONStringWithDateFormat(t, ToolUtil.DATE_FORMAT));
         Object keyValue = tJson.get(this.keyHandler.getName());
-        if (keyValue == null) {
+        if (keyValue == null || keyValue.toString().isEmpty()) {
             if (this.keyHandler.isAuto()) {
-                keyValue = ToolUtils.getAutomicId();
+                keyValue = ToolUtil.getAutomicId();
                 tJson.put(this.keyHandler.getName(), keyValue);
                 this.keyHandler.setValue(t, keyValue);
             }
         }
-        if (keyValue == null) {
+        if (keyValue == null || keyValue.toString().isEmpty()) {
             this.logger.error("{} insert miss keyValue:{}", clazz.getName(), this.keyHandler.getName());
             throw new RuntimeException("insert miss keyValue");
         }
         String id = keyValue.toString();
-        String path = index + "/" + type + "/" + id + "?refresh=true";
+        String path = index + "/_doc/" + id + "?refresh";
         Request request = new Request("PUT", path);
         request.setJsonEntity(tJson.toJSONString());
         try {
@@ -155,13 +147,17 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     @Override
     public void update(T t)
     {
-        JSONObject tJson = JSON.parseObject(JSON.toJSONString(t));
+        JSONObject tJson = JSON.parseObject(JSON.toJSONStringWithDateFormat(t, ToolUtil.DATE_FORMAT));
         Object keyValue = tJson.get(this.keyHandler.getName());
+        if (keyValue == null || keyValue.toString().isEmpty()) {
+            this.logger.error("{} update miss keyValue:{}", clazz.getName(), this.keyHandler.getName());
+            throw new RuntimeException("update miss keyValue");
+        }
         tJson.remove(this.keyHandler.getName());
         JSONObject requestJson = new JSONObject();
         requestJson.put("doc", tJson);
         String id = keyValue.toString();
-        String path = index + "/" + type + "/" + id + "/_update?refresh=true";
+        String path = index + "/_update/" + id + "?refresh";
         try {
             Request request = new Request("POST", path);
             request.setJsonEntity(requestJson.toJSONString());
@@ -173,14 +169,21 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     }
 
     @Override
-    public void update(Object keyValue, Map<String, Object> updateMap)
+    public void update(String keyValue, Map<String, Object> updateMap)
     {
+        if (keyValue == null || keyValue.isEmpty()) {
+            this.logger.error("{} update miss keyValue:{}", clazz.getName(), this.keyHandler.getName());
+            throw new RuntimeException("update miss keyValue");
+        }
         JSONObject tJson = new JSONObject();
         //只更新有定义的字段
         Object value;
         for (EsColumnHandler esColumnHandler : this.columnHandlerList) {
             value = updateMap.get(esColumnHandler.getName());
             if (value != null) {
+                if (esColumnHandler.getColumnType().equals(EsColumnType.DATE)) {
+                    value = ToolUtil.format((Date) value);
+                }
                 tJson.put(esColumnHandler.getName(), value);
             }
         }
@@ -189,7 +192,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
             JSONObject requestJson = new JSONObject();
             requestJson.put("doc", tJson);
             String id = keyValue.toString();
-            String path = index + "/" + type + "/" + id + "/_update?refresh=true";
+            String path = index + "/_update/" + id + "?refresh";
             try {
                 Request request = new Request("POST", path);
                 request.setJsonEntity(requestJson.toJSONString());
@@ -204,13 +207,24 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     @Override
     public void upsert(T t)
     {
-        JSONObject tJson = JSON.parseObject(JSON.toJSONString(t));
+        JSONObject tJson = JSON.parseObject(JSON.toJSONStringWithDateFormat(t, ToolUtil.DATE_FORMAT));
         Object keyValue = tJson.get(this.keyHandler.getName());
+        if (keyValue == null || keyValue.toString().isEmpty()) {
+            if (this.keyHandler.isAuto()) {
+                keyValue = ToolUtil.getAutomicId();
+                tJson.put(this.keyHandler.getName(), keyValue);
+                this.keyHandler.setValue(t, keyValue);
+            }
+        }
+        if (keyValue == null || keyValue.toString().isEmpty()) {
+            this.logger.error("{} upsert miss keyValue:{}", clazz.getName(), this.keyHandler.getName());
+            throw new RuntimeException("upsert miss keyValue");
+        }
         String id = keyValue.toString();
         JSONObject requestJson = new JSONObject();
         requestJson.put("doc", tJson);
         requestJson.put("doc_as_upsert", true);
-        String path = index + "/" + type + "/" + id + "/_update?refresh=true";
+        String path = index + "/_update/" + id + "?refresh";
         try {
             Request request = new Request("POST", path);
             request.setJsonEntity(requestJson.toJSONString());
@@ -225,7 +239,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     public void delete(Object keyValue)
     {
         String id = keyValue.toString();
-        String path = index + "/" + type + "/" + id + "?refresh=true";
+        String path = index + "/_doc/" + id + "?refresh";
         try {
             Request request = new Request("DELETE", path);
             EsContext.INSTANCE.getRestClient().performRequest(request);
@@ -256,7 +270,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     public List<T> search(QueryBuilder queryBuilder, SortBuilder sort, int from, int size)
     {
         List<T> tList = Collections.EMPTY_LIST;
-        String path = index + "/" + type + "/_search";
+        String path = index + "/_search";
         JSONObject requestJson = new JSONObject();
         if (queryBuilder != null) {
             requestJson.put("query", queryBuilder.toJSONObject());
@@ -299,7 +313,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     public List<T> search(QueryBuilder queryBuilder, List<SortBuilder> sortList, int from, int size)
     {
         List<T> tList = Collections.EMPTY_LIST;
-        String path = index + "/" + type + "/_search";
+        String path = index + "/_search";
         JSONObject requestJson = new JSONObject();
         if (queryBuilder != null) {
             requestJson.put("query", queryBuilder.toJSONObject());
@@ -369,7 +383,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
         return this.search(queryBuilder, sort, from, size);
     }
 
-    private boolean exist()
+    private boolean existIndex()
     {
         boolean exist = false;
         String path = this.index;
@@ -399,16 +413,9 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
         for (EsColumnHandler esColumnHandler : columnHandlerList) {
             propertiesJson.put(esColumnHandler.getName(), esColumnHandler.getProperty());
         }
-        //关闭_all
-        JSONObject allJson = new JSONObject();
-        allJson.put("enabled", false);
-        //
-        JSONObject docJson = new JSONObject();
-        docJson.put("properties", propertiesJson);
-        docJson.put("_all", allJson);
-        //
+        //7.x后include_type_name默认为false,不需要指定type,type="_doc"
         JSONObject mappingsJson = new JSONObject();
-        mappingsJson.put(this.type, docJson);
+        mappingsJson.put("properties", propertiesJson);
         //
         JSONObject requestJson = new JSONObject();
         requestJson.put("settings", settingsJson);
@@ -427,7 +434,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
 
     public void updateMapping()
     {
-        boolean exist = this.exist();
+        boolean exist = this.existIndex();
         if (exist == false) {
             this.createIndex();
         } else {
@@ -439,8 +446,8 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
             }
             JSONObject requestJson = new JSONObject();
             requestJson.put("properties", propertiesJson);
-            //
-            String path = index + "/_mapping/" + this.type;
+            //7.x后include_type_name默认为false,不需要指定type,type="_doc"
+            String path = index + "/_mapping";
             Request request = new Request("PUT", path);
             request.setJsonEntity(requestJson.toJSONString());
             try {

@@ -29,11 +29,4 @@ public @interface EsEntity
      */
     public String index() default "";
 
-    /**
-     * 默认为_doc,建议使用默认值
-     *
-     * @return
-     */
-    public String type() default "";
-
 }

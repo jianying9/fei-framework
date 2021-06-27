@@ -3,6 +3,7 @@ package com.fei.web.router.handler;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.util.TypeUtils;
+import com.fei.framework.utils.ToolUtil;
 import com.fei.web.request.Request;
 import com.fei.web.response.Response;
 import com.fei.web.router.RouterContext;
@@ -53,7 +54,7 @@ public class ControlHandlerImpl implements RouteHandler
         try {
             Object data = this.method.invoke(this.controller, params);
             if (data != null) {
-                String dataJson = JSON.toJSONString(data);
+                String dataJson = JSON.toJSONStringWithDateFormat(data, ToolUtil.DATE_FORMAT);
                 JSONObject jsonData = JSON.parseObject(dataJson);
                 response.setData(jsonData);
             }

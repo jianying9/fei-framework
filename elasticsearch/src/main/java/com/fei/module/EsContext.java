@@ -4,7 +4,7 @@ import com.fei.framework.context.AppContext;
 import com.fei.framework.module.Module;
 import com.fei.framework.module.ModuleContext;
 import com.fei.framework.bean.BeanContext;
-import com.fei.framework.util.ToolUtils;
+import com.fei.framework.utils.ToolUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -17,6 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -51,11 +52,11 @@ public class EsContext implements ModuleContext
 
     private final Logger logger = LogManager.getLogger(EsContext.class);
 
-    private String host;
-
-    private int port = 9200;
-
     private String database;
+
+    private String url;
+
+    private String pathPrefix = "/";
 
     private RestClient restClient;
 
@@ -69,67 +70,74 @@ public class EsContext implements ModuleContext
     public void init(Set<Class<?>> classSet)
     {
         //初始化es配置
-        host = AppContext.INSTANCE.getParameter(EsConfig.HOST);
-        String portStr = AppContext.INSTANCE.getParameter(EsConfig.PORT);
-        if (portStr != null) {
-            port = Integer.parseInt(portStr);
-        }
+        url = AppContext.INSTANCE.getParameter(EsConfig.URL);
         //
         database = AppContext.INSTANCE.getParameter(EsConfig.DATABASE);
         if (database == null) {
             database = "";
         }
         //
-        String user = AppContext.INSTANCE.getParameter(EsConfig.USER);
-        if (user == null) {
-            user = "";
-        }
-        String passowrd = AppContext.INSTANCE.getParameter(EsConfig.PASSWORD);
-        if (passowrd == null) {
-            passowrd = "";
-        }
+        final String user = AppContext.INSTANCE.getParameter(EsConfig.USER);
+        final String password = AppContext.INSTANCE.getParameter(EsConfig.PASSWORD);
+        //
         String httpCa = AppContext.INSTANCE.getParameter(EsConfig.HTTP_CERTIFICATE);
-        if (httpCa == null) {
-            httpCa = "";
+        String httpCaPassword = AppContext.INSTANCE.getParameter(EsConfig.HTTP_CERTIFICATE_PASSWORD);
+        if (httpCaPassword == null) {
+            httpCaPassword = "";
         }
         //
-        if (host != null) {
+        if (url != null) {
             try {
-                KeyStore trustStore = KeyStore.getInstance("PKCS12");
-                String storePassword = "";
-                if (httpCa.isEmpty() == false) {
+                //如果有自定义ssl证书,则初始化
+                final SSLContext sslContext;
+                if (httpCa != null && httpCa.isEmpty() == false) {
+                    KeyStore trustStore = KeyStore.getInstance("PKCS12");
                     File file = new File(httpCa);
                     FileInputStream fileInputStream = new FileInputStream(file);
-                    trustStore.load(fileInputStream, storePassword.toCharArray());
+                    trustStore.load(fileInputStream, httpCaPassword.toCharArray());
+                    SSLContextBuilder sslBuilder = SSLContexts.custom()
+                            .loadTrustMaterial(trustStore, null);
+                    sslContext = sslBuilder.build();
+                } else {
+                    sslContext = null;
                 }
                 //
-                SSLContextBuilder sslBuilder = SSLContexts.custom()
-                        .loadTrustMaterial(trustStore, null);
-                final SSLContext sslContext = sslBuilder.build();
-                //
-                final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-                credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(user, passowrd));
-                //
-                restClient = RestClient.builder(
-                        new HttpHost(host, port, "https")).setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback()
+                final HttpHost httpHost = this.createHostAndPathPrefix(url);
+                RestClientBuilder restClientBuilder = RestClient.builder(httpHost)
+                        .setPathPrefix(pathPrefix)
+                        .setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback()
                         {
                             @Override
                             public HttpAsyncClientBuilder customizeHttpClient(
                                     HttpAsyncClientBuilder httpClientBuilder)
                             {
-                                return httpClientBuilder.setSSLContext(sslContext).setSSLHostnameVerifier(new HostnameVerifier()
-                                {
-                                    @Override
-                                    public boolean verify(String string, SSLSession ssls)
-                                    {
-                                        //不校验ssl证书是否和hostName一致
-                                        return true;
+                                //处理账号密码
+                                if (user.isEmpty() == false && password.isEmpty() == false) {
+                                    CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+                                    credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(user, password));
+                                    httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                                }
+                                //处理https
+                                if (httpHost.getSchemeName().equals("https")) {
+                                    if (sslContext != null) {
+                                        httpClientBuilder.setSSLContext(sslContext);
                                     }
-                                }).setDefaultCredentialsProvider(credentialsProvider);
+                                    httpClientBuilder.setSSLHostnameVerifier(new HostnameVerifier()
+                                    {
+                                        @Override
+                                        public boolean verify(String string, SSLSession ssls)
+                                        {
+                                            //不校验ssl证书是否和hostName一致
+                                            return true;
+                                        }
+                                    });
+                                }
+                                return httpClientBuilder;
                             }
-                        }).build();
+                        });
+                this.restClient = restClientBuilder.build();
             } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | KeyManagementException ex) {
-                this.logger.error("elasticsearch添加节点异常");
+                this.logger.error("elasticsearch rest client init error", ex);
             }
         }
         //解析
@@ -144,6 +152,42 @@ public class EsContext implements ModuleContext
         classSet.removeAll(esEntityClassSet);
     }
 
+    /**
+     * 根据url自动生成host和pathPrefix
+     *
+     * @param s
+     * @return
+     */
+    private HttpHost createHostAndPathPrefix(final String s)
+    {
+        String text = s;
+        //http or https
+        String scheme = null;
+        final int schemeIdx = text.indexOf("://");
+        if (schemeIdx > 0) {
+            scheme = text.substring(0, schemeIdx);
+            text = text.substring(schemeIdx + 3);
+        }
+        //pathPrefix
+        final int pathIdx = text.indexOf("/");
+        if (pathIdx > 0) {
+            this.pathPrefix = text.substring(pathIdx);
+            text = text.substring(0, pathIdx);
+        }
+        //port
+        int port = -1;
+        final int portIdx = text.lastIndexOf(":");
+        if (portIdx > 0) {
+            try {
+                port = Integer.parseInt(text.substring(portIdx + 1));
+            } catch (final NumberFormatException ex) {
+                throw new IllegalArgumentException("Invalid HTTP host: " + text);
+            }
+            text = text.substring(0, portIdx);
+        }
+        return new HttpHost(text, port, scheme);
+    }
+
     private void createDao(Class<?> clazz)
     {
         String dbName;
@@ -156,16 +200,12 @@ public class EsContext implements ModuleContext
         //根据类型获取索引名称
         String index;
         if (esEntity.index().isEmpty()) {
-            index = ToolUtils.getTableName(clazz);
+            index = ToolUtil.getTableName(clazz);
         } else {
             index = esEntity.index();
         }
         if (dbName.isEmpty() == false) {
             index = dbName + "_" + index;
-        }
-        String type = "_doc";
-        if (esEntity.type().isEmpty() == false) {
-            type = esEntity.type();
         }
         //获取该实体所有字段集合
         EsKeyHandler keyHandler = null;
@@ -207,7 +247,7 @@ public class EsContext implements ModuleContext
             throw new RuntimeException("EsColumn miss key");
         } else {
             //实例化dao
-            EsEntityDao esEntityDao = new EsEntityDaoImpl(index, type, keyHandler, columnHandlerList, clazz);
+            EsEntityDao esEntityDao = new EsEntityDaoImpl(index, keyHandler, columnHandlerList, clazz);
             //注册到bean
             BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
             beanContext.add(this.name, clazz.getName(), esEntityDao);
@@ -224,6 +264,8 @@ public class EsContext implements ModuleContext
             result = EsColumnType.LONG;
         } else if (type == double.class || type == Double.class) {
             result = EsColumnType.DOUBLE;
+        } else if (type == Date.class) {
+            result = EsColumnType.DATE;
         } else if (type == String.class) {
             if (esColumn.analyzer()) {
                 result = EsColumnType.TEXT;
@@ -247,16 +289,6 @@ public class EsContext implements ModuleContext
     public void build()
     {
         this.updateMapping();
-    }
-
-    public String getHost()
-    {
-        return host;
-    }
-
-    public int getPort()
-    {
-        return port;
     }
 
     public String getDatabase()

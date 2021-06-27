@@ -1,6 +1,6 @@
 package com.fei.framework.bean;
 
-import com.fei.framework.util.ClassUtils;
+import com.fei.framework.utils.ClassUtil;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -234,7 +234,7 @@ public class BeanContext
         Class<?> clazz = bean.getClass();
         try {
 
-            Method method = ClassUtils.getMethodByName(clazz, "init");
+            Method method = ClassUtil.getMethodByName(clazz, "init");
             if (method != null && Modifier.isStatic(method.getModifiers()) == false) {
                 //自身存在init方法
                 method.setAccessible(true);

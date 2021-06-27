@@ -2,7 +2,7 @@ package com.fei.demo.component;
 
 import com.fei.demo.controller.UserController.UserAddDto;
 import com.fei.demo.controller.UserController.UserDto;
-import com.fei.framework.util.ToolUtils;
+import com.fei.framework.utils.ToolUtil;
 import com.fei.module.Component;
 
 /**
@@ -28,7 +28,7 @@ public class UserComponent
 
     public UserDto addUser(UserAddDto userAddDto)
     {
-        UserDto userDto = ToolUtils.copy(userAddDto, UserDto.class);
+        UserDto userDto = ToolUtil.copy(userAddDto, UserDto.class);
         userDto.userId = "3444";
         return userDto;
     }

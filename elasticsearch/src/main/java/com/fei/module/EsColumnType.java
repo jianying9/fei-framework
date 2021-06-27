@@ -15,6 +15,8 @@ public enum EsColumnType {
     
     BOOLEAN,
     
-    DOUBLE
+    DOUBLE,
+    
+    DATE
 
 }

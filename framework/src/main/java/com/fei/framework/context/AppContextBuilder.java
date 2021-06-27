@@ -1,7 +1,7 @@
 package com.fei.framework.context;
 
 import com.fei.framework.bean.BeanContext;
-import com.fei.framework.util.ClassUtils;
+import com.fei.framework.utils.ClassUtil;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import com.fei.framework.module.ModuleContext;
-import com.fei.framework.util.ToolUtils;
+import com.fei.framework.utils.ToolUtil;
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
 
@@ -83,7 +83,7 @@ public class AppContextBuilder
             Set<Class<?>> classSet = new HashSet();
             AppContext.INSTANCE.addScanPackage("com.fei.module");
             final ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-            Set<String> classNameSet = ClassUtils.findClass(classloader, AppContext.INSTANCE.getPackageNameSet());
+            Set<String> classNameSet = ClassUtil.findClass(classloader, AppContext.INSTANCE.getPackageNameSet());
             Set<Class<?>> packageClassSet = this.loadClass(classloader, classNameSet);
             packageClassSet.addAll(this.initPackageClassSet);
             //确定包含annotation的类
@@ -108,12 +108,12 @@ public class AppContextBuilder
             for (Class<?> clazz : classSet) {
                 if (clazz.isAnnotationPresent(Module.class)) {
                     this.logger.info("find Module class:{}.", clazz.getName());
-                    moduleContext = ToolUtils.create(clazz);
+                    moduleContext = ToolUtil.create(clazz);
                     //
                     moduleContextList.add(moduleContext);
                 }
             }
-            ClassUtils.removeClass(classSet, moduleContextList);
+            ClassUtil.removeClass(classSet, moduleContextList);
             //初始化module
             for (ModuleContext ctx : moduleContextList) {
                 this.logger.info("init Module class:{},name:{}.", ctx.getClass().getName(), ctx.getName());
