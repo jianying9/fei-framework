@@ -17,6 +17,12 @@ public class ExistsQueryBuilder implements QueryBuilder
     }
 
     @Override
+    public boolean canFilter()
+    {
+        return true;
+    }
+
+    @Override
     public JSONObject toJSONObject()
     {
         JSONObject existsJson = new JSONObject();

@@ -53,6 +53,12 @@ public class RangeQueryBuilder implements QueryBuilder
         this.minValue = to;
         return this;
     }
+    
+    @Override
+    public boolean canFilter()
+    {
+        return true;
+    }
 
     @Override
     public JSONObject toJSONObject()

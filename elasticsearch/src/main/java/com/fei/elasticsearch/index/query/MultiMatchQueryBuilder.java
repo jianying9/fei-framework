@@ -18,6 +18,12 @@ public class MultiMatchQueryBuilder implements QueryBuilder
         this.fieldNames = fieldNames;
         this.text = text;
     }
+    
+    @Override
+    public boolean canFilter()
+    {
+        return false;
+    }
 
     @Override
     public JSONObject toJSONObject()

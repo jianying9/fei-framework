@@ -1,17 +1,26 @@
 package com.fei.demo;
 
+import com.alibaba.fastjson.JSON;
 import com.fei.demo.entity.UserEntity;
+import com.fei.elasticsearch.index.query.BoolQueryBuilder;
+import com.fei.elasticsearch.index.query.QueryBuilders;
+import com.fei.elasticsearch.search.sort.SortBuilder;
+import com.fei.elasticsearch.search.sort.SortBuilders;
+import com.fei.elasticsearch.search.sort.SortOrder;
 import com.fei.framework.bean.Resource;
 import com.fei.framework.test.ResourceMock;
+import com.fei.framework.utils.ToolUtil;
 import com.fei.module.EsConfig;
 import com.fei.module.EsEntityDao;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -122,6 +131,20 @@ public class UserEntityTest
     {
         int total = this.userEntityDao.total();
         System.out.println(total);
+    }
+
+//    @Test
+    public void search()
+    {
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+//        boolQueryBuilder.must(QueryBuilders.termQuery("userName", "fei092"));
+        boolQueryBuilder.filter(QueryBuilders.existsQuery("money"));
+        boolQueryBuilder.filter(QueryBuilders.rangeQuery("createTime").gt("2021-06-27 22:00:00").lt("2021-06-27 23:00:00"));
+        SortBuilder sortBuilder = SortBuilders.fieldSort("createTime").order(SortOrder.DESC);
+        List<UserEntity> userList = this.userEntityDao.search(boolQueryBuilder, sortBuilder, 0, 100);
+        for (UserEntity userEntity : userList) {
+            System.out.println(JSON.toJSONStringWithDateFormat(userEntity, ToolUtil.DATE_FORMAT));
+        }
     }
 
 }

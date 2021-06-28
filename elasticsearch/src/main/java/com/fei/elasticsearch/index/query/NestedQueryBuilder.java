@@ -18,6 +18,12 @@ public class NestedQueryBuilder implements QueryBuilder
         this.path = path;
         this.queryBuilder = queryBuilder;
     }
+    
+    @Override
+    public boolean canFilter()
+    {
+        return false;
+    }
 
     @Override
     public JSONObject toJSONObject()

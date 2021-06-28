@@ -20,6 +20,12 @@ public class MatchQueryBuilder implements QueryBuilder
     }
 
     @Override
+    public boolean canFilter()
+    {
+        return false;
+    }
+
+    @Override
     public JSONObject toJSONObject()
     {
         JSONObject matchJson = new JSONObject();

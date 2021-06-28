@@ -18,6 +18,12 @@ public class TermQueryBuilder implements QueryBuilder
         this.fieldName = fieldName;
         this.value = value;
     }
+    
+    @Override
+    public boolean canFilter()
+    {
+        return true;
+    }
 
     @Override
     public JSONObject toJSONObject()

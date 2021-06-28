@@ -18,10 +18,18 @@ public class BoolQueryBuilder implements QueryBuilder
 
     private final List<QueryBuilder> shouldClauses = new ArrayList();
 
+    private final List<QueryBuilder> filterClauses = new ArrayList();
+
     public BoolQueryBuilder must(QueryBuilder queryBuilder)
     {
         mustClauses.add(queryBuilder);
         return this;
+    }
+
+    @Override
+    public boolean canFilter()
+    {
+        return false;
     }
 
     public BoolQueryBuilder mustNot(QueryBuilder queryBuilder)
@@ -33,6 +41,16 @@ public class BoolQueryBuilder implements QueryBuilder
     public BoolQueryBuilder should(QueryBuilder queryBuilder)
     {
         shouldClauses.add(queryBuilder);
+        return this;
+    }
+
+    public BoolQueryBuilder filter(QueryBuilder queryBuilder)
+    {
+        if (queryBuilder.canFilter()) {
+            filterClauses.add(queryBuilder);
+        } else {
+            mustClauses.add(queryBuilder);
+        }
         return this;
     }
 
@@ -60,6 +78,13 @@ public class BoolQueryBuilder implements QueryBuilder
                 shouldArray.add(shouldClause.toJSONObject());
             }
             boolJson.put("should", shouldArray);
+        }
+        if (this.filterClauses.isEmpty() == false) {
+            JSONArray filterArray = new JSONArray();
+            for (QueryBuilder filterClause : this.filterClauses) {
+                filterArray.add(filterClause.toJSONObject());
+            }
+            boolJson.put("filter", filterArray);
         }
         //
         JSONObject queryJson = new JSONObject();

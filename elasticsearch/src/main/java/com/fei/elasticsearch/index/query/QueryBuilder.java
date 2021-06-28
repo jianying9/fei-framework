@@ -10,4 +10,6 @@ public interface QueryBuilder
 {
 
     public JSONObject toJSONObject();
+    
+    public boolean canFilter();
 }
