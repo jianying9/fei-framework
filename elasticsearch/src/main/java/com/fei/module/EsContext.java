@@ -10,6 +10,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -219,7 +221,6 @@ public class EsContext implements ModuleContext
             if (Modifier.isStatic(field.getModifiers()) == false) {
                 //非静态字段
                 fieldName = field.getName();
-
                 if (field.isAnnotationPresent(EsColumn.class)) {
                     //
                     esColumn = field.getAnnotation(EsColumn.class);
@@ -273,11 +274,41 @@ public class EsContext implements ModuleContext
                 result = EsColumnType.KEYWORD;
             }
         } else if (type.isArray()) {
-            this.logger.error("{},{} EsColumn unsupport Array", clazz.getName(), field.getName());
-            throw new RuntimeException("EsColumn unsupport Array");
+            Class<?> componentType = type.getComponentType();
+            if (componentType == boolean.class || componentType == Boolean.class) {
+                result = EsColumnType.BOOLEAN;
+            } else if (componentType == long.class || int.class == componentType || componentType == Integer.class || componentType == Long.class) {
+                result = EsColumnType.LONG;
+            } else if (componentType == double.class || componentType == Double.class) {
+                result = EsColumnType.DOUBLE;
+            } else if (componentType == Date.class) {
+                result = EsColumnType.DATE;
+            } else if (componentType == String.class) {
+                result = EsColumnType.KEYWORD;
+            } else {
+                this.logger.error("{},{} EsColumn Array only support Array<Boolean>,Array<Long>,Array<Double>,Array<Date>,Array<String>", clazz.getName(), field.getName());
+                throw new RuntimeException("EsColumn Array only support Array<Boolean>,Array<Long>,Array<Double>,Array<Date>,Array<String>");
+            }
         } else if (Collection.class.isAssignableFrom(type)) {
-            this.logger.error("{},{} EsColumn unsupport Collection", clazz.getName(), field.getName());
-            throw new RuntimeException("EsColumn unsupport Collection");
+            //集合泛型
+            Type generictype = field.getGenericType();
+            ParameterizedType listGenericType = (ParameterizedType) generictype;
+            Type[] listActualTypeArguments = listGenericType.getActualTypeArguments();
+            Class<?> subType = (Class<?>) listActualTypeArguments[0];
+            if (subType == boolean.class || subType == Boolean.class) {
+                result = EsColumnType.BOOLEAN;
+            } else if (subType == long.class || int.class == subType || subType == Integer.class || subType == Long.class) {
+                result = EsColumnType.LONG;
+            } else if (subType == double.class || subType == Double.class) {
+                result = EsColumnType.DOUBLE;
+            } else if (subType == Date.class) {
+                result = EsColumnType.DATE;
+            } else if (subType == String.class) {
+                result = EsColumnType.KEYWORD;
+            } else {
+                this.logger.error("{},{} EsColumn Collection only support Collection<Boolean>,Collection<Long>,Collection<Double>,Collection<Date>,Collection<String>", clazz.getName(), field.getName());
+                throw new RuntimeException("EsColumn Collection only support Collection<Boolean>,Collection<Long>,Collection<Double>,Collection<Date>,Collection<String>");
+            }
         } else {
             this.logger.error("{},{} EsColumn unsupport Object", clazz.getName(), field.getName());
             throw new RuntimeException("EsColumn unsupport Object");

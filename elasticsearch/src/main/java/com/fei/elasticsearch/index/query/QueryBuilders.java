@@ -1,7 +1,5 @@
 package com.fei.elasticsearch.index.query;
 
-import java.util.Collection;
-
 /**
  *
  * @author jianying9
@@ -24,24 +22,28 @@ public class QueryBuilders
         return new RangeQueryBuilder(name);
     }
 
-    public static TermsQueryBuilder termsQuery(String name, Collection<Object> values)
+    public static TermsQueryBuilder termsQuery(String name, Object... values)
     {
         return new TermsQueryBuilder(name, values);
     }
-    
-    public static MatchQueryBuilder matchQuery(String name, String text) {
+
+    public static MatchQueryBuilder matchQuery(String name, String text)
+    {
         return new MatchQueryBuilder(name, text);
     }
-    
-    public static ExistsQueryBuilder existsQuery(String name) {
+
+    public static ExistsQueryBuilder existsQuery(String name)
+    {
         return new ExistsQueryBuilder(name);
     }
-    
-    public static MultiMatchQueryBuilder multiMatchQuery(String text, String... fieldNames) {
+
+    public static MultiMatchQueryBuilder multiMatchQuery(String text, String... fieldNames)
+    {
         return new MultiMatchQueryBuilder(text, fieldNames);
     }
-    
-    public static NestedQueryBuilder nestedQuery(String path, QueryBuilder query) {
+
+    public static NestedQueryBuilder nestedQuery(String path, QueryBuilder query)
+    {
         return new NestedQueryBuilder(path, query);
     }
 
