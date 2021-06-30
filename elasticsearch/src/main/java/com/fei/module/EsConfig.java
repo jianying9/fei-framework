@@ -4,19 +4,19 @@ package com.fei.module;
  *
  * @author jianying9
  */
-public class EsConfig
+public interface EsConfig
 {
 
-    public static final String URL = "elasticsearch.url";
+    String URL = "elasticsearch.url";
 
-    public static final String DATABASE = "elasticsearch.database";
+    String DATABASE = "elasticsearch.database";
 
-    public static final String USER = "elasticsearch.user";
+    String USER = "elasticsearch.user";
 
-    public static final String PASSWORD = "elasticsearch.password";
+    String PASSWORD = "elasticsearch.password";
 
-    public static final String HTTP_CERTIFICATE = "elasticsearch.http.certificate";
+    String HTTP_CERTIFICATE = "elasticsearch.http.certificate";
 
-    public static final String HTTP_CERTIFICATE_PASSWORD = "elasticsearch.http.certificate.password";
+    String HTTP_CERTIFICATE_PASSWORD = "elasticsearch.http.certificate.password";
 
 }

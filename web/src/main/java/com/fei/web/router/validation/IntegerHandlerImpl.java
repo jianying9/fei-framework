@@ -25,14 +25,14 @@ public final class IntegerHandlerImpl implements ValidationHandler
             this.limit = false;
             this.max = max;
             this.min = min;
-            this.errorMsg = this.name + " must be number";
+            this.errorMsg = this.name + " must be integer";
             this.type = "integer";
         } else {
             //有大小限制
             this.limit = true;
             this.max = max > min ? max : min;
             this.min = max > min ? min : max;
-            this.errorMsg = this.name + " must be number["
+            this.errorMsg = this.name + " must be integer["
                     + Long.toString(this.min) + ","
                     + Long.toString(this.max) + "]";
             type = "integer[" + Long.toString(this.min) + "," + Long.toString(this.max) + "]";

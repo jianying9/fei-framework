@@ -1,7 +1,6 @@
 package com.fei.web.router.handler;
 
-import com.alibaba.fastjson.JSONObject;
-import com.fei.web.component.Session;
+import com.fei.web.component.Token;
 import com.fei.web.request.Request;
 import com.fei.web.response.Response;
 
@@ -23,12 +22,15 @@ public class AuthHandlerImpl implements RouteHandler
     public Response processRequest(Request request)
     {
         Response response;
-        JSONObject data = request.getData();
-        Session session = request.getSession();
-        if (session == null) {
+        Token token = request.getToken();
+        if (token == null) {
             //验证失败
             response = new Response(request.getRoute());
             response.setCode(Response.UNLOGIN);
+        } else if (token.expired) {
+            //过期
+            response = new Response(request.getRoute());
+            response.setCode(Response.EXPIRED);
         } else {
             //验证通过
             response = this.nextHandler.processRequest(request);

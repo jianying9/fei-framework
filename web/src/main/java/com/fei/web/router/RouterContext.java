@@ -2,12 +2,13 @@ package com.fei.web.router;
 
 import com.fei.framework.bean.BeanContext;
 import com.fei.framework.context.AppContext;
+import com.fei.framework.utils.ToolUtil;
 import com.fei.web.router.handler.ControlHandlerImpl;
 import com.fei.web.router.handler.RequestValidationHandlerImpl;
 import com.fei.web.router.handler.RouteHandler;
 import com.fei.web.router.validation.ArrayHandlerImpl;
 import com.fei.web.router.validation.BooleanHandlerImpl;
-import com.fei.web.router.validation.DoubleHandlerImpl;
+import com.fei.web.router.validation.NumberHandlerImpl;
 import com.fei.web.router.validation.IntegerHandlerImpl;
 import com.fei.web.router.validation.NotNullHandlerImpl;
 import com.fei.web.router.validation.ObjectHandlerImpl;
@@ -29,6 +30,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import com.fei.module.RequestParam;
 import com.fei.web.router.handler.AuthHandlerImpl;
+import com.fei.web.router.validation.DateHandlerImpl;
+import java.util.Date;
 
 /**
  * 路由对象上下文
@@ -60,34 +63,28 @@ public class RouterContext
         beanContext.add(this.name, router.getRoute(), router);
     }
 
+    /**
+     * 验证返回值的类型是否支持
+     *
+     * @param type
+     */
+    private void checkReturnSupport(Class<?> type)
+    {
+        if (type != Void.class) {
+            if (ToolUtil.isBasicType(type) || type.isArray() || Collection.class.isAssignableFrom(type) || type.getPackageName().startsWith("java.")) {
+                this.logger.error("{}:{} unsupport returnType {}", currController.getClass().getName(), currMethod.getName(), type.getName());
+                throw new RuntimeException(currMethod.getName() + " unsupport returnType" + type.getName());
+            }
+        }
+    }
+
     private Router create(String route, Object controller, Method method, boolean auth)
     {
         this.currController = controller;
         this.currMethod = method;
-        //校验-输入对象和输出对象只能是
+        //验证返回值类型是否支持
         Class<?> returnType = method.getReturnType();
-        if (Collection.class.isAssignableFrom(returnType)) {
-            this.logger.error("{}:{} unsupport Collection returnType", currController.getClass().getName(), currMethod.getName());
-            throw new RuntimeException(method.getName() + " unsupport Collection returnType");
-        } else if (returnType.isArray()) {
-            this.logger.error("{}:{} unsupport Array returnType", currController.getClass().getName(), currMethod.getName());
-            throw new RuntimeException(method.getName() + " unsupport Array returnType");
-        }
-        //
-        Class<?> paramClass;
-        String paramName;
-        Parameter[] parameterArray = method.getParameters();
-        for (Parameter parameter : parameterArray) {
-            paramClass = parameter.getType();
-            paramName = parameter.getName();
-            if (Collection.class.isAssignableFrom(paramClass)) {
-                this.logger.error("{}:{}:{} unsupport Collection parameter", currController.getClass().getName(), currMethod.getName(), paramName);
-                throw new RuntimeException(paramName + " unsupport Collection parameter");
-            } else if (paramClass.isArray()) {
-                this.logger.error("{}:{}:{} unsupport Array parameter", currController.getClass().getName(), currMethod.getName(), paramName);
-                throw new RuntimeException(paramName + " unsupport Array parameter");
-            }
-        }
+        this.checkReturnSupport(returnType);
         //业务方法执行
         RouteHandler routeHandler = new ControlHandlerImpl(route, controller, method);
         //参数验证
@@ -106,91 +103,154 @@ public class RouterContext
         Parameter[] parameterArray = method.getParameters();
         Class<?> paramClass;
         Map<String, ValidationHandler> allMap = new HashMap();
-        Map<String, ValidationHandler> map;
         //校验-输入对象和输出对象只能是
         for (Parameter parameter : parameterArray) {
             paramClass = parameter.getType();
             this.currClassLinkList.clear();
             this.currParameter = parameter;
-            map = this.createValidationHandlerMap("", paramClass);
-            allMap.putAll(map);
-
+            if (parameter.isAnnotationPresent(RequestParam.class)) {
+                if (ToolUtil.isBasicType(paramClass)) {
+                    //参数为基础类型
+                    ValidationHandler validationHandler = this.createBasicValidationHandler(paramClass, parameter.getName(), parameter.getName(), parameter.getAnnotation(RequestParam.class));
+                    allMap.put(validationHandler.getKey(), validationHandler);
+                } else if (Collection.class.isAssignableFrom(paramClass)) {
+                    //参数为集合类型
+                    Type generictype = parameter.getParameterizedType();
+                    ParameterizedType listGenericType = (ParameterizedType) generictype;
+                    Type[] listActualTypeArguments = listGenericType.getActualTypeArguments();
+                    Class<?> subType = (Class<?>) listActualTypeArguments[0];
+                    ValidationHandler validationHandler = this.createCollectionValidationHandler(subType, parameter.getName(), parameter.getName(), parameter.getAnnotation(RequestParam.class));
+                    allMap.put(validationHandler.getKey(), validationHandler);
+                } else if (paramClass.isArray()) {
+                    //数组
+                    Class<?> componentType = paramClass.getComponentType();
+                    ValidationHandler validationHandler = this.createCollectionValidationHandler(componentType, parameter.getName(), parameter.getName(), parameter.getAnnotation(RequestParam.class));
+                    allMap.put(validationHandler.getKey(), validationHandler);
+                } else {
+                    //对象类型
+                    Map<String, ValidationHandler> map = this.createObjectValidationHandlerMap("", paramClass);
+                    allMap.putAll(map);
+                }
+            } else {
+                //对象类型
+                Map<String, ValidationHandler> map = this.createObjectValidationHandlerMap("", paramClass);
+                allMap.putAll(map);
+            }
         }
         routeHandler = new RequestValidationHandlerImpl(routeHandler, allMap);
         return routeHandler;
     }
 
-    private Map<String, ValidationHandler> createValidationHandlerMap(String parentName, Class<?> paramClass)
-    {
-        if (this.currClassLinkList.contains(paramClass)) {
-            //参数递归,阻止
-            this.logger.error("{}:{}:{} unsupport RquestParam for-loop", this.currController.getClass().getName(), this.currMethod.getName(), this.currParameter.getType().getName());
-            throw new RuntimeException(this.currParameter.getType().getName() + " unsupport RquestParam for-loop");
-        }
-        this.currClassLinkList.add(paramClass);
-        Map<String, ValidationHandler> validationHandlerMap = new HashMap();
-        String paramName;
-        String key;
-        Class<?> type;
-        ValidationHandler validationHandler;
-        Field[] fields = paramClass.getDeclaredFields();
-        for (Field field : fields) {
-            if (Modifier.isStatic(field.getModifiers()) == false && Modifier.isFinal(field.getModifiers()) == false) {
-                if (field.isAnnotationPresent(RequestParam.class)) {
-                    if (parentName.isEmpty()) {
-                        paramName = field.getName();
-                    } else {
-                        paramName = parentName + "." + field.getName();
-                    }
-                    key = field.getName();
-                    type = field.getType();
-                    validationHandler = this.createValidationHandler(type, key, paramName, field);
-                    validationHandlerMap.put(key, validationHandler);
-                }
-            }
-        }
-        return validationHandlerMap;
-    }
-
-    private ValidationHandler createValidationHandler(Class<?> type, String key, String paramName, Field field)
+    /**
+     * 方法基础类型参数验证
+     *
+     * @param parameter
+     * @return
+     */
+    private ValidationHandler createBasicValidationHandler(Class<?> type, String key, String name, RequestParam requestParam)
     {
         ValidationHandler validationHandler;
-        RequestParam requestParam = field.getAnnotation(RequestParam.class);
         if (type == boolean.class || type == Boolean.class) {
-            validationHandler = new BooleanHandlerImpl(key, paramName);
-        } else if (type == long.class || int.class == type || type == Integer.class || type == Long.class) {
-            validationHandler = new IntegerHandlerImpl(key, paramName, requestParam.max(), requestParam.min());
-        } else if (type == double.class || type == Double.class) {
-            validationHandler = new DoubleHandlerImpl(key, paramName, requestParam.max(), requestParam.min());
+            validationHandler = new BooleanHandlerImpl(key, name);
+        } else if (type == long.class || type == Long.class || int.class == type || type == Integer.class || short.class == type || type == Short.class) {
+            validationHandler = new IntegerHandlerImpl(key, name, requestParam.max(), requestParam.min());
+        } else if (type == double.class || type == Double.class || type == float.class || type == Float.class || Number.class.isAssignableFrom(type)) {
+            validationHandler = new NumberHandlerImpl(key, name, requestParam.max(), requestParam.min());
         } else if (type == String.class) {
             if (requestParam.regexp().isEmpty()) {
-                validationHandler = new StringHandlerImpl(key, paramName, requestParam.max(), requestParam.min());
+                validationHandler = new StringHandlerImpl(key, name, requestParam.max(), requestParam.min());
             } else {
-                validationHandler = new RegexHandlerImpl(key, paramName, requestParam.regexp());
+                validationHandler = new RegexHandlerImpl(key, name, requestParam.regexp());
             }
-        } else if (type.isArray()) {
-            //数组
-            Class<?> componentType = type.getComponentType();
-            validationHandler = this.createValidationHandler(componentType, key, paramName, field);
-            validationHandler = new ArrayHandlerImpl(validationHandler);
-        } else if (Collection.class.isAssignableFrom(type)) {
-            //集合泛型
-            Type generictype = field.getGenericType();
-            ParameterizedType listGenericType = (ParameterizedType) generictype;
-            Type[] listActualTypeArguments = listGenericType.getActualTypeArguments();
-            Class<?> subType = (Class<?>) listActualTypeArguments[0];
-            validationHandler = this.createValidationHandler(subType, key, paramName, field);
-            validationHandler = new ArrayHandlerImpl(validationHandler);
+        } else if (type == Date.class) {
+            validationHandler = new DateHandlerImpl(key, name);
         } else {
-            //对象
-            Map<String, ValidationHandler> subValidationHandlerMap = this.createValidationHandlerMap(paramName, type);
-            validationHandler = new ObjectHandlerImpl(key, paramName, subValidationHandlerMap);
+            //不支持类型
+            this.logger.error("{}:{}:{} unsupport parameterType {}", currController.getClass().getName(), currMethod.getName(), this.currParameter.getName(), type.getName());
+            throw new RuntimeException(this.currParameter.getName() + " unsupport parameterType" + type.getName());
         }
         //是否需要非空判断
-        if (requestParam.notNull()) {
+        if (requestParam.required()) {
             validationHandler = new NotNullHandlerImpl(validationHandler);
         }
         return validationHandler;
+    }
+
+    /**
+     * 参数为集合类型
+     *
+     * @param parameter
+     * @return
+     */
+    private ValidationHandler createCollectionValidationHandler(Class<?> type, String key, String name, RequestParam requestParam)
+    {
+        ValidationHandler validationHandler;
+        if (ToolUtil.isBasicType(type)) {
+            //参数为原始类型
+            validationHandler = this.createBasicValidationHandler(type, key, name, requestParam);
+        } else {
+            //对象类型
+            Map<String, ValidationHandler> subValidationHandlerMap = this.createObjectValidationHandlerMap(name, type);
+            validationHandler = new ObjectHandlerImpl(key, name, subValidationHandlerMap);
+        }
+        validationHandler = new ArrayHandlerImpl(validationHandler);
+        //是否需要非空判断
+        if (requestParam.required()) {
+            validationHandler = new NotNullHandlerImpl(validationHandler);
+        }
+        return validationHandler;
+    }
+
+    private Map<String, ValidationHandler> createObjectValidationHandlerMap(String parentName, Class<?> paramClass)
+    {
+        Map<String, ValidationHandler> validationHandlerMap = new HashMap();
+        //
+        if (this.currClassLinkList.contains(paramClass) == false) {
+            String paramName;
+            Class<?> type;
+            Field[] fields = paramClass.getDeclaredFields();
+            ValidationHandler validationHandler;
+            RequestParam requestParam;
+            for (Field field : fields) {
+                if (Modifier.isStatic(field.getModifiers()) == false && Modifier.isFinal(field.getModifiers()) == false) {
+                    if (field.isAnnotationPresent(RequestParam.class)) {
+                        requestParam = field.getAnnotation(RequestParam.class);
+                        if (parentName.isEmpty()) {
+                            paramName = field.getName();
+                        } else {
+                            paramName = parentName + "." + field.getName();
+                        }
+                        type = field.getType();
+                        if (ToolUtil.isBasicType(type)) {
+                            //参数为基础类型
+                            validationHandler = this.createBasicValidationHandler(type, field.getName(), paramName, requestParam);
+                        } else if (Collection.class.isAssignableFrom(paramClass)) {
+                            //参数为集合类型
+                            Type generictype = field.getGenericType();
+                            ParameterizedType listGenericType = (ParameterizedType) generictype;
+                            Type[] listActualTypeArguments = listGenericType.getActualTypeArguments();
+                            Class<?> subType = (Class<?>) listActualTypeArguments[0];
+                            validationHandler = this.createCollectionValidationHandler(subType, field.getName(), paramName, requestParam);
+                        } else if (paramClass.isArray()) {
+                            //数组
+                            Class<?> componentType = paramClass.getComponentType();
+                            validationHandler = this.createCollectionValidationHandler(componentType, field.getName(), paramName, requestParam);
+                        } else {
+                            //对象
+                            Map<String, ValidationHandler> subValidationHandlerMap = this.createObjectValidationHandlerMap(paramName, type);
+                            validationHandler = new ObjectHandlerImpl(field.getName(), paramName, subValidationHandlerMap);
+                            //是否需要非空判断
+                            if (requestParam.required()) {
+                                validationHandler = new NotNullHandlerImpl(validationHandler);
+                            }
+                        }
+                        validationHandlerMap.put(validationHandler.getKey(), validationHandler);
+                    }
+                }
+            }
+            this.currClassLinkList.add(paramClass);
+        }
+        return validationHandlerMap;
     }
 
     public Router get(String route)

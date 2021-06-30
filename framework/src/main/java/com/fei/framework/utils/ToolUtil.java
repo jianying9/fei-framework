@@ -1,6 +1,9 @@
 package com.fei.framework.utils;
 
 import com.alibaba.fastjson.JSON;
+import com.fei.framework.context.AppContext;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -9,7 +12,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author jianying9
@@ -186,6 +194,29 @@ public final class ToolUtil
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static Map<String, String> getAppParams(String appName)
+    {
+        Map<String, String> paramaterMap = new HashMap();
+        String fileName = appName + ".properties";
+        Properties properties = new Properties();
+        InputStream in = ToolUtil.class.getClassLoader().getResourceAsStream(fileName);
+        try {
+            properties.load(in);
+        } catch (IOException ex) {
+            Logger logger = LogManager.getLogger(AppContext.class);
+            logger.warn(fileName + " not found...");
+        }
+        for (String key : properties.stringPropertyNames()) {
+            paramaterMap.put(key, properties.getProperty(key));
+        }
+        return paramaterMap;
+    }
+
+    public static boolean isBasicType(Class<?> type)
+    {
+        return type.isPrimitive() || type == String.class || type == Date.class || Number.class.isAssignableFrom(type);
     }
 
 }

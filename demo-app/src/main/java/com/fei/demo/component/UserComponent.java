@@ -1,7 +1,7 @@
 package com.fei.demo.component;
 
-import com.fei.demo.controller.UserController.UserAddDto;
-import com.fei.demo.controller.UserController.UserDto;
+import com.fei.demo.controller.UserController.UserAddD;
+import com.fei.demo.controller.UserController.UserV;
 import com.fei.framework.utils.ToolUtil;
 import com.fei.module.Component;
 
@@ -13,9 +13,9 @@ import com.fei.module.Component;
 public class UserComponent
 {
 
-    public UserDto getUser(String userId)
+    public UserV getUser(String userId)
     {
-        UserDto userDto = new UserDto();
+        UserV userDto = new UserV();
         userDto.userId = userId;
         userDto.userName = "name1";
         if (userId.equals("1") == false) {
@@ -26,9 +26,9 @@ public class UserComponent
         return userDto;
     }
 
-    public UserDto addUser(UserAddDto userAddDto)
+    public UserV addUser(UserAddD userAddDto)
     {
-        UserDto userDto = ToolUtil.copy(userAddDto, UserDto.class);
+        UserV userDto = ToolUtil.copy(userAddDto, UserV.class);
         userDto.userId = "3444";
         return userDto;
     }

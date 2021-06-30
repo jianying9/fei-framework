@@ -4,13 +4,16 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.util.TypeUtils;
 import com.fei.framework.utils.ToolUtil;
+import com.fei.web.component.Session;
+import com.fei.web.component.Token;
 import com.fei.web.request.Request;
 import com.fei.web.response.Response;
 import com.fei.web.router.RouterContext;
-import com.fei.web.router.RouterException;
+import com.fei.web.router.BizException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.Collection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -45,10 +48,26 @@ public class ControlHandlerImpl implements RouteHandler
         Response response = new Response(request.getRoute());
         //注入请求参数
         Class<?> paramClass;
+        String paramName;
         Object[] params = new Object[this.parameters.length];
         for (int index = 0; index < this.parameters.length; index++) {
             paramClass = this.parameters[index].getType();
-            params[index] = TypeUtils.castToJavaBean(request.getData(), paramClass);
+            if (paramClass == Session.class) {
+                Session session = null;
+                Token token = request.getToken();
+                if (token != null || token.expired == false) {
+                    session = new Session();
+                    session.userId = token.userId;
+                    session.userName = token.userName;
+                    session.expireTime = token.expireTime;
+                }
+                params[index] = session;
+            } else if (ToolUtil.isBasicType(paramClass) || Collection.class.isAssignableFrom(paramClass) || paramClass.isArray()) {
+                paramName = this.parameters[index].getName();
+                params[index] = request.getData().get(paramName);
+            } else {
+                params[index] = TypeUtils.castToJavaBean(request.getData(), paramClass);
+            }
         }
         //调用并处理结果
         try {
@@ -60,11 +79,11 @@ public class ControlHandlerImpl implements RouteHandler
             }
         } catch (InvocationTargetException ex) {
             Throwable t = ex.getTargetException();
-            if (RouterException.class.isInstance(t)) {
+            if (BizException.class.isInstance(t)) {
                 //业务异常处理
-                RouterException routerException = (RouterException) t;
-                response.setCode(routerException.getCode());
-                response.setMsg(routerException.getMsg());
+                BizException bizException = (BizException) t;
+                response.setCode(bizException.getCode());
+                response.setMsg(bizException.getMsg());
             } else {
                 response.setCode(Response.EXCEPTION);
                 this.logger.error("exec route:{}, msg:{}", this.route, this.toString(), ex);

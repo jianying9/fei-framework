@@ -5,7 +5,7 @@ package com.fei.web.router.validation;
  *
  * @author jianying9
  */
-public class DoubleHandlerImpl implements ValidationHandler
+public class NumberHandlerImpl implements ValidationHandler
 {
 
     private final String key;
@@ -16,7 +16,7 @@ public class DoubleHandlerImpl implements ValidationHandler
     private final String errorMsg;
     private final boolean limit;
 
-    public DoubleHandlerImpl(String key, String name, long max, long min)
+    public NumberHandlerImpl(String key, String name, long max, long min)
     {
         this.key = key;
         this.name = name;
@@ -25,17 +25,17 @@ public class DoubleHandlerImpl implements ValidationHandler
             this.limit = false;
             this.max = max;
             this.min = min;
-            this.errorMsg = this.name + " must be double";
-            this.type = "double";
+            this.errorMsg = this.name + " must be number";
+            this.type = "number";
         } else {
             //有大小限制
             this.limit = true;
             this.max = max > min ? max : min;
             this.min = max > min ? min : max;
-            this.errorMsg = this.name + " must be double["
+            this.errorMsg = this.name + " must be number["
                     + Long.toString(this.min) + ","
                     + Long.toString(this.max) + "]";
-            this.type = "double[" + Long.toString(this.min) + "," + Long.toString(this.max) + "]";
+            this.type = "number[" + Long.toString(this.min) + "," + Long.toString(this.max) + "]";
         }
     }
 

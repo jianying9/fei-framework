@@ -1,10 +1,10 @@
-package com.fei.demo;
+package com.fei.demo.app;
 
 import com.fei.framework.context.AppContext;
 import com.fei.framework.context.AppContextBuilder;
+import com.fei.framework.utils.ToolUtil;
 import com.fei.jetty.embed.api.ServerBuilder;
 import com.fei.web.servlet.AppServlet;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -30,7 +30,7 @@ public class JettyStart
         }
         //框架初始化
         AppContext.INSTANCE.addScanPackage(JettyStart.class);
-        Map<String, String> parameterMap = new HashMap();
+        Map<String, String> parameterMap = ToolUtil.getAppParams(appName);
         AppContextBuilder appContextBuilder = new AppContextBuilder(parameterMap);
         appContextBuilder.build();
         //启动

@@ -74,8 +74,12 @@ public class Response
 
     //成功
     public final static String SUCCESS = "success";
+    //失败
+    public final static String FAILED = "failed";
     //未登录
     public final static String UNLOGIN = "unlogin";
+    //过期
+    public final static String EXPIRED = "expired";
     //非法数据
     public final static String INVALID = "invalid";
     //无权限

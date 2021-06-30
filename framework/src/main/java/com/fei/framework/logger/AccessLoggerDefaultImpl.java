@@ -5,7 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 /**
  *
- * @author aladdin
+ * @author jianying9
  */
 public final class AccessLoggerDefaultImpl implements AccessLogger
 {

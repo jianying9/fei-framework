@@ -1,23 +1,24 @@
 package com.fei.web.router;
 
 /**
+ * 业务异常
  *
  * @author jianying9
  */
-public class RouterException extends Exception
+public class BizException extends Exception
 {
 
     private final String code;
 
     private final String msg;
 
-    public RouterException(String code, String msg)
+    public BizException(String code, String msg)
     {
-        this.code = code;
+        this.code = "biz_" + code;
         this.msg = msg;
     }
 
-    public RouterException(String code)
+    public BizException(String code)
     {
         this.code = code;
         this.msg = "";

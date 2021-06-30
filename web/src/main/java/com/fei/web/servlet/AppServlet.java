@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
  *
  * @author jianying9
  */
-@WebServlet(name = "fei-app-http", loadOnStartup = 1, urlPatterns = {"/http/*"}, asyncSupported = false)
+@WebServlet(name = "fei-app-http", loadOnStartup = 1, urlPatterns = {"/api/*"}, asyncSupported = false)
 public class AppServlet extends HttpServlet
 {
 

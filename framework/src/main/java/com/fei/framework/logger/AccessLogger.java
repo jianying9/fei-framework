@@ -2,7 +2,7 @@ package com.fei.framework.logger;
 
 /**
  *
- * @author aladdin
+ * @author jianying9
  */
 public interface AccessLogger {
 

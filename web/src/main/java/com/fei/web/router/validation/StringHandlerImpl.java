@@ -3,7 +3,7 @@ package com.fei.web.router.validation;
 /**
  * 字符类型处理类
  *
- * @author aladdin
+ * @author jianying9
  */
 public final class StringHandlerImpl implements ValidationHandler
 {
