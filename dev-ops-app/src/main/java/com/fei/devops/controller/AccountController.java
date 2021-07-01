@@ -1,13 +1,13 @@
 package com.fei.devops.controller;
 
+import com.fei.annotations.component.Resource;
+import com.fei.annotations.web.Controller;
+import com.fei.annotations.web.RequestMapping;
+import com.fei.annotations.web.RequestParam;
+import com.fei.annotations.web.ResponseParam;
 import com.fei.devops.entity.AccountEntity;
-import com.fei.framework.bean.Resource;
-import com.fei.framework.utils.ToolUtil;
-import com.fei.module.Controller;
+import com.fei.app.utils.ToolUtil;
 import com.fei.module.EsEntityDao;
-import com.fei.module.RequestMapping;
-import com.fei.module.RequestParam;
-import com.fei.module.ResponseParam;
 import com.fei.web.component.JwtBean;
 import com.fei.web.component.Session;
 import com.fei.web.component.Token;

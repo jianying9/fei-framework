@@ -1,9 +1,9 @@
 package com.fei.demo.component;
 
+import com.fei.annotations.component.Component;
 import com.fei.demo.controller.UserController.UserAddD;
 import com.fei.demo.controller.UserController.UserV;
-import com.fei.framework.utils.ToolUtil;
-import com.fei.module.Component;
+import com.fei.app.utils.ToolUtil;
 
 /**
  *

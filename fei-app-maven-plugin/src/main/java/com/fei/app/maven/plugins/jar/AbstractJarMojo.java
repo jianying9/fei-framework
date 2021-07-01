@@ -18,6 +18,7 @@ package com.fei.app.maven.plugins.jar;
  * specific language governing permissions and limitations
  * under the License.
  */
+import com.fei.annotations.app.BootApp;
 import org.apache.maven.archiver.MavenArchiveConfiguration;
 import org.apache.maven.archiver.MavenArchiver;
 import org.apache.maven.execution.MavenSession;
@@ -33,7 +34,12 @@ import org.codehaus.plexus.archiver.Archiver;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import org.apache.maven.archiver.ManifestConfiguration;
 
@@ -284,23 +290,44 @@ public abstract class AbstractJarMojo
                     + "Please see the >>Major Version Upgrade to version 3.0.0<< on the plugin site.");
         }
 
-        //fei app打包配置初始化
-        //生成的jar中，不包含pom.xml和pom.properties这两个文件
-        this.archive.setAddMavenDescriptor(false);
-        //
-        ManifestConfiguration manifestConfiguration = this.archive.getManifest();
-        //要把第三方jar放到manifest的classpath中
-        manifestConfiguration.setAddClasspath(true);
-        //生成的manifest中classpath的前缀，因为要把第三方jar放到lib目录下，所以classpath的前缀是lib/
-        manifestConfiguration.setClasspathPrefix("lib/");
-        //防止SNAPSHOT的jar包在class-path中使用真实版本，与lib中不一致
-        manifestConfiguration.setUseUniqueVersions(false);
-        //启动类
-        manifestConfiguration.setMainClass("com.fei.demo.app.JettyStart");
-
         if (skipIfEmpty && (!getClassesDirectory().exists() || getClassesDirectory().list().length < 1)) {
             getLog().info("Skipping packaging of the " + getType());
         } else {
+
+            //fei app打包配置初始化
+            //生成的jar中，不包含pom.xml和pom.properties这两个文件
+            this.archive.setAddMavenDescriptor(false);
+            //
+            ManifestConfiguration manifestConfiguration = this.archive.getManifest();
+            //要把第三方jar放到manifest的classpath中
+            manifestConfiguration.setAddClasspath(true);
+            //生成的manifest中classpath的前缀，因为要把第三方jar放到lib目录下，所以classpath的前缀是lib/
+            manifestConfiguration.setClasspathPrefix("lib/");
+            //防止SNAPSHOT的jar包在class-path中使用真实版本，与lib中不一致
+            manifestConfiguration.setUseUniqueVersions(false);
+            //
+            File classPath = this.getClassesDirectory();
+            List<String> classNameList = this.getClassNameList(classPath);
+            try {
+                URL classUrl = new URL("file:" + classPath.getAbsolutePath() + "/");
+                this.getLog().info("find Main-Class in : " + classUrl.toString());
+                URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{classUrl}, Thread.currentThread().getContextClassLoader());
+                for (String className : classNameList) {
+                    Class<?> clazz = urlClassLoader.loadClass(className);
+                    if (clazz.isAnnotationPresent(BootApp.class)) {
+                        //启动类
+                        this.getLog().info("Main-Class:" + className);
+                        manifestConfiguration.setMainClass(className);
+                        break;
+                    }
+                }
+            } catch (MalformedURLException | ClassNotFoundException ex) {
+                this.getLog().error(ex);
+            }
+            if (manifestConfiguration.getMainClass() == null || manifestConfiguration.getMainClass().isEmpty()) {
+                throw new RuntimeException("Main-Class not configured, please use annotation BootApp to config it.");
+            }
+            //
             File jarFile = createArchive();
 
             if (hasClassifier()) {
@@ -313,6 +340,30 @@ public abstract class AbstractJarMojo
                 getProject().getArtifact().setFile(jarFile);
             }
         }
+    }
+
+    private List<String> getClassNameList(File filePath)
+    {
+        List<String> classNameList = new ArrayList();
+        if (filePath.isDirectory()) {
+            File[] childFilePathArray = filePath.listFiles();
+            for (File childFilePath : childFilePathArray) {
+                List<String> childClassNameList = this.getClassNameList(childFilePath);
+                classNameList.addAll(childClassNameList);
+            }
+        } else if (filePath.getAbsolutePath().endsWith(".class")) {
+            String className = this.getClassName(filePath);
+            classNameList.add(className);
+        }
+        return classNameList;
+    }
+
+    private String getClassName(File file)
+    {
+        String filePath = file.getAbsolutePath();
+        String buildPath = this.getClassesDirectory().getAbsolutePath() + "/";
+        String className = filePath.replace(buildPath, "").replaceAll("/", ".").replace(".class", "");
+        return className;
     }
 
     private boolean projectHasAlreadySetAnArtifact()

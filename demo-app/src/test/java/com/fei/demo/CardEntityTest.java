@@ -1,12 +1,12 @@
 package com.fei.demo;
 
 import com.alibaba.fastjson.JSON;
+import com.fei.annotations.component.Resource;
 import com.fei.demo.entity.CardEntity;
 import com.fei.elasticsearch.index.query.BoolQueryBuilder;
 import com.fei.elasticsearch.index.query.QueryBuilders;
-import com.fei.framework.bean.Resource;
-import com.fei.framework.test.ResourceMock;
-import com.fei.framework.utils.ToolUtil;
+import com.fei.app.test.ResourceMock;
+import com.fei.app.utils.ToolUtil;
 import com.fei.module.EsEntityDao;
 import java.util.ArrayList;
 import java.util.Date;

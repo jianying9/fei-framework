@@ -1,9 +1,9 @@
 package com.fei.devops.app;
 
 import com.fei.annotations.app.BootApp;
-import com.fei.framework.context.AppContext;
-import com.fei.framework.context.AppContextBuilder;
-import com.fei.framework.utils.ToolUtil;
+import com.fei.app.context.AppContext;
+import com.fei.app.context.AppContextBuilder;
+import com.fei.app.utils.ToolUtil;
 import com.fei.jetty.embed.ServerBuilder;
 import com.fei.web.servlet.AppServlet;
 import java.util.Map;

@@ -12,11 +12,6 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>fei-app-maven-plugin</name>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-    </properties>
     <dependencies>
         <dependency>
             <groupId>com.fei</groupId>
@@ -131,7 +126,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
-                <version>3.5.2</version>
+                <version>3.6.1</version>
             </plugin>
         </plugins>
     </build>

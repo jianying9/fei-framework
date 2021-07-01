@@ -15,7 +15,7 @@
         </dependency>
         <dependency>
             <groupId>com.fei</groupId>
-            <artifactId>web</artifactId>
+            <artifactId>fei-web</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

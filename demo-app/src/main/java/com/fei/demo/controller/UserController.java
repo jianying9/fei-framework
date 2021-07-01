@@ -1,12 +1,12 @@
 package com.fei.demo.controller;
 
+import com.fei.annotations.component.Resource;
+import com.fei.annotations.web.Controller;
+import com.fei.annotations.web.RequestMapping;
+import com.fei.annotations.web.RequestParam;
 import com.fei.demo.component.UserComponent;
-import com.fei.framework.bean.Resource;
-import com.fei.module.Controller;
-import com.fei.module.RequestMapping;
 import java.util.ArrayList;
 import java.util.List;
-import com.fei.module.RequestParam;
 
 /**
  *
