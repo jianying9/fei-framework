@@ -1,8 +1,8 @@
 package com.fei.demo.entity;
 
-import com.fei.module.EsColumn;
-import com.fei.module.EsEntity;
-import com.fei.module.EsKey;
+import com.fei.annotations.elasticsearch.EsColumn;
+import com.fei.annotations.elasticsearch.EsEntity;
+import com.fei.annotations.elasticsearch.EsKey;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;

@@ -6,17 +6,19 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
-        <module>framework</module>
-        <module>web</module>
-        <module>jetty-embed-api</module>
         <module>demo-app</module>
-        <module>elasticsearch</module>
         <module>dev-ops-app</module>
+        <module>fei-app-maven-plugin</module>
+        <module>fei-app</module>
+        <module>fei-web</module>
+        <module>fei-elasticsearch</module>
+        <module>fei-jetty-embed</module>
+        <module>fei-annotations</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -62,7 +64,6 @@
                 <version>4.13</version>
             </dependency>
         </dependencies>
-        
     </dependencyManagement>
     
     <build>
@@ -70,13 +71,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.1</version>
                 <configuration>
-                    <compilerArgs>
-                        <arg>-parameters</arg>
-                    </compilerArgs>
+                    <compilerArgs>-Xlint:unchecked</compilerArgs>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+    
 </project>
