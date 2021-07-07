@@ -84,7 +84,7 @@ public abstract class AbstractJarMojo
     /**
      * Name of the generated JAR.
      */
-    @Parameter(defaultValue = "app", readonly = true)
+    @Parameter(defaultValue = "${project.build.finalName}", readonly = true)
     private String finalName;
 
     /**

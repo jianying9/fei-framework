@@ -7,6 +7,28 @@
         <artifactId>fei-framework</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
+    <!--1、compile:compile 参数说明
+    compilerArgs="-parameters",编译时保留方法参数名(1.8后支持功能,默认关闭,需要主动开启)  
+    -->
+    
+    <!--2、test-compile:testCompile 参数说明
+    compilerArgs="-parameters",编译时保留方法参数名(1.8后支持功能,默认关闭,需要主动开启)  
+    -->
+    
+    <!--3、package:copy-dependencies 参数说明
+    outputDirectory="${project.build.directory}/${project.build.finalName}/lib" 第三依赖库复制路径 
+    -->
+    <!--4、package:jar 参数说明
+    outputDirectory="${project.build.directory}/${project.build.finalName}" 打包结果jar文件输出目录
+    classifier="main" 输出jar文件名加标识，${project.build.finalName}-main.jar
+    archive.addMavenDescriptor="false" 生成的jar中,不要包含pom.xml和pom.properties这两个文件
+    archive.addMavenDescriptor="false" 生成的jar中,不要包含pom.xml和pom.properties这两个文件
+    archive.manifest.addClasspath="true" 是否要把第三方jar路径信息放到manifest的class-path中
+    archive.manifest.classpathPrefix="lib/" 生成的manifest中classpath的前缀,因为要把第三方jar放到lib目录下,所以classpath的前缀是lib/
+    archive.manifest.useUniqueVersions="false" 防止SNAPSHOT的jar包在class-path中使用真实版本
+    archive.manifest.mainClass="" 扫描获取注解@BootApp对应的类
+    -->
+    
     <groupId>com.fei</groupId>
     <artifactId>fei-app-maven-plugin</artifactId>
     <version>1.0-SNAPSHOT</version>
