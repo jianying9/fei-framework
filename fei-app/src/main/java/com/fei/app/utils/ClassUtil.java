@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -31,7 +31,7 @@ public final class ClassUtil
      */
     public static Set<String> findClass(final ClassLoader classloader, final Set<String> packageNameList)
     {
-        Logger logger = LogManager.getLogger(ClassUtil.class);
+        Logger logger = LoggerFactory.getLogger(ClassUtil.class);
         final Set<String> classNameSet = new HashSet(200);
         Enumeration<URL> eUrl;
         try {

@@ -14,8 +14,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Collection;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -32,7 +32,7 @@ public class ControlHandlerImpl implements RouteHandler
 
     private final Parameter[] parameters;
 
-    private final Logger logger = LogManager.getLogger(RouterContext.class);
+    private final Logger logger = LoggerFactory.getLogger(RouterContext.class);
 
     public ControlHandlerImpl(String route, Object controller, Method method)
     {

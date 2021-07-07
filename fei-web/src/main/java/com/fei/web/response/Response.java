@@ -97,4 +97,11 @@ public class Response
         return output;
     }
 
+    public static JSONObject createOk()
+    {
+        JSONObject output = new JSONObject();
+        output.put("code", Response.SUCCESS);
+        return output;
+    }
+
 }

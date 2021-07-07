@@ -14,10 +14,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -27,7 +27,7 @@ import org.elasticsearch.client.Response;
 public class EsEntityDaoImpl<T> implements EsEntityDao<T>
 {
 
-    private final Logger logger = LogManager.getLogger(EsContext.class);
+    private final Logger logger = LoggerFactory.getLogger(EsContext.class);
     private final EsKeyHandler keyHandler;
     private final List<EsColumnHandler> columnHandlerList;
     private final Class<T> clazz;
@@ -69,7 +69,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
             JSONObject totalJson = hitsJson.getJSONObject("total");
             result = totalJson.getIntValue("value");
         } catch (IOException ex) {
-            this.logger.error(ex);
+            this.logger.error("es client: exec total error", ex);
             throw new RuntimeException("unknown es error");
         }
         return result;
@@ -88,7 +88,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
             JSONObject responseJson = JSON.parseObject(responseBody);
             exist = responseJson.containsKey("_source");
         } catch (IOException ex) {
-            this.logger.error(ex);
+            this.logger.error("es client: exec exist error", ex);
             throw new RuntimeException("unknown es error");
         }
         return exist;
@@ -110,7 +110,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
             this.checkDefaultValue(entityJson);
             t = TypeUtils.castToJavaBean(entityJson, this.clazz);
         } catch (IOException ex) {
-            this.logger.error(ex);
+            this.logger.error("es client: exec get error", ex);
             throw new RuntimeException("unknown es error");
         }
         return t;
@@ -139,7 +139,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
         try {
             EsContext.INSTANCE.getRestClient().performRequest(request);
         } catch (IOException ex) {
-            this.logger.error(ex);
+            this.logger.error("es client: exec insert error", ex);
             throw new RuntimeException("unknown es error");
         }
     }
@@ -163,7 +163,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
             request.setJsonEntity(requestJson.toJSONString());
             EsContext.INSTANCE.getRestClient().performRequest(request);
         } catch (IOException ex) {
-            this.logger.error(ex);
+            this.logger.error("es client: exec update error", ex);
             throw new RuntimeException("unknown es error");
         }
     }
@@ -198,7 +198,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
                 request.setJsonEntity(requestJson.toJSONString());
                 EsContext.INSTANCE.getRestClient().performRequest(request);
             } catch (IOException ex) {
-                this.logger.error(ex);
+                this.logger.error("es client: exec update error", ex);
                 throw new RuntimeException("unknown es error");
             }
         }
@@ -230,7 +230,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
             request.setJsonEntity(requestJson.toJSONString());
             EsContext.INSTANCE.getRestClient().performRequest(request);
         } catch (IOException ex) {
-            this.logger.error(ex);
+            this.logger.error("es client: exec upsert error", ex);
             throw new RuntimeException("unknown es error");
         }
     }
@@ -244,7 +244,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
             Request request = new Request("DELETE", path);
             EsContext.INSTANCE.getRestClient().performRequest(request);
         } catch (IOException ex) {
-            this.logger.error(ex);
+            this.logger.error("es client: exec delete error", ex);
             throw new RuntimeException("unknown es error");
         }
     }
@@ -303,7 +303,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
                 tList.add(t);
             }
         } catch (IOException ex) {
-            this.logger.error(ex);
+            this.logger.error("es client: exec search error", ex);
             throw new RuntimeException("unknown es error");
         }
         return tList;
@@ -348,7 +348,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
                 tList.add(t);
             }
         } catch (IOException ex) {
-            this.logger.error(ex);
+            this.logger.error("es client: exec search error", ex);
             throw new RuntimeException("unknown es error");
         }
         return tList;
@@ -396,7 +396,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
                 exist = true;
             }
         } catch (IOException ex) {
-            this.logger.error(ex);
+            this.logger.error("es client: exec exist index error", ex);
             throw new RuntimeException("unknown es error");
         }
         return exist;
@@ -427,7 +427,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
         try {
             EsContext.INSTANCE.getRestClient().performRequest(request);
         } catch (IOException ex) {
-            this.logger.error(ex);
+            this.logger.error("es client: exec create index error", ex);
             throw new RuntimeException("unknown es error");
         }
     }
@@ -453,7 +453,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
             try {
                 EsContext.INSTANCE.getRestClient().performRequest(request);
             } catch (IOException ex) {
-                this.logger.error(ex);
+                this.logger.error("es client: exec update mapping error", ex);
                 throw new RuntimeException("unknown es error");
             }
         }

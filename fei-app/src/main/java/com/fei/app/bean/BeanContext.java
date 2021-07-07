@@ -14,8 +14,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 public class BeanContext
 {
 
-    private final Logger logger = LogManager.getLogger(BeanContext.class);
+    private final Logger logger = LoggerFactory.getLogger(BeanContext.class);
 
     private final Map<String, Map<String, Object>> beanGroupMap = new HashMap();
 

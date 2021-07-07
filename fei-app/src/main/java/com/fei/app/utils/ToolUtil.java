@@ -16,8 +16,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author jianying9
@@ -205,7 +205,7 @@ public final class ToolUtil
         try {
             properties.load(in);
         } catch (IOException ex) {
-            Logger logger = LogManager.getLogger(AppContext.class);
+            Logger logger = LoggerFactory.getLogger(AppContext.class);
             logger.warn(fileName + " not found...");
         }
         for (String key : properties.stringPropertyNames()) {

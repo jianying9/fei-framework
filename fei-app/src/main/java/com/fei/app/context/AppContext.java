@@ -1,6 +1,7 @@
 package com.fei.app.context;
 
 import com.fei.app.bean.BeanContext;
+import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -24,6 +25,32 @@ public final class AppContext
     private boolean ready = false;
 
     private boolean debug = false;
+
+    private String appName = "app";
+
+    public String getAppName()
+    {
+        return appName;
+    }
+
+    public void setAppName(String appName)
+    {
+        this.appName = appName;
+    }
+
+    public String getAbsolutePath()
+    {
+        //初始化当前应用目录
+        String appPath = new File("").getAbsolutePath();
+        //如果是maven运行环境则根目录定位到target
+        String targetPath = appPath + "/target";
+        File targetDir = new File(targetPath);
+        if (targetDir.exists()) {
+            String buildName = appPath.substring(appPath.lastIndexOf("/") + 1);
+            appPath = targetPath + "/" + buildName;
+        }
+        return appPath;
+    }
 
     public boolean isReady()
     {

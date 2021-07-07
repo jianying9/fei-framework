@@ -14,8 +14,8 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @Controller 接口
@@ -27,7 +27,7 @@ public class ControllerContext implements ModuleContext
 
     private final String name = "controller";
 
-    private final Logger logger = LogManager.getLogger(ControllerContext.class);
+    private final Logger logger = LoggerFactory.getLogger(ControllerContext.class);
 
     private final List<Object> controllerList = new ArrayList();
 

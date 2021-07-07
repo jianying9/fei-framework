@@ -38,10 +38,10 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -55,7 +55,7 @@ public class EsContext implements ModuleContext
 
     private final String name = "esEntityDao";
 
-    private final Logger logger = LogManager.getLogger(EsContext.class);
+    private final Logger logger = LoggerFactory.getLogger(EsContext.class);
 
     private String database;
 

@@ -1,5 +1,6 @@
 package com.fei.jetty.embed;
 
+import com.fei.app.context.AppContext;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -15,8 +16,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.Servlet;
 import javax.servlet.annotation.WebServlet;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.http.MimeTypes;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
@@ -34,6 +33,8 @@ import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * jetty server实例化
@@ -63,22 +64,12 @@ public class ServerBuilder
     public ServerBuilder(String appName)
     {
         this.appName = appName;
-        //初始化当前应用目录
-        String basePath = new File("").getAbsolutePath();
-        //如果是maven运行环境则根目录定位到target
-        String targetPath = basePath + "/target";
-        File targetDir = new File(targetPath);
-        if (targetDir.exists()) {
-            String buildName = basePath.substring(basePath.lastIndexOf("/") + 1);
-            basePath = targetPath + "/" + buildName;
-        }
-        this.appPath = basePath;
+        AppContext.INSTANCE.setAppName(appName);
+        this.appPath = AppContext.INSTANCE.getAbsolutePath();
         //设置环境变量,用于jetty的log4j2日志输出
         System.setProperty("AppPath", this.appPath);
-        this.logger = LogManager.getLogger(ServerBuilder.class);
+        this.logger = LoggerFactory.getLogger(ServerBuilder.class);
         logger.info("app目录:{}", this.appPath);
-        //添加状态服务
-        this.servletList.add(StateServlet.class);
     }
 
     private void initDir()

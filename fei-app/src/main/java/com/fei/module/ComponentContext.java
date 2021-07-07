@@ -10,8 +10,8 @@ import com.fei.app.utils.ToolUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @Bean 实现
@@ -23,7 +23,7 @@ public class ComponentContext implements ModuleContext
 
     private final String name = "component";
 
-    private final Logger logger = LogManager.getLogger(ComponentContext.class);
+    private final Logger logger = LoggerFactory.getLogger(ComponentContext.class);
 
     @Override
     public String getName()

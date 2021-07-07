@@ -1,4 +1,4 @@
-package com.fei.app.logger;
+package com.fei.web.logger;
 
 /**
  *

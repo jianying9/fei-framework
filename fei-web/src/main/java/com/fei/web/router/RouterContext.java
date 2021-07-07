@@ -26,12 +26,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import com.fei.annotations.web.RequestParam;
 import com.fei.web.router.handler.AuthHandlerImpl;
 import com.fei.web.router.validation.DateHandlerImpl;
 import java.util.Date;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 路由对象上下文
@@ -43,7 +43,7 @@ public class RouterContext
 
     private final String name = "router";
 
-    private final Logger logger = LogManager.getLogger(RouterContext.class);
+    private final Logger logger = LoggerFactory.getLogger(RouterContext.class);
 
     public final static RouterContext INSTANCE = new RouterContext();
 

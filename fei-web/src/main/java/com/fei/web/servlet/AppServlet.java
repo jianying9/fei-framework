@@ -17,8 +17,8 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -28,7 +28,7 @@ import org.apache.logging.log4j.Logger;
 public class AppServlet extends HttpServlet
 {
 
-    private final Logger logger = LogManager.getLogger(AppServlet.class);
+    private final Logger logger = LoggerFactory.getLogger(AppServlet.class);
 
     @Override
     public void init() throws ServletException
@@ -52,58 +52,64 @@ public class AppServlet extends HttpServlet
         response.addHeader("Access-Control-Allow-Origin", "*");
         //
         String route = request.getPathInfo();
-        Router router = RouterContext.INSTANCE.get(route);
-        if (router == null) {
+        if (route.isEmpty() || route.equals("/")) {
             //route不存在
-            JSONObject output = Response.createNotfound(route);
+            JSONObject output = Response.createOk();
             this.toWrite(response, output.toJSONString());
         } else {
-            //读取输入数据
-            String contentType = request.getContentType();
-            JSONObject input = null;
-            if (contentType.equals("application/json")) {
-                // 读取json
-                BufferedReader br = new BufferedReader(new InputStreamReader(request.getInputStream(), "utf-8"));
-                String line;
-                StringBuilder sb = new StringBuilder();
-                while ((line = br.readLine()) != null) {
-                    sb.append(line);
-                }
-                try {
-                    Object obj = JSON.parse(line);
-                    if (obj instanceof JSONObject) {
-                        input = (JSONObject) obj;
-                    }
-                } catch (JSONException e) {
-                    this.logger.warn("json error:{}:{}", e.getMessage(), line);
-                }
-            } else {
-                //读取传统数据
-                input = new JSONObject();
-                Enumeration<String> names = request.getParameterNames();
-                String name;
-                String value;
-                while (names.hasMoreElements()) {
-                    name = names.nextElement();
-                    value = request.getParameter(name);
-                    value = ToolUtil.trim(value);
-                    input.put(name, value);
-                }
-            }
-            //执行
-            if (input == null) {
-                input = new JSONObject();
-            }
-            //获取auth信息
-            String auth = request.getHeader("Authorization");
-            if (auth == null) {
-                auth = input.getString("_auth");
-            }
-            JSONObject output = router.processRequest(input, auth);
-            //响应
-            this.toWrite(response, output.toJSONString());
-        }
+            Router router = RouterContext.INSTANCE.get(route);
+            if (router == null) {
 
+                //route不存在
+                JSONObject output = Response.createNotfound(route);
+                this.toWrite(response, output.toJSONString());
+            } else {
+                //读取输入数据
+                String contentType = request.getContentType();
+                JSONObject input = null;
+                if (contentType.equals("application/json")) {
+                    // 读取json
+                    BufferedReader br = new BufferedReader(new InputStreamReader(request.getInputStream(), "utf-8"));
+                    String line;
+                    StringBuilder sb = new StringBuilder();
+                    while ((line = br.readLine()) != null) {
+                        sb.append(line);
+                    }
+                    try {
+                        Object obj = JSON.parse(line);
+                        if (obj instanceof JSONObject) {
+                            input = (JSONObject) obj;
+                        }
+                    } catch (JSONException e) {
+                        this.logger.warn("json error:{}:{}", e.getMessage(), line);
+                    }
+                } else {
+                    //读取传统数据
+                    input = new JSONObject();
+                    Enumeration<String> names = request.getParameterNames();
+                    String name;
+                    String value;
+                    while (names.hasMoreElements()) {
+                        name = names.nextElement();
+                        value = request.getParameter(name);
+                        value = ToolUtil.trim(value);
+                        input.put(name, value);
+                    }
+                }
+                //执行
+                if (input == null) {
+                    input = new JSONObject();
+                }
+                //获取auth信息
+                String auth = request.getHeader("Authorization");
+                if (auth == null) {
+                    auth = input.getString("_auth");
+                }
+                JSONObject output = router.processRequest(input, auth);
+                //响应
+                this.toWrite(response, output.toJSONString());
+            }
+        }
     }
 
     private void toWrite(HttpServletResponse response, String jsonStr)

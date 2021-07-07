@@ -3,8 +3,6 @@ package com.fei.app.context;
 import com.fei.app.bean.BeanContext;
 import com.fei.app.utils.ClassUtil;
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import com.fei.annotations.module.Module;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +11,8 @@ import com.fei.app.module.ModuleContext;
 import com.fei.app.utils.ToolUtil;
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 全局上下文对象构造函数抽象类
@@ -22,7 +22,7 @@ import java.util.HashSet;
 public class AppContextBuilder
 {
 
-    private final Logger logger = LogManager.getLogger(AppContext.class);
+    private final Logger logger = LoggerFactory.getLogger(AppContext.class);
     private final Set<Class<?>> initPackageClassSet = new HashSet();
 
     public AppContextBuilder(Map<String, String> parameterMap)
@@ -41,7 +41,7 @@ public class AppContextBuilder
         Class<?> clazz;
         try {
             for (String className : classNameSet) {
-                this.logger.debug("locadClass:{}", className);
+                this.logger.debug("loadClass:{}", className);
                 clazz = classloader.loadClass(className);
                 packageClassSet.add(clazz);
             }
@@ -52,7 +52,7 @@ public class AppContextBuilder
                 stop = false;
             }
             if (stop) {
-                this.logger.error(ex);
+                this.logger.error("loadClass error", ex);
                 throw new RuntimeException(ex);
             }
         }
