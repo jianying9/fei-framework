@@ -220,6 +220,7 @@ public class EsContext implements ModuleContext
         EsColumn esColumn;
         EsKey esKey;
         EsColumnType columnType;
+        Object defaultValue;
         for (Field field : fieldArray) {
             if (Modifier.isStatic(field.getModifiers()) == false) {
                 //非静态字段
@@ -228,7 +229,8 @@ public class EsContext implements ModuleContext
                     //
                     esColumn = field.getAnnotation(EsColumn.class);
                     columnType = this.getColumnType(clazz, field, esColumn);
-                    EsColumnHandler columnHandler = new EsColumnHandler(fieldName, columnType, esColumn.defaultValue());
+                    defaultValue = this.getDefaultValue(columnType, esColumn);
+                    EsColumnHandler columnHandler = new EsColumnHandler(fieldName, columnType, defaultValue);
                     columnHandlerList.add(columnHandler);
                 } else if (field.isAnnotationPresent(EsKey.class)) {
                     if (keyHandler == null) {
@@ -317,6 +319,51 @@ public class EsContext implements ModuleContext
             throw new RuntimeException("EsColumn unsupport Object");
         }
         return result;
+    }
+    
+    public Object getDefaultValue(EsColumnType esColumnType, EsColumn esColumn) {
+        Object defaultValue;
+        switch(esColumnType) {
+            case LONG:
+                if(esColumn.defaultValue().isEmpty()) {
+                    defaultValue = 0;
+                } else {
+                    try {
+                        defaultValue = Long.parseLong(esColumn.defaultValue());
+                    } catch (NumberFormatException e) {
+                        defaultValue = 0;
+                    }
+                }
+                break;
+            case DOUBLE:
+                if(esColumn.defaultValue().isEmpty()) {
+                    defaultValue = 0;
+                } else {
+                    try {
+                        defaultValue = Double.parseDouble(esColumn.defaultValue());
+                    } catch (NumberFormatException e) {
+                        defaultValue = 0;
+                    }
+                }
+                break;
+            case DATE:
+                defaultValue = 0;
+                break;
+            case TEXT:
+            case KEYWORD:
+                defaultValue = esColumn.defaultValue();
+                break;
+            case BOOLEAN:
+                if(esColumn.defaultValue().isEmpty()) {
+                    defaultValue = false;
+                } else {
+                    defaultValue = Boolean.parseBoolean(esColumn.defaultValue());
+                }
+                break;
+            default:
+                defaultValue = "";
+        } 
+        return defaultValue;
     }
 
     @Override

@@ -76,11 +76,10 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     }
 
     @Override
-    public boolean exist(Object keyValue)
+    public boolean exist(String keyValue)
     {
         boolean exist = false;
-        String id = keyValue.toString();
-        String path = index + "/_doc/" + id;
+        String path = index + "/_doc/" + keyValue;
         try {
             Request request = new Request("GET", path);
             Response response = EsContext.INSTANCE.getRestClient().performRequest(request);
@@ -95,11 +94,10 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     }
 
     @Override
-    public T get(Object keyValue)
+    public T get(String keyValue)
     {
         T t = null;
-        String id = keyValue.toString();
-        String path = index + "/_doc/" + id;
+        String path = index + "/_doc/" + keyValue;
         try {
             Request request = new Request("GET", path);
             Response response = EsContext.INSTANCE.getRestClient().performRequest(request);
@@ -120,20 +118,19 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     public void insert(T t)
     {
         JSONObject tJson = JSON.parseObject(JSON.toJSONStringWithDateFormat(t, ToolUtil.DATE_FORMAT));
-        Object keyValue = tJson.get(this.keyHandler.getName());
-        if (keyValue == null || keyValue.toString().isEmpty()) {
+        String keyValue = tJson.getString(this.keyHandler.getName());
+        if (keyValue == null || keyValue.isEmpty()) {
             if (this.keyHandler.isAuto()) {
                 keyValue = ToolUtil.getAutomicId();
                 tJson.put(this.keyHandler.getName(), keyValue);
                 this.keyHandler.setValue(t, keyValue);
             }
         }
-        if (keyValue == null || keyValue.toString().isEmpty()) {
+        if (keyValue == null || keyValue.isEmpty()) {
             this.logger.error("{} insert miss keyValue:{}", clazz.getName(), this.keyHandler.getName());
             throw new RuntimeException("insert miss keyValue");
         }
-        String id = keyValue.toString();
-        String path = index + "/_doc/" + id + "?refresh";
+        String path = index + "/_doc/" + keyValue + "?refresh";
         Request request = new Request("PUT", path);
         request.setJsonEntity(tJson.toJSONString());
         try {
@@ -148,16 +145,15 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     public void update(T t)
     {
         JSONObject tJson = JSON.parseObject(JSON.toJSONStringWithDateFormat(t, ToolUtil.DATE_FORMAT));
-        Object keyValue = tJson.get(this.keyHandler.getName());
-        if (keyValue == null || keyValue.toString().isEmpty()) {
+        String keyValue = tJson.getString(this.keyHandler.getName());
+        if (keyValue == null || keyValue.isEmpty()) {
             this.logger.error("{} update miss keyValue:{}", clazz.getName(), this.keyHandler.getName());
             throw new RuntimeException("update miss keyValue");
         }
         tJson.remove(this.keyHandler.getName());
         JSONObject requestJson = new JSONObject();
         requestJson.put("doc", tJson);
-        String id = keyValue.toString();
-        String path = index + "/_update/" + id + "?refresh";
+        String path = index + "/_update/" + keyValue + "?refresh";
         try {
             Request request = new Request("POST", path);
             request.setJsonEntity(requestJson.toJSONString());
@@ -191,8 +187,7 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
         if (tJson.isEmpty() == false) {
             JSONObject requestJson = new JSONObject();
             requestJson.put("doc", tJson);
-            String id = keyValue.toString();
-            String path = index + "/_update/" + id + "?refresh";
+            String path = index + "/_update/" + keyValue + "?refresh";
             try {
                 Request request = new Request("POST", path);
                 request.setJsonEntity(requestJson.toJSONString());
@@ -208,23 +203,22 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     public void upsert(T t)
     {
         JSONObject tJson = JSON.parseObject(JSON.toJSONStringWithDateFormat(t, ToolUtil.DATE_FORMAT));
-        Object keyValue = tJson.get(this.keyHandler.getName());
-        if (keyValue == null || keyValue.toString().isEmpty()) {
+        String keyValue = tJson.getString(this.keyHandler.getName());
+        if (keyValue == null || keyValue.isEmpty()) {
             if (this.keyHandler.isAuto()) {
                 keyValue = ToolUtil.getAutomicId();
                 tJson.put(this.keyHandler.getName(), keyValue);
                 this.keyHandler.setValue(t, keyValue);
             }
         }
-        if (keyValue == null || keyValue.toString().isEmpty()) {
+        if (keyValue == null || keyValue.isEmpty()) {
             this.logger.error("{} upsert miss keyValue:{}", clazz.getName(), this.keyHandler.getName());
             throw new RuntimeException("upsert miss keyValue");
         }
-        String id = keyValue.toString();
         JSONObject requestJson = new JSONObject();
         requestJson.put("doc", tJson);
         requestJson.put("doc_as_upsert", true);
-        String path = index + "/_update/" + id + "?refresh";
+        String path = index + "/_update/" + keyValue + "?refresh";
         try {
             Request request = new Request("POST", path);
             request.setJsonEntity(requestJson.toJSONString());
@@ -236,10 +230,9 @@ public class EsEntityDaoImpl<T> implements EsEntityDao<T>
     }
 
     @Override
-    public void delete(Object keyValue)
+    public void delete(String keyValue)
     {
-        String id = keyValue.toString();
-        String path = index + "/_doc/" + id + "?refresh";
+        String path = index + "/_doc/" + keyValue + "?refresh";
         try {
             Request request = new Request("DELETE", path);
             EsContext.INSTANCE.getRestClient().performRequest(request);

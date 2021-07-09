@@ -22,7 +22,7 @@ public interface EsEntityDao<T>
      * @param keyValue
      * @return
      */
-    public boolean exist(Object keyValue);
+    public boolean exist(String keyValue);
 
     /**
      * 总记录数
@@ -37,14 +37,14 @@ public interface EsEntityDao<T>
      * @param keyValue
      * @return
      */
-    public T get(Object keyValue);
+    public T get(String keyValue);
 
     /**
      * 删除
      *
      * @param keyValue
      */
-    public void delete(Object keyValue);
+    public void delete(String keyValue);
 
     /**
      * 插入
