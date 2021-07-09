@@ -84,7 +84,7 @@ public abstract class AbstractJarMojo
     /**
      * Name of the generated JAR.
      */
-    @Parameter(defaultValue = "${project.build.finalName}", readonly = true)
+    @Parameter(defaultValue = "${project.build.finalName}", readonly = false)
     private String finalName;
 
     /**
@@ -315,9 +315,12 @@ public abstract class AbstractJarMojo
                 for (String className : classNameList) {
                     Class<?> clazz = urlClassLoader.loadClass(className);
                     if (clazz.isAnnotationPresent(BootApp.class)) {
-                        //启动类
+                        //appName
                         this.getLog().info("Main-Class:" + className);
                         manifestConfiguration.setMainClass(className);
+                        //打包后文件名
+                        BootApp bootApp = clazz.getAnnotation(BootApp.class);
+                        this.finalName = bootApp.value();
                         break;
                     }
                 }

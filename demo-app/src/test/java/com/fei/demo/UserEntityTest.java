@@ -10,6 +10,7 @@ import com.fei.elasticsearch.search.sort.SortBuilders;
 import com.fei.elasticsearch.search.sort.SortOrder;
 import com.fei.app.test.ResourceMock;
 import com.fei.app.utils.ToolUtil;
+import com.fei.demo.AppMain;
 import com.fei.module.EsEntityDao;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,8 +40,7 @@ public class UserEntityTest
     @BeforeClass
     public static void setUpClass()
     {
-        Map<String, String> parameterMap = ToolUtil.getAppParams("demo");
-        resourceMock = new ResourceMock(UserEntity.class, parameterMap);
+        resourceMock = new ResourceMock(AppMain.class);
     }
 
     @AfterClass

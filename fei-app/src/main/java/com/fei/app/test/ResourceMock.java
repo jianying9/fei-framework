@@ -1,9 +1,10 @@
 package com.fei.app.test;
 
+import com.fei.annotations.app.BootApp;
 import com.fei.app.bean.BeanContext;
 import com.fei.app.context.AppContext;
 import com.fei.app.context.AppContextBuilder;
-import java.util.HashMap;
+import com.fei.app.utils.ToolUtil;
 import java.util.Map;
 
 /**
@@ -13,21 +14,24 @@ import java.util.Map;
 public class ResourceMock
 {
 
-    public ResourceMock(Class<?> component)
+    public ResourceMock(Class<?> mainClass)
     {
-        Map<String, String> parameterMap = new HashMap();
-        parameterMap.put("debug", "true");
-        AppContextBuilder appContextBuilder = new AppContextBuilder(parameterMap);
-        appContextBuilder.addPackageClass(component);
-        appContextBuilder.build();
-    }
-
-    public ResourceMock(Class<?> component, Map<String, String> parameterMap)
-    {
-        parameterMap.put("debug", "true");
-        AppContextBuilder appContextBuilder = new AppContextBuilder(parameterMap);
-        appContextBuilder.addPackageClass(component);
-        appContextBuilder.build();
+        if (AppContext.INSTANCE.isReady() == false) {
+            //appName
+            if (mainClass.isAnnotationPresent(BootApp.class) == false) {
+                throw new RuntimeException("mainClass must annotation BootApp.class");
+            }
+            BootApp bootApp = mainClass.getAnnotation(BootApp.class);
+            String appName = bootApp.value();
+            //框架初始化
+            AppContext.INSTANCE.addScanPackage(mainClass);
+            AppContext.INSTANCE.setAppName(appName);
+            Map<String, String> parameterMap = ToolUtil.getAppParams(appName);
+            //
+            parameterMap.put("debug", "true");
+            AppContextBuilder appContextBuilder = new AppContextBuilder(parameterMap);
+            appContextBuilder.build();
+        }
     }
 
     public void resource(Object obj)

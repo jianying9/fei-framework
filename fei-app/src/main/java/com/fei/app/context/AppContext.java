@@ -27,6 +27,7 @@ public final class AppContext
     private boolean debug = false;
 
     private String appName = "app";
+    private String appPath = "/";
 
     public String getAppName()
     {
@@ -38,10 +39,10 @@ public final class AppContext
         this.appName = appName;
     }
 
-    public String getAbsolutePath()
+    public String initAppPath()
     {
         //初始化当前应用目录
-        String appPath = new File("").getAbsolutePath();
+        this.appPath = new File("").getAbsolutePath();
         //如果是maven运行环境则根目录定位到target
         String targetPath = appPath + "/target";
         File targetDir = new File(targetPath);
@@ -49,7 +50,15 @@ public final class AppContext
             String buildName = appPath.substring(appPath.lastIndexOf("/") + 1);
             appPath = targetPath + "/" + buildName;
         }
+        //
+        //设置环境变量,用于日志对象初始化配置
+        System.setProperty("AppPath", appPath);
         return appPath;
+    }
+
+    public String getAppPath()
+    {
+        return this.appPath;
     }
 
     public boolean isReady()
@@ -57,9 +66,9 @@ public final class AppContext
         return ready;
     }
 
-    void setReady(boolean ready)
+    void ready()
     {
-        this.ready = ready;
+        this.ready = true;
     }
 
     public boolean isDebug()

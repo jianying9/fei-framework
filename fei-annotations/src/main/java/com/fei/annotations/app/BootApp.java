@@ -14,4 +14,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface BootApp
 {
+
+    /**
+     * appName:应用名
+     *
+     * @return
+     */
+    public String value();
 }

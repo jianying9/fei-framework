@@ -35,31 +35,6 @@ public class AppContextBuilder
         this.initPackageClassSet.add(clazz);
     }
 
-    private Set<Class<?>> loadClass(ClassLoader classloader, Set<String> classNameSet)
-    {
-        Set<Class<?>> packageClassSet = new HashSet(classNameSet.size());
-        Class<?> clazz;
-        try {
-            for (String className : classNameSet) {
-                this.logger.debug("loadClass:{}", className);
-                clazz = classloader.loadClass(className);
-                packageClassSet.add(clazz);
-            }
-        } catch (ClassNotFoundException | ClassFormatError | NoClassDefFoundError ex) {
-            boolean stop = true;
-            String error = ex.getMessage();
-            if (error.contains("javax/servlet/")) {
-                stop = false;
-            }
-            if (stop) {
-                this.logger.error("loadClass error", ex);
-                throw new RuntimeException(ex);
-            }
-        }
-
-        return packageClassSet;
-    }
-
     private void analyzeDependency(BeanContext beanContext, Class<?> depClass, Set<Class<?>> allClassSet)
     {
         if (allClassSet.contains(depClass) == false) {
@@ -81,10 +56,9 @@ public class AppContextBuilder
             }
             //增加扫描包
             Set<Class<?>> classSet = new HashSet();
+            this.logger.info("scan package:{}", AppContext.INSTANCE.getPackageNameSet());
             AppContext.INSTANCE.addScanPackage("com.fei.module");
-            final ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-            Set<String> classNameSet = ClassUtil.findClass(classloader, AppContext.INSTANCE.getPackageNameSet());
-            Set<Class<?>> packageClassSet = this.loadClass(classloader, classNameSet);
+            Set<Class<?>> packageClassSet = ClassUtil.loadClass(AppContext.INSTANCE.getPackageNameSet());
             packageClassSet.addAll(this.initPackageClassSet);
             //确定包含annotation的类
             BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
@@ -127,7 +101,7 @@ public class AppContextBuilder
                 ctx.build();
             }
             //初始化完成
-            AppContext.INSTANCE.setReady(true);
+            AppContext.INSTANCE.ready();
         }
     }
 

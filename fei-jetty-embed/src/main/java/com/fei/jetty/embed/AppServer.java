@@ -1,6 +1,10 @@
 package com.fei.jetty.embed;
 
+import com.fei.annotations.app.BootApp;
 import com.fei.app.context.AppContext;
+import com.fei.app.context.AppContextBuilder;
+import com.fei.app.utils.ToolUtil;
+import com.fei.web.servlet.AppServlet;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EventListener;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.Servlet;
@@ -41,12 +46,14 @@ import org.slf4j.LoggerFactory;
  *
  * @author jianying9
  */
-public class ServerBuilder
+public class AppServer
 {
 
-    private final String appName;
+    private String defaultWebappPath = "";
 
-    private final String appPath;
+    private String webappsPath = "";
+
+    private String logsWebappPath = "";
 
     private int port = 8080;
 
@@ -57,37 +64,48 @@ public class ServerBuilder
     private final List<Class<? extends Servlet>> servletList = new ArrayList();
 
     /**
-     * 实例化
+     * 服务实例化
      *
-     * @param appName 应用名称
+     * @param mainClass
+     * @param args
      */
-    public ServerBuilder(String appName)
+    public AppServer(Class<?> mainClass, String[] args)
     {
-        this.appName = appName;
+        //端口自定义
+        if (AppServer.getPort(args) > -1) {
+            port = AppServer.getPort(args);
+        }
+        //appName
+        if (mainClass.isAnnotationPresent(BootApp.class) == false) {
+            throw new RuntimeException("mainClass must annotation BootApp.class");
+        }
+        BootApp bootApp = mainClass.getAnnotation(BootApp.class);
+        String appName = bootApp.value();
+        //框架初始化
+        AppContext.INSTANCE.addScanPackage(mainClass);
         AppContext.INSTANCE.setAppName(appName);
-        this.appPath = AppContext.INSTANCE.getAbsolutePath();
-        //设置环境变量,用于jetty的log4j2日志输出
-        System.setProperty("AppPath", this.appPath);
-        this.logger = LoggerFactory.getLogger(ServerBuilder.class);
-        logger.info("app目录:{}", this.appPath);
+        Map<String, String> parameterMap = ToolUtil.getAppParams(appName);
+        AppContextBuilder appContextBuilder = new AppContextBuilder(parameterMap);
+        appContextBuilder.build();
+        String appPath = AppContext.INSTANCE.initAppPath();
+        this.logger = LoggerFactory.getLogger(AppServer.class);
+        logger.info("app目录:{}", appPath);
+        //
+        this.servletList.add(AppServlet.class);
     }
 
     private void initDir()
     {
-        //lib   第三方库
-        String libPath = this.appPath + "/lib";
-        this.checkDir(libPath);
-        logger.info("lib目录:{}", libPath);
         //webapps   web服务目录
-        String webappPath = this.appPath + "/webapps";
-        this.checkDir(webappPath);
-        logger.info("web应用目录:{}", webappPath);
+        webappsPath = AppContext.INSTANCE.getAppPath() + "/webapps";
+        this.checkDir(webappsPath);
+        logger.info("web应用目录:{}", webappsPath);
         //webapps/logs  日志web应用目录
-        String logsWebappPath = webappPath + "/logs";
+        logsWebappPath = webappsPath + "/logs";
         this.checkDir(logsWebappPath);
         logger.info("日志web应用目录:{}", logsWebappPath);
         //webapps/appName
-        String defaultWebappPath = webappPath + "/" + this.appName;
+        defaultWebappPath = webappsPath + "/" + AppContext.INSTANCE.getAppName();
         this.checkDir(defaultWebappPath);
         logger.info("默认web应用目录:{}", defaultWebappPath);
     }
@@ -106,13 +124,13 @@ public class ServerBuilder
      * @param listener
      * @return
      */
-    public ServerBuilder addEventListener(EventListener listener)
+    public AppServer addEventListener(EventListener listener)
     {
         this.eventListenerList.add(listener);
         return this;
     }
 
-    public ServerBuilder setPort(int port)
+    public AppServer setPort(int port)
     {
         this.port = port;
         return this;
@@ -124,7 +142,7 @@ public class ServerBuilder
      * @param servlet 类
      * @return
      */
-    public ServerBuilder addServlet(Class<? extends Servlet> servlet)
+    public AppServer addServlet(Class<? extends Servlet> servlet)
     {
         this.servletList.add(servlet);
         return this;
@@ -227,7 +245,7 @@ public class ServerBuilder
         }
     }
 
-    public void build()
+    public void start()
     {
         //初始化目录
         this.initDir();
@@ -242,7 +260,7 @@ public class ServerBuilder
         connector.setPort(this.port);
         server.setConnectors(new Connector[]{connector});
         //初始化默认webapp服务
-        WebAppContext defaultAppContext = new WebAppContext(this.appPath + "/webapps/" + this.appName, "/" + appName);
+        WebAppContext defaultAppContext = new WebAppContext(this.defaultWebappPath, "/" + AppContext.INSTANCE.getAppName());
         //禁止http目录遍历
         defaultAppContext.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
         //添加监听
@@ -271,11 +289,11 @@ public class ServerBuilder
         mimeTypes.addMimeMapping("log", "text/plain;charset=utf-8");
         //设置路径
         ContextHandler logContext = new ContextHandler();
-        logContext.setContextPath("/" + this.appName + "_logs");
-        logContext.setBaseResource(Resource.newResource(new File(this.appPath + "/webapps/logs")));
+        logContext.setContextPath("/logs");
+        logContext.setBaseResource(Resource.newResource(new File(this.logsWebappPath)));
         logContext.setHandler(logResourceHandler);
         //设置安全验证
-        ClassLoader classLoader = ServerBuilder.class.getClassLoader();
+        ClassLoader classLoader = AppServer.class.getClassLoader();
         URL realmProps = classLoader.getResource("realm.properties");
         LoginService loginService = new HashLoginService("logRealm",
                 realmProps.toExternalForm());
@@ -297,7 +315,7 @@ public class ServerBuilder
         handlers.addHandler(security);
         server.setHandler(handlers);
         //准备启动服务
-        this.logger.info("端口:{},应用名称:{},准备启动服务...", port, appName);
+        this.logger.info("端口:{},应用名称:{},准备启动服务...", port, AppContext.INSTANCE.getAppName());
         //检测端口是否被占用,如果已经被使用则杀死已有服务
         this.checkAndKillPort();
         try {
@@ -311,11 +329,6 @@ public class ServerBuilder
         this.logger.info("启动成功:{}", pid);
         //修改http响应头Server信息
 //        HttpGenerator.setJettyVersion("Zlw(3.3.3)");
-    }
-
-    public Logger getLogger()
-    {
-        return logger;
     }
 
     public static int getPort(String[] args)

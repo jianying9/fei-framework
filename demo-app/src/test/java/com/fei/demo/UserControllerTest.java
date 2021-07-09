@@ -36,8 +36,8 @@ public class UserControllerTest
     @BeforeClass
     public static void setUpClass()
     {
-        routerMock = new RouterMock(UserController.class);
-        resourceMock = new ResourceMock(UserController.class);
+        routerMock = new RouterMock(AppMain.class);
+        resourceMock = new ResourceMock(AppMain.class);
     }
 
     @AfterClass

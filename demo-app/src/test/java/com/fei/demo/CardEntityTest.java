@@ -7,18 +7,17 @@ import com.fei.elasticsearch.index.query.BoolQueryBuilder;
 import com.fei.elasticsearch.index.query.QueryBuilders;
 import com.fei.app.test.ResourceMock;
 import com.fei.app.utils.ToolUtil;
+import com.fei.demo.AppMain;
 import com.fei.module.EsEntityDao;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
  *
@@ -39,8 +38,7 @@ public class CardEntityTest
     @BeforeClass
     public static void setUpClass()
     {
-        Map<String, String> parameterMap = ToolUtil.getAppParams("demo");
-        resourceMock = new ResourceMock(CardEntity.class, parameterMap);
+        resourceMock = new ResourceMock(AppMain.class);
     }
 
     @AfterClass

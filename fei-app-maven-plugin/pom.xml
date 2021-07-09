@@ -20,7 +20,7 @@
     -->
     <!--4、package:jar 参数说明
     outputDirectory="${project.build.directory}/${project.build.finalName}" 打包结果jar文件输出目录
-    classifier="main" 输出jar文件名加标识，${project.build.finalName}-main.jar
+    classifier="app-main" 输出jar文件名加标识，${project.build.finalName}-main.jar
     archive.addMavenDescriptor="false" 生成的jar中,不要包含pom.xml和pom.properties这两个文件
     archive.addMavenDescriptor="false" 生成的jar中,不要包含pom.xml和pom.properties这两个文件
     archive.manifest.addClasspath="true" 是否要把第三方jar路径信息放到manifest的class-path中

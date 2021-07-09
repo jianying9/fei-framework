@@ -25,17 +25,18 @@ public final class ClassUtil
     /**
      * 获取包下所有的class
      *
-     * @param classloader
-     * @param packageNameList
+     * @param packageNameSet
      * @return
      */
-    public static Set<String> findClass(final ClassLoader classloader, final Set<String> packageNameList)
+    public static Set<Class<?>> loadClass(final Set<String> packageNameSet)
     {
         Logger logger = LoggerFactory.getLogger(ClassUtil.class);
+        //获取所有类名
+        final ClassLoader classloader = Thread.currentThread().getContextClassLoader();
         final Set<String> classNameSet = new HashSet(200);
         Enumeration<URL> eUrl;
         try {
-            for (String packageName : packageNameList) {
+            for (String packageName : packageNameSet) {
                 //获取有效的url
                 eUrl = classloader.getResources(getPackagePath(packageName));
                 if (eUrl != null) {
@@ -50,7 +51,27 @@ public final class ClassUtil
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-        return classNameSet;
+        //加载所有class
+        Set<Class<?>> classSet = new HashSet(classNameSet.size());
+        Class<?> clazz;
+        try {
+            for (String className : classNameSet) {
+                logger.debug("loadClass:{}", className);
+                clazz = classloader.loadClass(className);
+                classSet.add(clazz);
+            }
+        } catch (ClassNotFoundException | ClassFormatError | NoClassDefFoundError ex) {
+            boolean stop = true;
+            String error = ex.getMessage();
+            if (error.contains("javax/servlet/")) {
+                stop = false;
+            }
+            if (stop) {
+                logger.error("loadClass error", ex);
+                throw new RuntimeException(ex);
+            }
+        }
+        return classSet;
     }
 
     /**
@@ -212,4 +233,5 @@ public final class ClassUtil
         }
         return method;
     }
+
 }
