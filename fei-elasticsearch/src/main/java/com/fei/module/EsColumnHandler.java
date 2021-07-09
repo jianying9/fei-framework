@@ -43,10 +43,18 @@ public class EsColumnHandler
         propertyJson.put("type", this.columnType.name().toLowerCase());
         Object nullValue = this.getNullValue();
         propertyJson.put("null_value", nullValue);
-        if (this.columnType.equals(EsColumnType.TEXT)) {
-            propertyJson.put("analyzer", "ik_max_word");
-        } else if (this.columnType.equals(EsColumnType.DATE)) {
-            propertyJson.put("format", "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis");
+        switch (this.columnType) {
+            case TEXT:
+                propertyJson.put("analyzer", "ik_max_word");
+                break;
+            case DATE:
+                propertyJson.put("format", "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis");
+                break;
+            case KEYWORD:
+                propertyJson.put("ignore_above", 1024);
+                break;
+            default:
+                break;
         }
         return propertyJson;
     }
