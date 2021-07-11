@@ -30,7 +30,7 @@ public @interface EsColumn
     public String desc();
 
     /**
-     * 如果是String类型,配置是否要分词。如果要分词，则不能为keyword
+     * 如果是String类型,配置是否要分词。不需要分词,用keyword存储,最长1024个字符。需要分词,用text存储,长度无限制
      *
      * @return
      */

@@ -7,7 +7,6 @@ import com.fei.elasticsearch.index.query.BoolQueryBuilder;
 import com.fei.elasticsearch.index.query.QueryBuilders;
 import com.fei.app.test.ResourceMock;
 import com.fei.app.utils.ToolUtil;
-import com.fei.demo.AppMain;
 import com.fei.module.EsEntityDao;
 import java.util.ArrayList;
 import java.util.Date;
@@ -18,6 +17,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -89,7 +89,7 @@ public class CardEntityTest
         System.out.println(JSON.toJSONStringWithDateFormat(cardEntity, ToolUtil.DATE_FORMAT));
     }
 
-//    @Test
+    @Test
     public void search()
     {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();

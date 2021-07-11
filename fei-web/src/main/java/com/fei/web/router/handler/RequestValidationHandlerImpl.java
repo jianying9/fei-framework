@@ -4,8 +4,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.fei.web.request.Request;
 import com.fei.web.response.Response;
 import com.fei.web.router.validation.ValidationHandler;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  *
@@ -32,12 +33,19 @@ public class RequestValidationHandlerImpl implements RouteHandler
         Object childValue;
         ValidationHandler validationHandler;
         String result = "";
-        for (Entry<String, ValidationHandler> entry : this.validationHandlerMap.entrySet()) {
-            validationHandler = entry.getValue();
-            childValue = data.get(entry.getKey());
-            result = validationHandler.validate(childValue);
-            if (result.isEmpty() == false) {
-                break;
+        Set<String> keySet = new HashSet();
+        keySet.addAll(data.keySet());
+        for (String key : keySet) {
+            validationHandler = this.validationHandlerMap.get(key);
+            if (validationHandler == null) {
+                //没有定义,丢弃
+                data.remove(key);
+            } else {
+                childValue = data.get(key);
+                result = validationHandler.validate(childValue);
+                if (result.isEmpty() == false) {
+                    break;
+                }
             }
         }
         if (result.isEmpty()) {

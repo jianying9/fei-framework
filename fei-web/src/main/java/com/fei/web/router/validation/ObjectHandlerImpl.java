@@ -1,7 +1,9 @@
 package com.fei.web.router.validation;
 
 import com.alibaba.fastjson.JSONObject;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * json对象类型处理类
@@ -45,13 +47,18 @@ public class ObjectHandlerImpl implements ValidationHandler
         if (value != null) {
             if (value instanceof JSONObject) {
                 result = "";
-                JSONObject jsonValue = (JSONObject) value;
+                JSONObject data = (JSONObject) value;
                 Object childValue;
                 ValidationHandler validationHandler;
-                if (this.validationHandlerMap.isEmpty() == false) {
-                    for (Map.Entry<String, ValidationHandler> entry : this.validationHandlerMap.entrySet()) {
-                        validationHandler = entry.getValue();
-                        childValue = jsonValue.get(entry.getKey());
+                Set<String> keySet = new HashSet();
+                keySet.addAll(data.keySet());
+                for (String key : keySet) {
+                    validationHandler = this.validationHandlerMap.get(key);
+                    if (validationHandler == null) {
+                        //没有定义,丢弃
+                        data.remove(key);
+                    } else {
+                        childValue = data.get(key);
                         result = validationHandler.validate(childValue);
                         if (result.isEmpty() == false) {
                             break;

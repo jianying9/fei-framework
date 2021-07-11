@@ -10,7 +10,6 @@ import com.fei.elasticsearch.search.sort.SortBuilders;
 import com.fei.elasticsearch.search.sort.SortOrder;
 import com.fei.app.test.ResourceMock;
 import com.fei.app.utils.ToolUtil;
-import com.fei.demo.AppMain;
 import com.fei.module.EsEntityDao;
 import java.util.Date;
 import java.util.HashMap;
@@ -20,6 +19,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -126,7 +126,7 @@ public class UserEntityTest
         System.out.println(total);
     }
 
-//    @Test
+    @Test
     public void search()
     {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
