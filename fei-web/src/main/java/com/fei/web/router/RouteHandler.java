@@ -1,4 +1,4 @@
-package com.fei.web.router.handler;
+package com.fei.web.router;
 
 import com.fei.web.request.Request;
 import com.fei.web.response.Response;
@@ -9,6 +9,7 @@ import com.fei.web.response.Response;
  */
 public interface RouteHandler
 {
+
     public String getRoute();
 
     public Response processRequest(Request request);

@@ -78,8 +78,7 @@ public class UserControllerTest
         array.add("1");
         input.put("userIdArray", array);
         input.put("userId", 999);
-        JSONObject output = routerMock.perform("/user/batchGet", input, this.auth);
-        System.out.println(output.toString(SerializerFeature.PrettyFormat));
+        routerMock.perform("/user/batchGet", input, this.auth);
     }
 
 }

@@ -1,5 +1,6 @@
 package com.fei.web.request;
 
+import com.fei.web.router.BizContext;
 import com.alibaba.fastjson.JSONObject;
 import com.fei.web.component.Token;
 
@@ -11,22 +12,22 @@ import com.fei.web.component.Token;
 public class Request
 {
 
-    private final String route;
+    private final BizContext bizContext;
 
     private final Token token;
 
     private final JSONObject data;
 
-    public Request(String route, Token token, JSONObject data)
+    public Request(BizContext bizContext, Token token, JSONObject data)
     {
-        this.route = route;
+        this.bizContext = bizContext;
         this.token = token;
         this.data = data;
     }
 
     public String getRoute()
     {
-        return route;
+        return this.bizContext.getRoute();
     }
 
     public Token getToken()
@@ -37,6 +38,11 @@ public class Request
     public JSONObject getData()
     {
         return data;
+    }
+
+    public BizContext getBizContext()
+    {
+        return this.bizContext;
     }
 
 }

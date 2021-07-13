@@ -1,4 +1,4 @@
-package com.fei.web.router.handler;
+package com.fei.web.router;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -8,8 +8,6 @@ import com.fei.web.component.Session;
 import com.fei.web.component.Token;
 import com.fei.web.request.Request;
 import com.fei.web.response.Response;
-import com.fei.web.router.RouterContext;
-import com.fei.web.router.BizException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -53,15 +51,18 @@ public class ControlHandlerImpl implements RouteHandler
         for (int index = 0; index < this.parameters.length; index++) {
             paramClass = this.parameters[index].getType();
             if (paramClass == Session.class) {
+                //注入用户信息
                 Session session = null;
                 Token token = request.getToken();
                 if (token != null && token.expired == false) {
                     session = new Session();
                     session.userId = token.userId;
                     session.userName = token.userName;
-                    session.expireTime = token.expireTime;
                 }
                 params[index] = session;
+            } else if (paramClass == BizContext.class) {
+                //注入请求上下文信息
+                params[index] = request.getBizContext();
             } else if (ToolUtil.isBasicType(paramClass) || Collection.class.isAssignableFrom(paramClass) || paramClass.isArray()) {
                 paramName = this.parameters[index].getName();
                 params[index] = request.getData().get(paramName);
@@ -70,6 +71,8 @@ public class ControlHandlerImpl implements RouteHandler
             }
         }
         //调用并处理结果
+        BizContext bizContext = request.getBizContext();
+        bizContext.setSubStartTime(System.currentTimeMillis());
         try {
             Object data = this.method.invoke(this.controller, params);
             if (data != null) {
@@ -97,6 +100,7 @@ public class ControlHandlerImpl implements RouteHandler
             response.setCode(Response.EXCEPTION);
             this.logger.error("exec route:{}, msg:{}", this.route, this.toString(), ex);
         }
+        bizContext.setSubEndTime(System.currentTimeMillis());
         return response;
     }
 

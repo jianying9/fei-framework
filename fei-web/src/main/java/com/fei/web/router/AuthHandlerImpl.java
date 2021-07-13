@@ -1,4 +1,4 @@
-package com.fei.web.router.handler;
+package com.fei.web.router;
 
 import com.fei.web.component.Token;
 import com.fei.web.request.Request;

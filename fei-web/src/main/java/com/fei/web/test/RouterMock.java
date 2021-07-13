@@ -1,7 +1,6 @@
 package com.fei.web.test;
 
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.fei.annotations.app.BootApp;
 import com.fei.app.context.AppContext;
 import com.fei.app.context.AppContextBuilder;
@@ -10,8 +9,6 @@ import com.fei.web.response.Response;
 import com.fei.web.router.Router;
 import com.fei.web.router.RouterContext;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -19,8 +16,6 @@ import org.slf4j.LoggerFactory;
  */
 public class RouterMock
 {
-
-    private final Logger logger = LoggerFactory.getLogger(RouterMock.class);
 
     public RouterMock(Class<?> mainClass)
     {
@@ -41,16 +36,15 @@ public class RouterMock
         }
     }
 
-    public JSONObject perform(String route, JSONObject input, String auth)
+    public String perform(String route, JSONObject input, String auth)
     {
         Router router = RouterContext.INSTANCE.get(route);
-        JSONObject output;
+        String output;
         if (router == null) {
-            output = Response.createNotfound(route);
+            output = Response.createNotfound(route).toJSONString();
         } else {
             output = router.processRequest(input, auth);
         }
-        this.logger.info(output.toString(SerializerFeature.PrettyFormat));
         return output;
     }
 
