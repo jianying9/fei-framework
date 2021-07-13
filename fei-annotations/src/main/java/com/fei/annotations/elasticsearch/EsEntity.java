@@ -29,4 +29,10 @@ public @interface EsEntity
      */
     public String index() default "";
 
+    /**
+     * 生命周期管理策略
+     *
+     * @return
+     */
+    public String lifecycle() default "";
 }

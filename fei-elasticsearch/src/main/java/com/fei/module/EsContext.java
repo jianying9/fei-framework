@@ -253,7 +253,7 @@ public class EsContext implements ModuleContext
             throw new RuntimeException("EsColumn miss key");
         } else {
             //实例化dao
-            EsEntityDao esEntityDao = new EsEntityDaoImpl(index, keyHandler, columnHandlerList, clazz);
+            EsEntityDao esEntityDao = new EsEntityDaoImpl(index, esEntity.lifecycle(), keyHandler, columnHandlerList, clazz);
             //注册到bean
             BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
             beanContext.add(this.name, clazz.getName(), esEntityDao);

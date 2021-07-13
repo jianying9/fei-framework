@@ -85,5 +85,14 @@ public class EsColumnHandler
         } 
         return nullValue;
     }
+    
+    
+    public static JSONObject getTimestampProperty()
+    {
+        JSONObject propertyJson = new JSONObject();
+        propertyJson.put("type", "date");
+        propertyJson.put("format", "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis");
+        return propertyJson;
+    }
 
 }

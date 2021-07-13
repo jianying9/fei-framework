@@ -12,7 +12,7 @@ import java.util.Set;
  *
  * @author jianying9
  */
-@EsEntity
+@EsEntity(lifecycle = "logs")
 public class CardEntity
 {
 

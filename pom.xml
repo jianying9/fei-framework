@@ -14,6 +14,7 @@
         <module>fei-elasticsearch</module>
         <module>fei-jetty-embed</module>
         <module>fei-annotations</module>
+        <module>fei-web-logger-es</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
