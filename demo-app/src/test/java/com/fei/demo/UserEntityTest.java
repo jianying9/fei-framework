@@ -2,7 +2,7 @@ package com.fei.demo;
 
 import com.alibaba.fastjson.JSON;
 import com.fei.annotations.component.Resource;
-import com.fei.demo.entity.UserEntity;
+import com.fei.demo.es.UserEntity;
 import com.fei.elasticsearch.index.query.BoolQueryBuilder;
 import com.fei.elasticsearch.index.query.QueryBuilders;
 import com.fei.elasticsearch.search.sort.SortBuilder;

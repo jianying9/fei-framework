@@ -2,7 +2,7 @@ package com.fei.demo;
 
 import com.alibaba.fastjson.JSON;
 import com.fei.annotations.component.Resource;
-import com.fei.demo.entity.CardEntity;
+import com.fei.demo.es.CardEntity;
 import com.fei.elasticsearch.index.query.BoolQueryBuilder;
 import com.fei.elasticsearch.index.query.QueryBuilders;
 import com.fei.app.test.ResourceMock;

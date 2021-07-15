@@ -1,4 +1,4 @@
-package com.fei.demo.entity;
+package com.fei.demo.es;
 
 import com.fei.annotations.elasticsearch.EsColumn;
 import com.fei.annotations.elasticsearch.EsEntity;
@@ -12,7 +12,7 @@ import java.util.Set;
  *
  * @author jianying9
  */
-@EsEntity(lifecycle = "logs")
+@EsEntity()
 public class CardEntity
 {
 

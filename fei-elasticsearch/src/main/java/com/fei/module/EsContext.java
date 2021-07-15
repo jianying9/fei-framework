@@ -3,6 +3,7 @@ package com.fei.module;
 import com.fei.annotations.elasticsearch.EsColumn;
 import com.fei.annotations.elasticsearch.EsEntity;
 import com.fei.annotations.elasticsearch.EsKey;
+import com.fei.annotations.elasticsearch.EsStream;
 import com.fei.app.context.AppContext;
 import com.fei.annotations.module.Module;
 import com.fei.app.module.ModuleContext;
@@ -53,7 +54,7 @@ public class EsContext implements ModuleContext
 
     public final static EsContext INSTANCE = new EsContext();
 
-    private final String name = "esEntityDao";
+    private final String name = "esDao";
 
     private final Logger logger = LoggerFactory.getLogger(EsContext.class);
 
@@ -146,15 +147,19 @@ public class EsContext implements ModuleContext
             }
         }
         //解析
-        Set<Class<?>> esEntityClassSet = new HashSet();
+        Set<Class<?>> esClassSet = new HashSet();
         for (Class<?> clazz : classSet) {
             if (clazz.isAnnotationPresent(EsEntity.class)) {
                 this.logger.info("find EsEntity class:{}.", clazz.getName());
-                this.createDao(clazz);
-                esEntityClassSet.add(clazz);
+                this.createEntityDao(clazz);
+                esClassSet.add(clazz);
+            } else if(clazz.isAnnotationPresent(EsStream.class)) {
+                this.logger.info("find EsStream class:{}.", clazz.getName());
+                this.createStreamDao(clazz);
+                esClassSet.add(clazz);
             }
         }
-        classSet.removeAll(esEntityClassSet);
+        classSet.removeAll(esClassSet);
     }
 
     /**
@@ -193,7 +198,7 @@ public class EsContext implements ModuleContext
         return new HttpHost(text, port, scheme);
     }
 
-    private void createDao(Class<?> clazz)
+    private void createEntityDao(Class<?> clazz)
     {
         String dbName;
         EsEntity esEntity = clazz.getAnnotation(EsEntity.class);
@@ -249,15 +254,65 @@ public class EsContext implements ModuleContext
             }
         }
         if (keyHandler == null) {
-            this.logger.error("{} EsColumn miss key", clazz.getName());
-            throw new RuntimeException("EsColumn miss key");
+            this.logger.error("{} EsEntity miss key", clazz.getName());
+            throw new RuntimeException("EsEntity miss key");
         } else {
             //实例化dao
-            EsEntityDao esEntityDao = new EsEntityDaoImpl(index, esEntity.lifecycle(), keyHandler, columnHandlerList, clazz);
+            EsEntityDao esEntityDao = new EsEntityDaoImpl(index, keyHandler, columnHandlerList, clazz);
             //注册到bean
             BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
             beanContext.add(this.name, clazz.getName(), esEntityDao);
         }
+    }
+    
+    private void createStreamDao(Class<?> clazz)
+    {
+        String dbName;
+        EsStream esStream = clazz.getAnnotation(EsStream.class);
+        if (esStream.database().isEmpty()) {
+            dbName = this.database;
+        } else {
+            dbName = esStream.database();
+        }
+        //根据类型获取索引名称
+        String index;
+        if (esStream.index().isEmpty()) {
+            index = ToolUtil.getTableName(clazz);
+        } else {
+            index = esStream.index();
+        }
+        if (dbName.isEmpty() == false) {
+            index = dbName + "_" + index;
+        }
+        //获取该实体所有字段集合
+        List<EsColumnHandler> columnHandlerList = new ArrayList(0);
+        Field[] fieldArray = clazz.getDeclaredFields();
+        String fieldName;
+        EsColumn esColumn;
+        EsColumnType columnType;
+        Object defaultValue;
+        for (Field field : fieldArray) {
+            if (Modifier.isStatic(field.getModifiers()) == false) {
+                //非静态字段
+                fieldName = field.getName();
+                if (field.isAnnotationPresent(EsColumn.class)) {
+                    //
+                    esColumn = field.getAnnotation(EsColumn.class);
+                    columnType = this.getColumnType(clazz, field, esColumn);
+                    defaultValue = this.getDefaultValue(columnType, esColumn);
+                    EsColumnHandler columnHandler = new EsColumnHandler(fieldName, columnType, defaultValue);
+                    columnHandlerList.add(columnHandler);
+                } else if (field.isAnnotationPresent(EsKey.class)) {
+                    this.logger.error("{} EsStream can not use key", clazz.getName());
+                    throw new RuntimeException("EsColumn can not use key");
+                }
+            }
+        }
+        //实例化dao
+            EsStreamDao esEntityDao = new EsStreamDaoImpl(index, esStream.lifecycle(), columnHandlerList, clazz);
+            //注册到bean
+            BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
+            beanContext.add(this.name, clazz.getName(), esEntityDao);
     }
 
     private EsColumnType getColumnType(Class<?> clazz, Field field, EsColumn esColumn)
@@ -369,7 +424,11 @@ public class EsContext implements ModuleContext
     @Override
     public void build()
     {
-        this.updateMapping();
+        BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
+        Map<String, Object> entityDaoMap = beanContext.get(this.name);
+        for (Object value : entityDaoMap.values()) {
+            ((AbstractEsDao) value).setUp();
+        }
     }
 
     public String getDatabase()
@@ -380,15 +439,6 @@ public class EsContext implements ModuleContext
     public RestClient getRestClient()
     {
         return restClient;
-    }
-
-    public void updateMapping()
-    {
-        BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
-        Map<String, Object> entityDaoMap = beanContext.get(this.name);
-        for (Object value : entityDaoMap.values()) {
-            ((EsEntityDaoImpl) value).updateMapping();
-        }
     }
 
 }
