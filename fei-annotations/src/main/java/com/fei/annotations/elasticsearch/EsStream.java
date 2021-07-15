@@ -34,5 +34,5 @@ public @interface EsStream
      *
      * @return
      */
-    public String lifecycle();
+    public String lifecycle() default "logs";
 }

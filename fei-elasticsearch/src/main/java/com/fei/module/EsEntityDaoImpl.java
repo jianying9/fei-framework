@@ -11,6 +11,7 @@ import java.util.Map;
 import org.apache.http.util.EntityUtils;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.Response;
+import org.elasticsearch.client.ResponseException;
 
 /**
  *
@@ -59,7 +60,7 @@ public class EsEntityDaoImpl<T> extends AbstractEsDao<T> implements EsEntityDao<
     @Override
     public boolean exist(String keyValue)
     {
-        boolean exist = false;
+        boolean exist;
         String path = this.getDocPath(keyValue);
         try {
             Request request = new Request("GET", path);
@@ -67,6 +68,8 @@ public class EsEntityDaoImpl<T> extends AbstractEsDao<T> implements EsEntityDao<
             String responseBody = EntityUtils.toString(response.getEntity());
             JSONObject responseJson = JSON.parseObject(responseBody);
             exist = responseJson.containsKey("_source");
+        } catch (ResponseException ex) {
+            exist = false;
         } catch (IOException ex) {
             this.logger.error("es client: exec exist error", ex);
             throw new RuntimeException("unknown es error");
@@ -77,7 +80,7 @@ public class EsEntityDaoImpl<T> extends AbstractEsDao<T> implements EsEntityDao<
     @Override
     public T get(String keyValue)
     {
-        T t = null;
+        T t;
         String path = this.getDocPath(keyValue);
         try {
             Request request = new Request("GET", path);
@@ -88,6 +91,8 @@ public class EsEntityDaoImpl<T> extends AbstractEsDao<T> implements EsEntityDao<
             //如果属性不存在,则赋值默认值
             this.checkDefaultValue(entityJson);
             t = TypeUtils.castToJavaBean(entityJson, this.clazz);
+        } catch (ResponseException ex) {
+            t = null;
         } catch (IOException ex) {
             this.logger.error("es client: exec get error", ex);
             throw new RuntimeException("unknown es error");
@@ -233,16 +238,16 @@ public class EsEntityDaoImpl<T> extends AbstractEsDao<T> implements EsEntityDao<
 
     private boolean existIndex()
     {
-        boolean exist = false;
+        boolean exist;
         String path = "/" + this.index;
         Request request = new Request("HEAD", path);
         Response response;
         try {
             response = EsContext.INSTANCE.getRestClient().performRequest(request);
             int code = response.getStatusLine().getStatusCode();
-            if (code == 200) {
-                exist = true;
-            }
+            exist = code == 200;
+        } catch (ResponseException ex) {
+            exist = false;
         } catch (IOException ex) {
             this.logger.error("es client: exec exist index error", ex);
             throw new RuntimeException("unknown es error");

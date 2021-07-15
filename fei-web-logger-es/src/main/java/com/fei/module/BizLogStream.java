@@ -1,16 +1,16 @@
 package com.fei.module;
 
 import com.fei.annotations.elasticsearch.EsColumn;
-import com.fei.annotations.elasticsearch.EsEntity;
 import com.fei.annotations.elasticsearch.EsKey;
+import com.fei.annotations.elasticsearch.EsStream;
 import java.util.Date;
 
 /**
  *
  * @author jianying9
  */
-@EsEntity
-public class BizLogEntity
+@EsStream
+public class BizLogStream
 {
 
     @EsKey(desc = "id", auto = true)

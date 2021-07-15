@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import org.elasticsearch.client.Request;
-import org.elasticsearch.client.Response;
+import org.elasticsearch.client.ResponseException;
 
 /**
  *
@@ -63,21 +63,64 @@ public class EsStreamDaoImpl<T> extends AbstractEsDao<T> implements EsStreamDao<
      */
     private boolean existPolicy()
     {
-        boolean exist = false;
-
+        boolean exist;
         String path = "/_ilm/policy/" + this.lifecycle;
         try {
             Request request = new Request("GET", path);
-            Response response = EsContext.INSTANCE.getRestClient().performRequest(request);
-            int code = response.getStatusLine().getStatusCode();
-            if (code == 200) {
-                exist = true;
-            }
+            EsContext.INSTANCE.getRestClient().performRequest(request);
+            exist = true;
+        } catch (ResponseException ex) {
+            exist = false;
         } catch (IOException ex) {
             this.logger.error("es client: exec get error", ex);
             throw new RuntimeException("unknown es error");
         }
         return exist;
+    }
+
+    /**
+     * 创建生命周期
+     */
+    private void createPolicy()
+    {
+        //rollover
+        JSONObject rolloverJson = new JSONObject();
+        rolloverJson.put("max_primary_shard_size", "10gb");
+        rolloverJson.put("max_age", "30d");
+        JSONObject hotActionJson = new JSONObject();
+        hotActionJson.put("rollover", rolloverJson);
+        //hot phase
+        JSONObject hotPhaseJson = new JSONObject();
+        hotPhaseJson.put("min_age", "0ms");
+        hotPhaseJson.put("actions", hotActionJson);
+        //delete
+        JSONObject deleteJson = new JSONObject();
+        deleteJson.put("delete_searchable_snapshot", true);
+        JSONObject deleteActionJson = new JSONObject();
+        deleteActionJson.put("delete", deleteJson);
+        //delete phase
+        JSONObject deletePhaseJson = new JSONObject();
+        deletePhaseJson.put("min_age", "90d");
+        deletePhaseJson.put("actions", deleteActionJson);
+        //phase
+        JSONObject phasesJson = new JSONObject();
+        phasesJson.put("hot", hotPhaseJson);
+        phasesJson.put("delete", deletePhaseJson);
+        //policy
+        JSONObject policyJson = new JSONObject();
+        policyJson.put("phases", phasesJson);
+        JSONObject requestJson = new JSONObject();
+        requestJson.put("policy", policyJson);
+        //
+        String path = "/_ilm/policy/" + this.lifecycle;
+        try {
+            Request request = new Request("PUT", path);
+            request.setJsonEntity(requestJson.toJSONString());
+            EsContext.INSTANCE.getRestClient().performRequest(request);
+        } catch (IOException ex) {
+            this.logger.error("es client: exec get error", ex);
+            throw new RuntimeException("unknown es error");
+        }
     }
 
     /**
@@ -89,8 +132,8 @@ public class EsStreamDaoImpl<T> extends AbstractEsDao<T> implements EsStreamDao<
         //判断生命周期是否存在
         boolean exist = this.existPolicy();
         if (exist == false) {
-            this.logger.error("es client: policy '{}' is not exist.", this.lifecycle);
-            throw new RuntimeException(this.lifecycle + "is not exist");
+            //不存在,则新增
+            this.createPolicy();
         }
         //创建或更新索引模板
         //patterns

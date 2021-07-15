@@ -59,7 +59,7 @@ public abstract class AbstractEsDao<T>
 
     public final int total()
     {
-        int result = 0;
+        int result;
         String path = this.getSearchDocPath();
         JSONObject requestJson = new JSONObject();
         requestJson.put("from", 0);
@@ -73,6 +73,8 @@ public abstract class AbstractEsDao<T>
             JSONObject hitsJson = responseJson.getJSONObject("hits");
             JSONObject totalJson = hitsJson.getJSONObject("total");
             result = totalJson.getIntValue("value");
+        } catch (ResponseException ex) {
+            result = 0;
         } catch (IOException ex) {
             this.logger.error("es client: exec total error", ex);
             throw new RuntimeException("unknown es error");
@@ -99,7 +101,7 @@ public abstract class AbstractEsDao<T>
      */
     public final List<T> search(QueryBuilder queryBuilder, SortBuilder sort, int from, int size)
     {
-        List<T> tList = Collections.EMPTY_LIST;
+        List<T> tList;
         String path = this.getSearchDocPath();
         JSONObject requestJson = new JSONObject();
         if (queryBuilder != null) {
@@ -143,7 +145,7 @@ public abstract class AbstractEsDao<T>
 
     public final List<T> search(QueryBuilder queryBuilder, List<SortBuilder> sortList, int from, int size)
     {
-        List<T> tList = Collections.EMPTY_LIST;
+        List<T> tList;
         String path = this.getSearchDocPath();
         JSONObject requestJson = new JSONObject();
         if (queryBuilder != null) {

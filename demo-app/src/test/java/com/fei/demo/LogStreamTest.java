@@ -66,7 +66,7 @@ public class LogStreamTest
         this.logStreamDao.insert(logStream);
     }
 
-//    @Test
+    @Test
     public void search()
     {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();

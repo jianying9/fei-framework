@@ -8,7 +8,7 @@ import java.util.Date;
  *
  * @author jianying9
  */
-@EsStream(lifecycle = "logs")
+@EsStream
 public class LogStream
 {
 
