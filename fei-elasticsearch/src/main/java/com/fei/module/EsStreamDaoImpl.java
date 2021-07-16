@@ -1,9 +1,9 @@
 package com.fei.module;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fei.app.utils.ToolUtil;
+import static com.fei.module.EsContext.TIMESTAMP_COLUMN_NAME;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -39,15 +39,15 @@ public class EsStreamDaoImpl<T> extends AbstractEsDao<T> implements EsStreamDao<
     @Override
     public void insert(T t)
     {
-        JSONObject tJson = JSON.parseObject(JSON.toJSONStringWithDateFormat(t, ToolUtil.DATE_FORMAT));
+        JSONObject eJson = this.t2e(t);
         //时间戳
         Date timestamp = new Date();
-        tJson.put(this.timestampName, ToolUtil.format(timestamp));
+        eJson.put(TIMESTAMP_COLUMN_NAME, ToolUtil.format(timestamp));
         //
         String keyValue = ToolUtil.getAutomicId();
         String path = this.getInsertDocPath(keyValue);
         Request request = new Request("PUT", path);
-        request.setJsonEntity(tJson.toJSONString());
+        request.setJsonEntity(eJson.toJSONString());
         try {
             EsContext.INSTANCE.getRestClient().performRequest(request);
         } catch (IOException ex) {
@@ -154,10 +154,8 @@ public class EsStreamDaoImpl<T> extends AbstractEsDao<T> implements EsStreamDao<
         //mappings
         JSONObject propertiesJson = new JSONObject();
         for (EsColumnHandler esColumnHandler : columnHandlerList) {
-            propertiesJson.put(esColumnHandler.getName(), esColumnHandler.getProperty());
+            propertiesJson.put(esColumnHandler.getColumnName(), esColumnHandler.getProperty());
         }
-        //增加时间戳
-        propertiesJson.put(this.timestampName, EsColumnHandler.getTimestampProperty());
         JSONObject mappingsJson = new JSONObject();
         mappingsJson.put("properties", propertiesJson);
         //关闭自动日期检测

@@ -9,7 +9,6 @@ import com.fei.elasticsearch.search.sort.SortOrder;
 import com.fei.app.test.ResourceMock;
 import com.fei.demo.es.LogStream;
 import com.fei.module.EsStreamDao;
-import java.util.Date;
 import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -62,7 +61,6 @@ public class LogStreamTest
         LogStream logStream = new LogStream();
         logStream.userId = "fei0192";
         logStream.userName = "fei0192";
-        logStream.createTime = new Date();
         this.logStreamDao.insert(logStream);
     }
 
@@ -71,7 +69,7 @@ public class LogStreamTest
     {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         boolQueryBuilder.must(QueryBuilders.termQuery("userName", "fei0192"));
-        SortBuilder sortBuilder = SortBuilders.fieldSort("createTime").order(SortOrder.DESC);
+        SortBuilder sortBuilder = SortBuilders.fieldSort("userName").order(SortOrder.DESC);
         List<LogStream> logList = this.logStreamDao.search(boolQueryBuilder, sortBuilder, 0, 100);
         for (LogStream logStream : logList) {
             System.out.println(logStream.userId);

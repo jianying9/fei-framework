@@ -65,6 +65,10 @@ public class EsContext implements ModuleContext
     private String pathPrefix = "/";
 
     private RestClient restClient;
+    
+    //时间戳保留字段
+    public final static String TIMESTAMP_FIELD_NAME = "timestamp";
+    public final static String TIMESTAMP_COLUMN_NAME = "@timestamp";
 
     @Override
     public String getName()
@@ -230,29 +234,39 @@ public class EsContext implements ModuleContext
             if (Modifier.isStatic(field.getModifiers()) == false) {
                 //非静态字段
                 fieldName = field.getName();
-                if (field.isAnnotationPresent(EsColumn.class)) {
-                    //
-                    esColumn = field.getAnnotation(EsColumn.class);
-                    columnType = this.getColumnType(clazz, field, esColumn);
-                    defaultValue = this.getDefaultValue(columnType, esColumn);
-                    EsColumnHandler columnHandler = new EsColumnHandler(fieldName, columnType, defaultValue);
-                    columnHandlerList.add(columnHandler);
-                } else if (field.isAnnotationPresent(EsKey.class)) {
-                    if (keyHandler == null) {
-                        esKey = field.getAnnotation(EsKey.class);
-                        if (field.getType().equals(String.class)) {
-                            keyHandler = new EsKeyHandler(fieldName, esKey.auto(), field);
+                //timestamp为保留字段,对应es的列@timestamp
+                if (fieldName.equals(TIMESTAMP_FIELD_NAME) == false) {
+                    if (field.isAnnotationPresent(EsColumn.class)) {
+                        //
+                        esColumn = field.getAnnotation(EsColumn.class);
+                        columnType = this.getColumnType(clazz, field, esColumn);
+                        defaultValue = this.getDefaultValue(columnType, esColumn);
+                        EsColumnHandler columnHandler = new EsColumnHandler(fieldName, columnType, defaultValue);
+                        columnHandlerList.add(columnHandler);
+                    } else if (field.isAnnotationPresent(EsKey.class)) {
+                        if (keyHandler == null) {
+                            esKey = field.getAnnotation(EsKey.class);
+                            if (field.getType().equals(String.class)) {
+                                keyHandler = new EsKeyHandler(fieldName, esKey.auto(), field);
+                            } else {
+                                this.logger.error("{} EsEntity key must String.class", clazz.getName());
+                                throw new RuntimeException("EsEntity key must String.class");
+                            }
                         } else {
-                            this.logger.error("{} EsColumn key must String.class", clazz.getName());
-                            throw new RuntimeException("EsColumn key must String.class");
+                            this.logger.error("{} EsEntity multy keys", clazz.getName());
+                            throw new RuntimeException("EsEntity multy keys");
                         }
                     } else {
-                        this.logger.error("{} EsColumn multy keys", clazz.getName());
-                        throw new RuntimeException("EsColumn multy keys");
+                        this.logger.error("{} field {} miss EsColumn", clazz.getName(), fieldName);
+                        throw new RuntimeException("field miss EsColumn");
                     }
                 }
             }
         }
+        //增加时间戳
+        EsColumnHandler timestampHandler = new EsColumnHandler(TIMESTAMP_FIELD_NAME, TIMESTAMP_COLUMN_NAME, EsColumnType.DATE, 0);
+        columnHandlerList.add(timestampHandler);
+        //
         if (keyHandler == null) {
             this.logger.error("{} EsEntity miss key", clazz.getName());
             throw new RuntimeException("EsEntity miss key");
@@ -264,7 +278,7 @@ public class EsContext implements ModuleContext
             beanContext.add(this.name, clazz.getName(), esEntityDao);
         }
     }
-    
+
     private void createStreamDao(Class<?> clazz)
     {
         String dbName;
@@ -295,24 +309,32 @@ public class EsContext implements ModuleContext
             if (Modifier.isStatic(field.getModifiers()) == false) {
                 //非静态字段
                 fieldName = field.getName();
-                if (field.isAnnotationPresent(EsColumn.class)) {
-                    //
-                    esColumn = field.getAnnotation(EsColumn.class);
-                    columnType = this.getColumnType(clazz, field, esColumn);
-                    defaultValue = this.getDefaultValue(columnType, esColumn);
-                    EsColumnHandler columnHandler = new EsColumnHandler(fieldName, columnType, defaultValue);
-                    columnHandlerList.add(columnHandler);
-                } else if (field.isAnnotationPresent(EsKey.class)) {
-                    this.logger.error("{} EsStream can not use key", clazz.getName());
-                    throw new RuntimeException("EsColumn can not use key");
+                if (fieldName.equals(TIMESTAMP_FIELD_NAME) == false) {
+                    if (field.isAnnotationPresent(EsColumn.class)) {
+                        //
+                        esColumn = field.getAnnotation(EsColumn.class);
+                        columnType = this.getColumnType(clazz, field, esColumn);
+                        defaultValue = this.getDefaultValue(columnType, esColumn);
+                        EsColumnHandler columnHandler = new EsColumnHandler(fieldName, columnType, defaultValue);
+                        columnHandlerList.add(columnHandler);
+                    } else if (field.isAnnotationPresent(EsKey.class)) {
+                        this.logger.error("{} EsStream can not use key", clazz.getName());
+                        throw new RuntimeException("EsColumn can not use key");
+                    } else {
+                        this.logger.error("{} field {} miss EsColumn", clazz.getName(), fieldName);
+                        throw new RuntimeException("field miss EsColumn");
+                    }
                 }
             }
         }
+        //增加时间戳
+        EsColumnHandler timestampHandler = new EsColumnHandler(TIMESTAMP_FIELD_NAME, TIMESTAMP_COLUMN_NAME, EsColumnType.DATE, 0);
+        columnHandlerList.add(timestampHandler);
         //实例化dao
-            EsStreamDao esEntityDao = new EsStreamDaoImpl(index, esStream.lifecycle(), columnHandlerList, clazz);
-            //注册到bean
-            BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
-            beanContext.add(this.name, clazz.getName(), esEntityDao);
+        EsStreamDao esEntityDao = new EsStreamDaoImpl(index, esStream.lifecycle(), columnHandlerList, clazz);
+        //注册到bean
+        BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
+        beanContext.add(this.name, clazz.getName(), esEntityDao);
     }
 
     private EsColumnType getColumnType(Class<?> clazz, Field field, EsColumn esColumn)
@@ -375,7 +397,7 @@ public class EsContext implements ModuleContext
         }
         return result;
     }
-    
+
     public Object getDefaultValue(EsColumnType esColumnType, EsColumn esColumn) {
         Object defaultValue;
         switch(esColumnType) {
@@ -417,7 +439,7 @@ public class EsContext implements ModuleContext
                 break;
             default:
                 defaultValue = "";
-        } 
+        }
         return defaultValue;
     }
 

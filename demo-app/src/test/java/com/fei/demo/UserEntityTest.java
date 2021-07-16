@@ -67,7 +67,6 @@ public class UserEntityTest
         userEntity.userName = "fei0192";
         userEntity.kid = false;
         userEntity.money = 4300;
-        userEntity.createTime = new Date();
         this.userEntityDao.insert(userEntity);
         System.out.println(userEntity.userId);
     }
@@ -80,7 +79,6 @@ public class UserEntityTest
         userEntity.userName = "fei0192u";
         userEntity.kid = true;
         userEntity.money = 9;
-        userEntity.createTime = new Date();
         this.userEntityDao.update(userEntity);
     }
 
@@ -88,16 +86,15 @@ public class UserEntityTest
     public void update2()
     {
         Map<String, Object> updateMap = new HashMap();
-        updateMap.put("kid", false);
-        updateMap.put("money", 1122);
+        updateMap.put("kid", true);
         updateMap.put("createTime", new Date());
-        this.userEntityDao.update("4SkA377EeN6PNinTtLckpY", updateMap);
+        this.userEntityDao.update("A9Hmr2teRX6eQPmnVRtD6X", updateMap);
     }
 
 //    @Test
     public void get()
     {
-        UserEntity userEntity = this.userEntityDao.get("4SkA377EeN6PNinTtLckpY");
+        UserEntity userEntity = this.userEntityDao.get("vEhwHeejP5gx6DZPqxqetF");
         System.out.println(userEntity.userName);
     }
 
@@ -108,7 +105,16 @@ public class UserEntityTest
         userEntity.userName = "fei0192s";
         userEntity.kid = false;
         userEntity.money = 99;
-        userEntity.createTime = new Date();
+        this.userEntityDao.upsert(userEntity);
+        System.out.println(userEntity.userId);
+    }
+
+//    @Test
+    public void upsert2()
+    {
+        UserEntity userEntity = new UserEntity();
+        userEntity.kid = true;
+        userEntity.userId = "AUR7pFrG8zmdpCjqFUhkfn";
         this.userEntityDao.upsert(userEntity);
         System.out.println(userEntity.userId);
     }

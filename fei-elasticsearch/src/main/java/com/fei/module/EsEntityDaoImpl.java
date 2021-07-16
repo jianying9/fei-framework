@@ -2,8 +2,8 @@ package com.fei.module;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.util.TypeUtils;
 import com.fei.app.utils.ToolUtil;
+import static com.fei.module.EsContext.TIMESTAMP_COLUMN_NAME;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -21,16 +21,13 @@ import org.elasticsearch.client.ResponseException;
 public class EsEntityDaoImpl<T> extends AbstractEsDao<T> implements EsEntityDao<T>
 {
 
-    private final EsKeyHandler keyHandler;
-
     public EsEntityDaoImpl(
             String index,
             EsKeyHandler keyHandler,
             List<EsColumnHandler> columnHandlerList,
             Class<T> clazz)
     {
-        super(index, columnHandlerList, clazz);
-        this.keyHandler = keyHandler;
+        super(index, keyHandler, columnHandlerList, clazz);
     }
 
     private String getDocPath(String keyValue)
@@ -87,10 +84,8 @@ public class EsEntityDaoImpl<T> extends AbstractEsDao<T> implements EsEntityDao<
             Response response = EsContext.INSTANCE.getRestClient().performRequest(request);
             String responseBody = EntityUtils.toString(response.getEntity());
             JSONObject responseJson = JSON.parseObject(responseBody);
-            JSONObject entityJson = responseJson.getJSONObject("_source");
-            //如果属性不存在,则赋值默认值
-            this.checkDefaultValue(entityJson);
-            t = TypeUtils.castToJavaBean(entityJson, this.clazz);
+            JSONObject eJson = responseJson.getJSONObject("_source");
+            t = this.e2t(eJson);
         } catch (ResponseException ex) {
             t = null;
         } catch (IOException ex) {
@@ -103,12 +98,12 @@ public class EsEntityDaoImpl<T> extends AbstractEsDao<T> implements EsEntityDao<
     @Override
     public void insert(T t)
     {
-        JSONObject tJson = JSON.parseObject(JSON.toJSONStringWithDateFormat(t, ToolUtil.DATE_FORMAT));
-        String keyValue = tJson.getString(this.keyHandler.getName());
+        JSONObject eJson = this.t2e(t);
+        String keyValue = eJson.getString(this.keyHandler.getName());
         if (keyValue == null || keyValue.isEmpty()) {
             if (this.keyHandler.isAuto()) {
                 keyValue = ToolUtil.getAutomicId();
-                tJson.put(this.keyHandler.getName(), keyValue);
+                eJson.put(this.keyHandler.getName(), keyValue);
                 this.keyHandler.setValue(t, keyValue);
             }
         }
@@ -118,11 +113,11 @@ public class EsEntityDaoImpl<T> extends AbstractEsDao<T> implements EsEntityDao<
         }
         //时间戳
         Date timestamp = new Date();
-        tJson.put(this.timestampName, ToolUtil.format(timestamp));
+        eJson.put(TIMESTAMP_COLUMN_NAME, ToolUtil.format(timestamp));
         //
         String path = this.getInsertDocPath(keyValue);
         Request request = new Request("PUT", path);
-        request.setJsonEntity(tJson.toJSONString());
+        request.setJsonEntity(eJson.toJSONString());
         try {
             EsContext.INSTANCE.getRestClient().performRequest(request);
         } catch (IOException ex) {
@@ -134,15 +129,18 @@ public class EsEntityDaoImpl<T> extends AbstractEsDao<T> implements EsEntityDao<
     @Override
     public void update(T t)
     {
-        JSONObject tJson = JSON.parseObject(JSON.toJSONStringWithDateFormat(t, ToolUtil.DATE_FORMAT));
-        String keyValue = tJson.getString(this.keyHandler.getName());
+        JSONObject eJson = this.t2e(t);
+        String keyValue = eJson.getString(this.keyHandler.getName());
         if (keyValue == null || keyValue.isEmpty()) {
             this.logger.error("{} update miss keyValue:{}", clazz.getName(), this.keyHandler.getName());
             throw new RuntimeException("update miss keyValue");
         }
-        tJson.remove(this.keyHandler.getName());
+        //不更新key
+        eJson.remove(this.keyHandler.getName());
+        //不更新时间戳
+        eJson.remove(TIMESTAMP_COLUMN_NAME);
         JSONObject requestJson = new JSONObject();
-        requestJson.put("doc", tJson);
+        requestJson.put("doc", eJson);
         String path = this.getUpdateDocPath(keyValue);
         try {
             Request request = new Request("POST", path);
@@ -161,22 +159,21 @@ public class EsEntityDaoImpl<T> extends AbstractEsDao<T> implements EsEntityDao<
             this.logger.error("{} update miss keyValue:{}", clazz.getName(), this.keyHandler.getName());
             throw new RuntimeException("update miss keyValue");
         }
-        JSONObject tJson = new JSONObject();
-        //只更新有定义的字段
+        JSONObject tJson = JSON.parseObject(JSON.toJSONStringWithDateFormat(updateMap, ToolUtil.DATE_FORMAT));
+        JSONObject eJson = new JSONObject();
         Object value;
         for (EsColumnHandler esColumnHandler : this.columnHandlerList) {
-            value = updateMap.get(esColumnHandler.getName());
+            value = tJson.get(esColumnHandler.getFieldName());
             if (value != null) {
-                if (esColumnHandler.getColumnType().equals(EsColumnType.DATE)) {
-                    value = ToolUtil.format((Date) value);
-                }
-                tJson.put(esColumnHandler.getName(), value);
+                eJson.put(esColumnHandler.getColumnName(), value);
             }
         }
+        //不更新时间戳
+        eJson.remove(TIMESTAMP_COLUMN_NAME);
         //
-        if (tJson.isEmpty() == false) {
+        if (eJson.isEmpty() == false) {
             JSONObject requestJson = new JSONObject();
-            requestJson.put("doc", tJson);
+            requestJson.put("doc", eJson);
             String path = this.getUpdateDocPath(keyValue);
             try {
                 Request request = new Request("POST", path);
@@ -192,12 +189,12 @@ public class EsEntityDaoImpl<T> extends AbstractEsDao<T> implements EsEntityDao<
     @Override
     public void upsert(T t)
     {
-        JSONObject tJson = JSON.parseObject(JSON.toJSONStringWithDateFormat(t, ToolUtil.DATE_FORMAT));
-        String keyValue = tJson.getString(this.keyHandler.getName());
+        JSONObject eJson = this.t2e(t);
+        String keyValue = eJson.getString(this.keyHandler.getName());
         if (keyValue == null || keyValue.isEmpty()) {
             if (this.keyHandler.isAuto()) {
                 keyValue = ToolUtil.getAutomicId();
-                tJson.put(this.keyHandler.getName(), keyValue);
+                eJson.put(this.keyHandler.getName(), keyValue);
                 this.keyHandler.setValue(t, keyValue);
             }
         }
@@ -207,10 +204,10 @@ public class EsEntityDaoImpl<T> extends AbstractEsDao<T> implements EsEntityDao<
         }
         //时间戳
         Date timestamp = new Date();
-        tJson.put(this.timestampName, ToolUtil.format(timestamp));
+        eJson.put(TIMESTAMP_COLUMN_NAME, ToolUtil.format(timestamp));
         //
         JSONObject requestJson = new JSONObject();
-        requestJson.put("doc", tJson);
+        requestJson.put("doc", eJson);
         requestJson.put("doc_as_upsert", true);
         String path = this.getUpdateDocPath(keyValue);
         try {
@@ -265,10 +262,8 @@ public class EsEntityDaoImpl<T> extends AbstractEsDao<T> implements EsEntityDao<
         JSONObject propertiesJson = new JSONObject();
         propertiesJson.put(this.keyHandler.getName(), this.keyHandler.getProperty());
         for (EsColumnHandler esColumnHandler : columnHandlerList) {
-            propertiesJson.put(esColumnHandler.getName(), esColumnHandler.getProperty());
+            propertiesJson.put(esColumnHandler.getColumnName(), esColumnHandler.getProperty());
         }
-        //增加时间戳
-        propertiesJson.put(this.timestampName, EsColumnHandler.getTimestampProperty());
         //7.x后include_type_name默认为false,不需要指定type,type="_doc"
         JSONObject mappingsJson = new JSONObject();
         mappingsJson.put("properties", propertiesJson);
@@ -305,7 +300,7 @@ public class EsEntityDaoImpl<T> extends AbstractEsDao<T> implements EsEntityDao<
             JSONObject propertiesJson = new JSONObject();
             propertiesJson.put(this.keyHandler.getName(), this.keyHandler.getProperty());
             for (EsColumnHandler esColumnHandler : columnHandlerList) {
-                propertiesJson.put(esColumnHandler.getName(), esColumnHandler.getProperty());
+                propertiesJson.put(esColumnHandler.getColumnName(), esColumnHandler.getProperty());
             }
             JSONObject requestJson = new JSONObject();
             requestJson.put("properties", propertiesJson);

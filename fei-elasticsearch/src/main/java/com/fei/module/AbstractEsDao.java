@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.util.TypeUtils;
+import com.fei.app.utils.ToolUtil;
 import com.fei.elasticsearch.index.query.QueryBuilder;
 import com.fei.elasticsearch.search.sort.SortBuilder;
 import java.io.IOException;
@@ -26,16 +27,29 @@ public abstract class AbstractEsDao<T>
 {
 
     protected final Logger logger = LoggerFactory.getLogger(EsContext.class);
+    protected final EsKeyHandler keyHandler;
     protected final List<EsColumnHandler> columnHandlerList;
     protected final Class<T> clazz;
     protected final String index;
-    protected final String timestampName = "@timestamp";
+
+    public AbstractEsDao(
+            String index,
+            EsKeyHandler keyHandler,
+            List<EsColumnHandler> columnHandlerList,
+            Class<T> clazz)
+    {
+        this.keyHandler = keyHandler;
+        this.columnHandlerList = columnHandlerList;
+        this.index = index;
+        this.clazz = clazz;
+    }
 
     public AbstractEsDao(
             String index,
             List<EsColumnHandler> columnHandlerList,
             Class<T> clazz)
     {
+        this.keyHandler = null;
         this.columnHandlerList = columnHandlerList;
         this.index = index;
         this.clazz = clazz;
@@ -55,6 +69,53 @@ public abstract class AbstractEsDao<T>
     {
         String path = "/" + index + "/_search";
         return path;
+    }
+
+    /**
+     * 实体对象转es表对象
+     *
+     * @param t
+     * @return
+     */
+    protected final JSONObject t2e(T t)
+    {
+        JSONObject tJson = JSON.parseObject(JSON.toJSONStringWithDateFormat(t, ToolUtil.DATE_FORMAT));
+        JSONObject eJson = new JSONObject();
+        Object value;
+        for (EsColumnHandler esColumnHandler : this.columnHandlerList) {
+            value = tJson.get(esColumnHandler.getFieldName());
+            eJson.put(esColumnHandler.getColumnName(), value);
+        }
+        if (this.keyHandler != null) {
+            value = tJson.get(this.keyHandler.getName());
+            eJson.put(this.keyHandler.getName(), value);
+        }
+        return eJson;
+    }
+
+    /**
+     * es表对象转实体
+     *
+     * @param eJson
+     * @return
+     */
+    protected final T e2t(JSONObject eJson)
+    {
+        JSONObject tJson = new JSONObject();
+        Object value;
+        for (EsColumnHandler esColumnHandler : this.columnHandlerList) {
+            value = eJson.get(esColumnHandler.getColumnName());
+            if (value == null) {
+                value = esColumnHandler.getDefaultValue();
+            }
+            tJson.put(esColumnHandler.getFieldName(), value);
+        }
+        if (this.keyHandler != null) {
+            value = eJson.get(this.keyHandler.getName());
+            tJson.put(this.keyHandler.getName(), value);
+        }
+        T t = TypeUtils.castToJavaBean(tJson, this.clazz);
+        return t;
     }
 
     public final int total()
@@ -80,15 +141,6 @@ public abstract class AbstractEsDao<T>
             throw new RuntimeException("unknown es error");
         }
         return result;
-    }
-
-    protected final void checkDefaultValue(JSONObject sourceJson)
-    {
-        for (EsColumnHandler esColumnHandler : columnHandlerList) {
-            if (sourceJson.containsKey(esColumnHandler.getName()) == false) {
-                sourceJson.put(esColumnHandler.getName(), esColumnHandler.getDefaultValue());
-            }
-        }
     }
 
     /**
@@ -123,15 +175,13 @@ public abstract class AbstractEsDao<T>
             JSONObject hitsJson = responseJson.getJSONObject("hits");
             JSONArray hitArray = hitsJson.getJSONArray("hits");
             JSONObject sourceJson;
-            JSONObject entityJson;
+            JSONObject eJson;
             T t;
             tList = new ArrayList(hitArray.size());
             for (int i = 0; i < hitArray.size(); i++) {
                 sourceJson = hitArray.getJSONObject(i);
-                entityJson = sourceJson.getJSONObject("_source");
-                //如果属性不存在,则赋值默认值
-                this.checkDefaultValue(entityJson);
-                t = TypeUtils.castToJavaBean(entityJson, this.clazz);
+                eJson = sourceJson.getJSONObject("_source");
+                t = this.e2t(eJson);
                 tList.add(t);
             }
         } catch (ResponseException ex) {
@@ -169,15 +219,13 @@ public abstract class AbstractEsDao<T>
             JSONObject hitsJson = responseJson.getJSONObject("hits");
             JSONArray hitArray = hitsJson.getJSONArray("hits");
             JSONObject sourceJson;
-            JSONObject entityJson;
+            JSONObject eJson;
             T t;
             tList = new ArrayList(hitArray.size());
             for (int i = 0; i < hitArray.size(); i++) {
                 sourceJson = hitArray.getJSONObject(i);
-                entityJson = sourceJson.getJSONObject("_source");
-                //如果属性不存在,则赋值默认值
-                this.checkDefaultValue(entityJson);
-                t = TypeUtils.castToJavaBean(entityJson, this.clazz);
+                eJson = sourceJson.getJSONObject("_source");
+                t = this.e2t(eJson);
                 tList.add(t);
             }
         } catch (ResponseException ex) {

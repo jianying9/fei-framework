@@ -1,6 +1,7 @@
 package com.fei.module;
 
 import com.alibaba.fastjson.JSONObject;
+import static com.fei.module.EsContext.TIMESTAMP_FIELD_NAME;
 
 /**
  *
@@ -9,24 +10,40 @@ import com.alibaba.fastjson.JSONObject;
 public class EsColumnHandler
 {
 
-    private final String name;
+    private final String fieldName;
+    
+    private final String columnName;
 
     private final EsColumnType columnType;
 
     private final Object defaultValue;
 
-    public EsColumnHandler(String name, EsColumnType columnType, Object defaultValue)
+    public EsColumnHandler(String filedName, EsColumnType columnType, Object defaultValue)
     {
-        this.name = name;
+        this.fieldName = filedName;
+        this.columnName = filedName;
         this.columnType = columnType;
         this.defaultValue = defaultValue;
     }
-
-    public String getName()
+    
+    public EsColumnHandler(String filedName, String columnName, EsColumnType columnType, Object defaultValue)
     {
-        return name;
+        this.fieldName = filedName;
+        this.columnName = columnName;
+        this.columnType = columnType;
+        this.defaultValue = defaultValue;
+    }
+    
+    public String getFieldName()
+    {
+        return fieldName;
     }
 
+    public String getColumnName()
+    {
+        return columnName;
+    }
+    
     public EsColumnType getColumnType()
     {
         return columnType;
@@ -41,8 +58,10 @@ public class EsColumnHandler
     {
         JSONObject propertyJson = new JSONObject();
         propertyJson.put("type", this.columnType.name().toLowerCase());
-        Object nullValue = this.getNullValue();
-        propertyJson.put("null_value", nullValue);
+        if(this.fieldName.equals(TIMESTAMP_FIELD_NAME) == false) {
+            Object nullValue = this.getNullValue();
+            propertyJson.put("null_value", nullValue);
+        }
         switch (this.columnType) {
             case TEXT:
                 propertyJson.put("analyzer", "ik_max_word");
@@ -84,15 +103,6 @@ public class EsColumnHandler
                 nullValue = "";
         } 
         return nullValue;
-    }
-    
-    
-    public static JSONObject getTimestampProperty()
-    {
-        JSONObject propertyJson = new JSONObject();
-        propertyJson.put("type", "date");
-        propertyJson.put("format", "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis");
-        return propertyJson;
     }
 
 }

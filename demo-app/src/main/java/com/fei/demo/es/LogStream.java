@@ -2,7 +2,6 @@ package com.fei.demo.es;
 
 import com.fei.annotations.elasticsearch.EsColumn;
 import com.fei.annotations.elasticsearch.EsStream;
-import java.util.Date;
 
 /**
  *
@@ -17,8 +16,5 @@ public class LogStream
 
     @EsColumn(desc = "姓名")
     public String userName;
-
-    @EsColumn(desc = "创建时间")
-    public Date createTime;
 
 }

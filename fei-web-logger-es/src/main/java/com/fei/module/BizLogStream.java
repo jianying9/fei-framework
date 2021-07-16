@@ -1,9 +1,7 @@
 package com.fei.module;
 
 import com.fei.annotations.elasticsearch.EsColumn;
-import com.fei.annotations.elasticsearch.EsKey;
 import com.fei.annotations.elasticsearch.EsStream;
-import java.util.Date;
 
 /**
  *
@@ -12,9 +10,6 @@ import java.util.Date;
 @EsStream
 public class BizLogStream
 {
-
-    @EsKey(desc = "id", auto = true)
-    public String logId;
 
     @EsColumn(desc = "路由")
     public String route;
@@ -33,8 +28,5 @@ public class BizLogStream
 
     @EsColumn(desc = "响应内容", analyzer = true)
     public String responseBody;
-
-    @EsColumn(desc = "记录时间")
-    public Date createTime;
 
 }
