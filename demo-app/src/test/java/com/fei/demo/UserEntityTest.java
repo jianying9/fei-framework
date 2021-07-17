@@ -86,15 +86,15 @@ public class UserEntityTest
     public void update2()
     {
         Map<String, Object> updateMap = new HashMap();
-        updateMap.put("kid", true);
+        updateMap.put("kid", false);
         updateMap.put("createTime", new Date());
-        this.userEntityDao.update("A9Hmr2teRX6eQPmnVRtD6X", updateMap);
+        this.userEntityDao.update("qMkNVWNRZxwLBHVx4GU7Gf", updateMap);
     }
 
 //    @Test
     public void get()
     {
-        UserEntity userEntity = this.userEntityDao.get("vEhwHeejP5gx6DZPqxqetF");
+        UserEntity userEntity = this.userEntityDao.get("qMkNVWNRZxwLBHVx4GU7Gf");
         System.out.println(userEntity.userName);
     }
 

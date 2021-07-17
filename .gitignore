@@ -8,3 +8,15 @@
 /demo-app/nbproject/
 /elasticsearch/target/
 /web/nbproject/
+/dev-ops/
+/dev-ops-app/target/
+/fei-app-maven-plugin/target/
+/fei-app/nbproject/
+/fei-app/target/
+/fei-web/target/
+/fei-web/nbproject/
+/fei-elasticsearch/target/
+/fei-jetty-embed/target/
+/fei-annotations/target/
+/fei-logger/target/
+/fei-web-logger-es/target/

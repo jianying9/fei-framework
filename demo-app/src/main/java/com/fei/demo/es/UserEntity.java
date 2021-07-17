@@ -4,6 +4,7 @@ import com.fei.annotations.elasticsearch.EsColumn;
 import com.fei.annotations.elasticsearch.EsEntity;
 import com.fei.annotations.elasticsearch.EsKey;
 import java.util.Date;
+import java.util.List;
 
 /**
  *

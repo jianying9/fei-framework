@@ -7,7 +7,17 @@ package com.fei.web.router;
 public class BizContext
 {
 
+    //接口
     private final String route;
+
+    //用户id
+    private String userId;
+
+    //用户
+    private String userName;
+
+    //业务分组追踪id(微服务垮服务器执行追踪)
+    private String groupId = "";
 
     //接口执行开始时间
     private long startTime = 0;
@@ -20,9 +30,6 @@ public class BizContext
 
     //control业务执行结束时间
     private long subEndTime = 0;
-
-    //业务分组追踪id(微服务垮服务器执行追踪)
-    private String groupId = "";
 
     public BizContext(String route)
     {
@@ -92,6 +99,26 @@ public class BizContext
     public long getSubProcessTime()
     {
         return this.subEndTime - this.subStartTime;
+    }
+
+    public String getUserId()
+    {
+        return userId;
+    }
+
+    void setUserId(String userId)
+    {
+        this.userId = userId;
+    }
+
+    public String getUserName()
+    {
+        return userName;
+    }
+
+    void setUserName(String userName)
+    {
+        this.userName = userName;
     }
 
 }

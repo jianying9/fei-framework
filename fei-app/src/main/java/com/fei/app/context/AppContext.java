@@ -28,6 +28,8 @@ public final class AppContext
 
     private String appName = "app";
     private String appPath = "/";
+    private String host = "";
+    private int port = 8080;
 
     public String getAppName()
     {
@@ -37,6 +39,26 @@ public final class AppContext
     public void setAppName(String appName)
     {
         this.appName = appName;
+    }
+
+    public String getHost()
+    {
+        return host;
+    }
+
+    public void setHost(String host)
+    {
+        this.host = host;
+    }
+
+    public int getPort()
+    {
+        return port;
+    }
+
+    public void setPort(int port)
+    {
+        this.port = port;
     }
 
     public String initAppPath()

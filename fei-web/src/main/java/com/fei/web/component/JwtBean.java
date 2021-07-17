@@ -69,6 +69,8 @@ public class JwtBean
             token.expired = false;
         } catch (TokenExpiredException e) {
             token.expired = true;
+            token.userId = "";
+            token.userName = "";
         } catch (JWTVerificationException e) {
             token = null;
         }
