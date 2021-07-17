@@ -1,7 +1,6 @@
 package com.fei.module;
 
 import com.alibaba.fastjson.JSONObject;
-import static com.fei.module.EsContext.TIMESTAMP_FIELD_NAME;
 
 /**
  *
@@ -58,10 +57,6 @@ public class EsColumnHandler
     {
         JSONObject propertyJson = new JSONObject();
         propertyJson.put("type", this.columnType.name().toLowerCase());
-        if(this.fieldName.equals(TIMESTAMP_FIELD_NAME) == false) {
-            Object nullValue = this.getNullValue();
-            propertyJson.put("null_value", nullValue);
-        }
         switch (this.columnType) {
             case TEXT:
                 propertyJson.put("analyzer", "ik_max_word");
@@ -77,32 +72,4 @@ public class EsColumnHandler
         }
         return propertyJson;
     }
-    
-    /**
-     * 创建mapping时处理null值,首次初始化后不能修改
-     * @return 
-     */
-    private Object getNullValue() {
-        Object nullValue;
-        switch(this.columnType) {
-            case LONG:
-            case DOUBLE:
-                nullValue = 0;
-                break;
-            case DATE:
-                nullValue = "2014-01-14 08:00:00";
-                break;
-            case TEXT:
-            case KEYWORD:
-                nullValue = "";
-                break;
-            case BOOLEAN:
-                nullValue = false;
-                break;
-            default:
-                nullValue = "";
-        } 
-        return nullValue;
-    }
-
 }

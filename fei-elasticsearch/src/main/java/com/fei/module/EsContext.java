@@ -331,10 +331,10 @@ public class EsContext implements ModuleContext
         EsColumnHandler timestampHandler = new EsColumnHandler(TIMESTAMP_FIELD_NAME, TIMESTAMP_COLUMN_NAME, EsColumnType.DATE, 0);
         columnHandlerList.add(timestampHandler);
         //实例化dao
-        EsStreamDao esEntityDao = new EsStreamDaoImpl(index, esStream.lifecycle(), columnHandlerList, clazz);
+        EsStreamDao esStreamDao = new EsStreamDaoImpl(index, esStream.lifecycle(), columnHandlerList, clazz);
         //注册到bean
         BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
-        beanContext.add(this.name, clazz.getName(), esEntityDao);
+        beanContext.add(this.name, clazz.getName(), esStreamDao);
     }
 
     private EsColumnType getColumnType(Class<?> clazz, Field field, EsColumn esColumn)
@@ -461,6 +461,12 @@ public class EsContext implements ModuleContext
     public RestClient getRestClient()
     {
         return restClient;
+    }
+    
+    public <B extends Object> B get(Class<?> clazz)
+    {
+        BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
+        return beanContext.get(this.name, clazz);
     }
 
 }

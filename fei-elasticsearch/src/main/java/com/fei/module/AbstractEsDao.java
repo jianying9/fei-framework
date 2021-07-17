@@ -84,6 +84,9 @@ public abstract class AbstractEsDao<T>
         Object value;
         for (EsColumnHandler esColumnHandler : this.columnHandlerList) {
             value = tJson.get(esColumnHandler.getFieldName());
+            if (value == null) {
+                value = esColumnHandler.getDefaultValue();
+            }
             eJson.put(esColumnHandler.getColumnName(), value);
         }
         if (this.keyHandler != null) {
