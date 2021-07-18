@@ -8,7 +8,7 @@ import com.fei.jetty.embed.AppServer;
  *
  * @author jianying9
  */
-@BootApp("dev-ops")
+@BootApp("devops")
 public class AppMain
 {
 

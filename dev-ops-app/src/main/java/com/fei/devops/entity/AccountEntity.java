@@ -29,7 +29,7 @@ public class AccountEntity
     @EsColumn(desc = "是否启用")
     public boolean enabled;
 
-    @EsColumn(desc = "创建时间")
-    public Date createTime;
+    @EsColumn(desc = "时间戳")
+    public Date timestamp;
 
 }

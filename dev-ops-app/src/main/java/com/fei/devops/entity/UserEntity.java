@@ -23,7 +23,7 @@ public class UserEntity
     @EsColumn(desc = "是否管理员")
     public boolean admin;
 
-    @EsColumn(desc = "创建时间")
-    public Date createTime;
+    @EsColumn(desc = "时间戳")
+    public Date timestamp;
 
 }

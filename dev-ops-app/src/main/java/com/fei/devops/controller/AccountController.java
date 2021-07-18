@@ -30,18 +30,7 @@ public class AccountController
     @Resource
     private JwtBean jwtBean;
 
-    public static class LoginD
-    {
-
-        @RequestParam(desc = "账号")
-        public String account;
-
-        @RequestParam(desc = "密码")
-        public String password;
-
-    }
-
-    public static class AuthV
+    public static class AuthView
     {
 
         @ResponseParam(desc = "auth的jwt信息")
@@ -55,33 +44,37 @@ public class AccountController
     /**
      * 登录
      *
-     * @param loginD
+     * @param account
+     * @param password
      * @return
      * @throws BizException
      */
     @RequestMapping(value = "/login", desc = "账号登录")
-    public AuthV login(LoginD loginD) throws BizException
+    public AuthView login(
+            @RequestParam(desc = "账号") String account,
+            @RequestParam(desc = "密码") String password
+    ) throws BizException
     {
-        AccountEntity accountEntity = this.accountEntityDao.get(loginD.account);
+        AccountEntity accountEntity = this.accountEntityDao.get(account);
         if (accountEntity == null || accountEntity.enabled == false) {
             //账号不存在
             throw new BizException("account_error", "账号不存在");
-        } else if (accountEntity.password.equals(loginD.password) == false) {
+        } else if (accountEntity.password.equals(password) == false) {
             //密码错误
             throw new BizException("password_error", "密码错误");
         } else {
             //登录成功,生成token
-            AuthV authV = new AuthV();
-            authV.auth = this.jwtBean.createToken(accountEntity.userId, accountEntity.userName);
+            AuthView authView = new AuthView();
+            authView.auth = this.jwtBean.createToken(accountEntity.userId, accountEntity.userName);
             //刷新token30有效
             long time = System.currentTimeMillis() + 3600000 * 24 * 30;
             Date refreshExpireTime = new Date(time);
-            authV.refreshAuth = this.jwtBean.createToken(accountEntity.userId, accountEntity.userName, refreshExpireTime);
-            return authV;
+            authView.refreshAuth = this.jwtBean.createToken(accountEntity.userId, accountEntity.userName, refreshExpireTime);
+            return authView;
         }
     }
 
-    public static class SessionV
+    public static class SessionView
     {
 
         @ResponseParam(desc = "用户id")
@@ -102,22 +95,21 @@ public class AccountController
      * @return
      */
     @RequestMapping(value = "/get", auth = true, desc = "获取当前登录信息")
-    public SessionV get(Session session)
+    public SessionView get(Session session)
     {
-        SessionV sessionDto = ToolUtil.copy(session, SessionV.class);
+        SessionView sessionDto = ToolUtil.copy(session, SessionView.class);
         return sessionDto;
     }
 
-    public static class RefreshD
-    {
-
-        @RequestParam(desc = "刷新请求token")
-        public String refreshToken;
-
-    }
-
+    /**
+     * 通过refreshAuth获得新的auth
+     *
+     * @param refreshAuth
+     * @return
+     * @throws BizException
+     */
     @RequestMapping(value = "/refresh", desc = "通过refreshAuth重新获取auth")
-    public String refresh(
+    public AuthView refresh(
             @RequestParam(desc = "刷新请求token") String refreshAuth
     ) throws BizException
     {
@@ -129,8 +121,10 @@ public class AccountController
             //过期
             throw new BizException(Response.FAILED, "用户信息已过期");
         } else {
+            AuthView authView = new AuthView();
             //登录成功,生成token
-            return this.jwtBean.createToken(token.userId, token.userName);
+            authView.auth = this.jwtBean.createToken(token.userId, token.userName);
+            return authView;
         }
     }
 }
