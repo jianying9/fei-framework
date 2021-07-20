@@ -17,7 +17,7 @@ public class AppMain
     public static void main(String[] args) throws Exception
     {
         AppServer appServer = new AppServer(AppMain.class, args);
-        appServer.start();
+        appServer.setPort(8090).start();
     }
 
 }

@@ -27,7 +27,6 @@ public final class AppContext
     private boolean debug = false;
 
     private String appName = "app";
-    private String appPath = "/";
     private String host = "";
     private int port = 8080;
 
@@ -59,28 +58,6 @@ public final class AppContext
     public void setPort(int port)
     {
         this.port = port;
-    }
-
-    public String initAppPath()
-    {
-        //初始化当前应用目录
-        this.appPath = new File("").getAbsolutePath();
-        //如果是maven运行环境则根目录定位到target
-        String targetPath = appPath + "/target";
-        File targetDir = new File(targetPath);
-        if (targetDir.exists()) {
-            String buildName = appPath.substring(appPath.lastIndexOf("/") + 1);
-            appPath = targetPath + "/" + buildName;
-        }
-        //
-        //设置环境变量,用于日志对象初始化配置
-        System.setProperty("AppPath", appPath);
-        return appPath;
-    }
-
-    public String getAppPath()
-    {
-        return this.appPath;
     }
 
     public boolean isReady()

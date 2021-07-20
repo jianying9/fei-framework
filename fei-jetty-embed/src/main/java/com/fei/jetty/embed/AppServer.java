@@ -81,33 +81,42 @@ public class AppServer
         }
         BootApp bootApp = mainClass.getAnnotation(BootApp.class);
         String appName = bootApp.value();
-        //框架初始化
-        AppContext.INSTANCE.addScanPackage(mainClass);
-        AppContext.INSTANCE.setAppName(appName);
-        Map<String, String> parameterMap = ToolUtil.getAppParams(appName);
-        AppContextBuilder appContextBuilder = new AppContextBuilder(parameterMap);
-        appContextBuilder.build();
-        String appPath = AppContext.INSTANCE.initAppPath();
-        this.logger = LoggerFactory.getLogger(AppServer.class);
-        logger.info("app目录:{}", appPath);
-        //
-        this.servletList.add(AppServlet.class);
-    }
-
-    private void initDir()
-    {
+        //appPath
+        String appPath = new File("").getAbsolutePath();
+        //如果是maven运行环境则根目录定位到target
+        String targetPath = appPath + "/target";
+        File targetDir = new File(targetPath);
+        if (targetDir.exists()) {
+            String buildName = appPath.substring(appPath.lastIndexOf("/") + 1);
+            appPath = targetPath + "/" + buildName;
+        }
+        //设置环境变量,用于日志对象初始化配置,logback.xml使用
+        System.setProperty("app.path", appPath);
+        System.setProperty("app.name", appName);
+        //初始化目录
         //webapps   web服务目录
-        webappsPath = AppContext.INSTANCE.getAppPath() + "/webapps";
+        webappsPath = appPath + "/webapps";
         this.checkDir(webappsPath);
-        logger.info("web应用目录:{}", webappsPath);
         //webapps/logs  日志web应用目录
         logsWebappPath = webappsPath + "/logs";
         this.checkDir(logsWebappPath);
-        logger.info("日志web应用目录:{}", logsWebappPath);
         //webapps/appName
-        defaultWebappPath = webappsPath + "/" + AppContext.INSTANCE.getAppName();
+        defaultWebappPath = webappsPath + "/" + appName;
         this.checkDir(defaultWebappPath);
+        //日志初始化
+        this.logger = LoggerFactory.getLogger(AppServer.class);
+        logger.info("app目录:{}", appPath);
+        logger.info("web应用目录:{}", webappsPath);
+        logger.info("日志web应用目录:{}", logsWebappPath);
         logger.info("默认web应用目录:{}", defaultWebappPath);
+        //框架初始化
+        AppContext.INSTANCE.setAppName(appName);
+        AppContext.INSTANCE.addScanPackage(mainClass);
+        Map<String, String> parameterMap = ToolUtil.getAppParams(appName);
+        AppContextBuilder appContextBuilder = new AppContextBuilder(parameterMap);
+        appContextBuilder.build();
+        //
+        this.servletList.add(AppServlet.class);
     }
 
     private void checkDir(String path)
@@ -247,8 +256,6 @@ public class AppServer
 
     public void start()
     {
-        //初始化目录
-        this.initDir();
         //创建server
         final Server server = new Server();
         //监听端口

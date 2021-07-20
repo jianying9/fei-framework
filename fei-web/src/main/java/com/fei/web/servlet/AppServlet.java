@@ -59,7 +59,6 @@ public class AppServlet extends HttpServlet
         } else {
             Router router = RouterContext.INSTANCE.get(route);
             if (router == null) {
-
                 //route不存在
                 JSONObject output = Response.createNotfound(route);
                 this.toWrite(response, output.toJSONString());
@@ -67,7 +66,7 @@ public class AppServlet extends HttpServlet
                 //读取输入数据
                 String contentType = request.getContentType();
                 JSONObject input = null;
-                if (contentType.equals("application/json")) {
+                if (contentType != null && contentType.equals("application/json")) {
                     // 读取json
                     BufferedReader br = new BufferedReader(new InputStreamReader(request.getInputStream(), "utf-8"));
                     String line;
