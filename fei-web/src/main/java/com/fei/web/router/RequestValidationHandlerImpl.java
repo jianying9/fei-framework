@@ -32,7 +32,7 @@ public class RequestValidationHandlerImpl implements RouteHandler
         JSONObject data = request.getData();
         Object childValue;
         ValidationHandler validationHandler;
-        String result = "";
+        //丢弃没有定义的参数
         Set<String> keySet = new HashSet();
         keySet.addAll(data.keySet());
         for (String key : keySet) {
@@ -40,12 +40,16 @@ public class RequestValidationHandlerImpl implements RouteHandler
             if (validationHandler == null) {
                 //没有定义,丢弃
                 data.remove(key);
-            } else {
-                childValue = data.get(key);
-                result = validationHandler.validate(childValue);
-                if (result.isEmpty() == false) {
-                    break;
-                }
+            }
+        }
+        //验证
+        String result = "";
+        for (Map.Entry<String, ValidationHandler> entry : this.validationHandlerMap.entrySet()) {
+            childValue = data.get(entry.getKey());
+            validationHandler = entry.getValue();
+            result = validationHandler.validate(childValue);
+            if (result.isEmpty() == false) {
+                break;
             }
         }
         if (result.isEmpty()) {
