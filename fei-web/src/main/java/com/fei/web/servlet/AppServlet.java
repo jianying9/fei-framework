@@ -50,6 +50,8 @@ public class AppServlet extends HttpServlet
     {
         //跨域设置
         response.addHeader("Access-Control-Allow-Origin", "*");
+        response.addHeader("Access-Control-Allow-Methods", "*");
+        response.addHeader("Access-Control-Allow-Headers", "authorization,content-type");
         //
         String route = request.getPathInfo();
         if (route.isEmpty() || route.equals("/")) {
@@ -66,7 +68,7 @@ public class AppServlet extends HttpServlet
                 //读取输入数据
                 String contentType = request.getContentType();
                 JSONObject input = null;
-                if (contentType != null && contentType.equals("application/json")) {
+                if (contentType != null && contentType.contains("application/json")) {
                     // 读取json
                     BufferedReader br = new BufferedReader(new InputStreamReader(request.getInputStream(), "utf-8"));
                     String line;
@@ -75,7 +77,7 @@ public class AppServlet extends HttpServlet
                         sb.append(line);
                     }
                     try {
-                        Object obj = JSON.parse(line);
+                        Object obj = JSON.parse(sb.toString());
                         if (obj instanceof JSONObject) {
                             input = (JSONObject) obj;
                         }
@@ -123,6 +125,8 @@ public class AppServlet extends HttpServlet
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
         response.addHeader("Access-Control-Allow-Origin", "*");
+        response.addHeader("Access-Control-Allow-Methods", "*");
+        response.addHeader("Access-Control-Allow-Headers", "authorization,content-type");
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
