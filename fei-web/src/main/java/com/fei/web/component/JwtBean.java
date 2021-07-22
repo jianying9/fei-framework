@@ -8,6 +8,7 @@ import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.impl.PublicClaims;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fei.annotations.component.Component;
+import com.fei.app.utils.ToolUtil;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class JwtBean
 
     public String createToken(String userId, String userName)
     {
-        Date expireTime = new Date(System.currentTimeMillis() + this.timeToLive * 1000);
+        Date expireTime = new Date(System.currentTimeMillis() + this.timeToLive * 1000l);
         return this.createToken(userId, userName, expireTime);
     }
 

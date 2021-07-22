@@ -113,7 +113,7 @@ public class AppServlet extends HttpServlet
     private void toWrite(HttpServletResponse response, String jsonStr)
     {
         response.setCharacterEncoding("utf-8");
-        response.setContentType("application/x-javascript");
+        response.setContentType("application/json");
         try ( PrintWriter printWriter = response.getWriter()) {
             printWriter.write(jsonStr);
             printWriter.flush();
