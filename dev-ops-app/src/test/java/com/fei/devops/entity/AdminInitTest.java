@@ -20,6 +20,8 @@ public class AdminInitTest
 
     public AdminInitTest()
     {
+        //admin
+        //aZyav83Ne74KwKFGma2PxW
     }
 
     @Resource
@@ -66,7 +68,9 @@ public class AdminInitTest
         accountEntity.userId = userEntity.userId;
         accountEntity.userName = userEntity.userName;
         accountEntity.account = "admin";
-        accountEntity.password = ToolUtil.encryptByMd5(ToolUtil.getAutomicId());
+        String pwd = ToolUtil.getAutomicId();
+        System.out.println(pwd);
+        accountEntity.password = ToolUtil.encryptByMd5(pwd);
         accountEntity.enabled = true;
         this.accountEntityDao.insert(accountEntity);
     }

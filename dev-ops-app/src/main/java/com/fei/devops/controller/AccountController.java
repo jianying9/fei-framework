@@ -37,7 +37,7 @@ public class AccountController
         public String auth;
 
         @ResponseParam(desc = "更新auth的jwt信息")
-        public String refreshAuth;
+        public String refreshToken;
 
     }
 
@@ -66,10 +66,10 @@ public class AccountController
             //登录成功,生成token
             AuthView authView = new AuthView();
             authView.auth = this.jwtBean.createToken(accountEntity.userId, accountEntity.userName);
-            //刷新token30有效
-            long time = System.currentTimeMillis() + 3600000 * 24 * 30;
+            //刷新token30天有效
+            long time = System.currentTimeMillis() + 3600000l * 24l * 30l;
             Date refreshExpireTime = new Date(time);
-            authView.refreshAuth = this.jwtBean.createToken(accountEntity.userId, accountEntity.userName, refreshExpireTime);
+            authView.refreshToken = this.jwtBean.createToken(accountEntity.userId, accountEntity.userName, refreshExpireTime);
             return authView;
         }
     }
@@ -104,16 +104,16 @@ public class AccountController
     /**
      * 通过refreshAuth获得新的auth
      *
-     * @param refreshAuth
+     * @param refreshToken
      * @return
      * @throws BizException
      */
     @RequestMapping(value = "/refresh", desc = "通过refreshAuth重新获取auth")
     public AuthView refresh(
-            @RequestParam(desc = "刷新请求token") String refreshAuth
+            @RequestParam(desc = "刷新请求token") String refreshToken
     ) throws BizException
     {
-        Token token = this.jwtBean.verifyToken(refreshAuth);
+        Token token = this.jwtBean.verifyToken(refreshToken);
         if (token == null) {
             //验证失败
             throw new BizException(Response.FAILED, "用户校验失败");
