@@ -89,15 +89,18 @@ public class ControlHandlerImpl implements RouteHandler
                 response.setMsg(bizException.getMsg());
             } else {
                 response.setCode(Response.EXCEPTION);
+                response.setMsg(Response.EXCEPTION);
                 this.logger.error("exec route:{}, msg:{}", this.route, this.toString(), ex);
             }
         } catch (IllegalAccessException | IllegalArgumentException ex) {
             //反射异常
             response.setCode(Response.EXCEPTION);
+            response.setMsg(Response.EXCEPTION);
             this.logger.error("exec route:{}, msg:{}", this.route, this.toString(), ex);
         } catch (RuntimeException ex) {
             //运行时异常处理
             response.setCode(Response.EXCEPTION);
+            response.setMsg(Response.EXCEPTION);
             this.logger.error("exec route:{}, msg:{}", this.route, this.toString(), ex);
         }
         bizContext.setSubEndTime(System.currentTimeMillis());

@@ -27,10 +27,12 @@ public class AuthHandlerImpl implements RouteHandler
             //验证失败
             response = new Response(request.getRoute());
             response.setCode(Response.UNLOGIN);
+            response.setMsg(Response.UNLOGIN);
         } else if (token.expired) {
             //过期
             response = new Response(request.getRoute());
             response.setCode(Response.EXPIRED);
+            response.setMsg(Response.EXPIRED);
         } else {
             //验证通过
             response = this.nextHandler.processRequest(request);
