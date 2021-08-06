@@ -18,10 +18,10 @@ import org.junit.BeforeClass;
  *
  * @author jianying9
  */
-public class GitlabAdminComponentTest
+public class GitlabComponentTest
 {
 
-    public GitlabAdminComponentTest()
+    public GitlabComponentTest()
     {
     }
 
@@ -37,6 +37,9 @@ public class GitlabAdminComponentTest
     {
         resourceMock = new ResourceMock(AppMain.class);
     }
+    
+    //YsC7XXqmGb46XMjqqBnpxi
+    //jianying9
 
     @AfterClass
     public static void tearDownClass()
@@ -58,7 +61,7 @@ public class GitlabAdminComponentTest
     }
 
 //    @Test
-    public void searchUser() throws IOException
+    public void searchUser() throws IOException, BizException
     {
         List<GitlabUser> userList = this.gitlabComponent.searchUser(this.gitlabToken);
         for (GitlabUser user : userList) {
@@ -76,7 +79,7 @@ public class GitlabAdminComponentTest
     }
 
 //    @Test
-    public void getUser() throws IOException
+    public void getUser() throws IOException, BizException
     {
         GitlabUser user = this.gitlabComponent.getUser(this.gitlabToken, "8");
         if (user != null) {

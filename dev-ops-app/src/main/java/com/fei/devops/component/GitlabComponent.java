@@ -101,6 +101,28 @@ public class GitlabComponent
         return tList;
     }
 
+    private String getErrorMsg(HttpResponseException ex)
+    {
+        String errorMsg;
+        switch (ex.getStatusCode()) {
+            case 400:
+                errorMsg = "缺少必填参数";
+                break;
+            case 401:
+                errorMsg = "缺少auth";
+                break;
+            case 403:
+                errorMsg = "当前用户没有该权限";
+                break;
+            case 409:
+                errorMsg = "新增信息已经存在";
+                break;
+            default:
+                errorMsg = "未知错误";
+        }
+        return errorMsg;
+    }
+
     private HttpPost createHttpPost(String url)
     {
         return this.createHttpPost(url, null);
@@ -153,7 +175,7 @@ public class GitlabComponent
         try {
             responseBody = this.client.execute(request, responseHandler);
         } catch (HttpResponseException ex) {
-            throw new BizException("git_oauth_token_error", "oauth token获取异常");
+            throw new BizException("git_oauth_token_error", this.getErrorMsg(ex));
         }
         return this.parseObject(responseBody, GitlabToken.class);
     }
@@ -170,17 +192,23 @@ public class GitlabComponent
         public boolean isAdmin;
     }
 
-    public List<GitlabUser> searchUser(GitlabToken gitlabToken) throws IOException
+    public List<GitlabUser> searchUser(GitlabToken gitlabToken) throws IOException, BizException
     {
         String url = this.apiPath + "/users";
         HttpGet request = this.createHttpGet(url, gitlabToken);
         ResponseHandler<String> responseHandler = new BasicResponseHandler();
-        String responseBody = this.client.execute(request, responseHandler);
-        List<GitlabUser> userList = this.parseArray(responseBody, GitlabUser.class);
+        String responseBody;
+        List<GitlabUser> userList;
+        try {
+            responseBody = this.client.execute(request, responseHandler);
+            userList = this.parseArray(responseBody, GitlabUser.class);
+        } catch (HttpResponseException ex) {
+            throw new BizException("gitlab_search_user_error", this.getErrorMsg(ex));
+        }
         return userList;
     }
 
-    public GitlabUser getCurrentUser(GitlabToken gitlabToken) throws IOException
+    public GitlabUser getCurrentUser(GitlabToken gitlabToken) throws IOException, BizException
     {
         GitlabUser user;
         String url = this.apiPath + "/user";
@@ -191,12 +219,12 @@ public class GitlabComponent
             responseBody = this.client.execute(request, responseHandler);
             user = this.parseObject(responseBody, GitlabUser.class);
         } catch (HttpResponseException ex) {
-            user = null;
+            throw new BizException("gitlab_get_user_error", this.getErrorMsg(ex));
         }
         return user;
     }
 
-    public GitlabUser getUser(GitlabToken gitlabToken, String id) throws IOException
+    public GitlabUser getUser(GitlabToken gitlabToken, String id) throws IOException, BizException
     {
         GitlabUser user;
         String url = this.apiPath + "/users/" + id;
@@ -207,7 +235,7 @@ public class GitlabComponent
             responseBody = this.client.execute(request, responseHandler);
             user = this.parseObject(responseBody, GitlabUser.class);
         } catch (HttpResponseException ex) {
-            user = null;
+            throw new BizException("gitlab_get_user_error", this.getErrorMsg(ex));
         }
         return user;
     }
@@ -230,7 +258,7 @@ public class GitlabComponent
         try {
             responseBody = this.client.execute(request, responseHandler);
         } catch (HttpResponseException ex) {
-            throw new BizException("git_user_conflict", "账号或邮箱已经被使用");
+            throw new BizException("gitlab_add_user_error", this.getErrorMsg(ex));
         }
         return this.parseObject(responseBody, GitlabUser.class);
     }
