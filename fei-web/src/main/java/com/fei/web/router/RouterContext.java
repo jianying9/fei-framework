@@ -7,7 +7,7 @@ import com.fei.web.router.validation.ArrayHandlerImpl;
 import com.fei.web.router.validation.BooleanHandlerImpl;
 import com.fei.web.router.validation.NumberHandlerImpl;
 import com.fei.web.router.validation.IntegerHandlerImpl;
-import com.fei.web.router.validation.NotNullHandlerImpl;
+import com.fei.web.router.validation.RequiredHandlerImpl;
 import com.fei.web.router.validation.ObjectHandlerImpl;
 import com.fei.web.router.validation.RegexHandlerImpl;
 import com.fei.web.router.validation.StringHandlerImpl;
@@ -167,7 +167,7 @@ public class RouterContext
         }
         //是否需要非空判断
         if (requestParam.required()) {
-            validationHandler = new NotNullHandlerImpl(validationHandler);
+            validationHandler = new RequiredHandlerImpl(validationHandler);
         }
         return validationHandler;
     }
@@ -192,7 +192,7 @@ public class RouterContext
         validationHandler = new ArrayHandlerImpl(validationHandler);
         //是否需要非空判断
         if (requestParam.required()) {
-            validationHandler = new NotNullHandlerImpl(validationHandler);
+            validationHandler = new RequiredHandlerImpl(validationHandler);
         }
         return validationHandler;
     }
@@ -237,7 +237,7 @@ public class RouterContext
                             validationHandler = new ObjectHandlerImpl(field.getName(), paramName, subValidationHandlerMap);
                             //是否需要非空判断
                             if (requestParam.required()) {
-                                validationHandler = new NotNullHandlerImpl(validationHandler);
+                                validationHandler = new RequiredHandlerImpl(validationHandler);
                             }
                         }
                         validationHandlerMap.put(validationHandler.getKey(), validationHandler);

@@ -5,16 +5,16 @@ package com.fei.web.router.validation;
  *
  * @author jianying9
  */
-public class NotNullHandlerImpl implements ValidationHandler
+public class RequiredHandlerImpl implements ValidationHandler
 {
 
     private final String errorMsg;
 
     private final ValidationHandler typeValidationHandler;
 
-    public NotNullHandlerImpl(ValidationHandler typeValidationHandler)
+    public RequiredHandlerImpl(ValidationHandler typeValidationHandler)
     {
-        this.errorMsg = typeValidationHandler.getName() + " can't be null";
+        this.errorMsg = typeValidationHandler.getName() + " can't be null or empty";
         this.typeValidationHandler = typeValidationHandler;
     }
 
@@ -22,7 +22,7 @@ public class NotNullHandlerImpl implements ValidationHandler
     public final String validate(Object value)
     {
         String result;
-        if (value != null) {
+        if (value != null && value.toString().isEmpty() == false) {
             result = this.typeValidationHandler.validate(value);
         } else {
             result = this.errorMsg;
