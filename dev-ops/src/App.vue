@@ -3,12 +3,21 @@
     <v-navigation-drawer permanent app>
       <v-list>
         <v-list-item>
-          <v-list-item-content>
-            <v-list-item-title class="text-h6">
-              {{ user.name }}
-            </v-list-item-title>
-            <v-list-item-subtitle>{{ user.email }}</v-list-item-subtitle>
-          </v-list-item-content>
+          <v-list-item-title class="text-h6">
+            {{ user.name }}
+          </v-list-item-title>
+          <v-menu left offset-y>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn icon v-bind="attrs" v-on="on">
+                <v-icon>mdi-dots-vertical</v-icon>
+              </v-btn>
+            </template>
+            <v-list>
+              <v-list-item link v-for="item in moreItemArray" :key="item.title" @click="selectMoreItem(item)">
+                <v-list-item-title>{{ item.title }}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
         </v-list-item>
       </v-list>
 
@@ -40,8 +49,18 @@
         {{ errorDialog.msg }}
       </v-alert>
     </v-dialog>
-    <v-dialog v-model="processDialog.show" persistent hide-overlay fullscreen transition=false>
-      <v-progress-linear indeterminate color="green" class="mb-0"></v-progress-linear>
+    <v-dialog
+      v-model="processDialog.show"
+      persistent
+      hide-overlay
+      fullscreen
+      transition="false"
+    >
+      <v-progress-linear
+        indeterminate
+        color="green"
+        class="mb-0"
+      ></v-progress-linear>
     </v-dialog>
   </v-app>
 </template>
@@ -67,6 +86,13 @@ export default {
       email: "",
       isAdmin: false,
     },
+    moreItemArray: [
+      {
+        route: "",
+        href: "https://a.zlw333.com/gitlab/-/profile/password/edit",
+        title: "修改密码",
+      },
+    ],
     itemArray: [
       {
         color: "blue-grey darken-2",
@@ -123,6 +149,13 @@ export default {
         }
       }
       this.$router.push(item.route);
+    },
+    selectMoreItem: function (item) {
+      if(item.route) {
+        this.$router.push(item.route);
+      } else if(item.href) {
+        window.location.href = item.href;
+      }
     },
   },
 };
