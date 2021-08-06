@@ -38,19 +38,28 @@ const http = {
             if (bizData.code === 'success') {
                 //刷新成功,更新auth
                 global.setAuth(bizData.data.auth);
+                //重新获取业务
+                response = await instance({
+                    url: url,
+                    method: 'post',
+                    headers: {
+                        'Authorization': global.getAuth()
+                    },
+                    data: data
+                });
+                bizData = response.data;
+            } else {
+                bizData = {
+                    route: global.api.account_refresh,
+                    code: 'unlogin',
+                    msg: ''
+                };
             }
-            //重新获取业务
-            response = await instance({
-                url: url,
-                method: 'post',
-                headers: {
-                    'Authorization': global.getAuth()
-                },
-                data: data
-            });
-            bizData = response.data;
-        } else if (bizData.code === 'success') {
-            if (bizData.route === global.api.account_login) {
+        }
+        //业务结果
+        if (bizData.code === 'success') {
+            //成功
+            if (bizData.route === global.api.account_loginByGitlab) {
                 //登录成功,保存auth和refreshToken
                 global.setAuth(bizData.data.auth);
                 global.setRefreshToken(bizData.data.refreshToken);
@@ -58,10 +67,8 @@ const http = {
         } else {
             //请求失败处理
             this.interceptors._fail(bizData);
-            //中断原Promise后续执行
-            return new Promise(()=>{});
         }
-        return bizData.data;
+        return bizData;
     }
 };
 

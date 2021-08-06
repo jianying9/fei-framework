@@ -6,9 +6,20 @@ if (!window.localStorage) {
 const storage = window.localStorage;
 
 const api = {
-    account_login: '/account/login',
+    //账号
+    account_loginByGitlab: '/account/loginByGitlab',
     account_get: '/account/get',
     account_refresh: '/account/refresh',
+    //
+    user_search: '/user/search',
+    user_get: '/user/get',
+    user_add: '/user/add',
+    user_current: '/user/current',
+    //app
+    app_search: '/app/search',
+    app_get: '/app/get',
+    app_add: '/app/add',
+
 };
 
 const global = {
@@ -26,7 +37,6 @@ const global = {
     getRefreshToken: function () {
         return storage.refreshToken;
     }
-
 };
 
 export default global;

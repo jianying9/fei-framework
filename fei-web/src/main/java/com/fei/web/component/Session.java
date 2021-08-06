@@ -7,7 +7,7 @@ package com.fei.web.component;
 public class Session
 {
 
-    public String userId;
+    public String id;
 
-    public String userName;
+    public String name;
 }

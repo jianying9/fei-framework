@@ -9,10 +9,21 @@ VueRouter.prototype.push = function push(location) {
 Vue.use(VueRouter);
 
 const routes = [
+  { path: '/', redirect: '/home' },
   {
-    path: '/',
+    path: '/home',
     name: 'Home',
     component: () => import(/* webpackChunkName: "chunk" */ '../views/Home.vue')
+  },
+  {
+    path: '/user',
+    name: 'User',
+    component: () => import(/* webpackChunkName: "chunk" */ '../views/User.vue')
+  },
+  {
+    path: '/user/add',
+    name: 'UserAdd',
+    component: () => import(/* webpackChunkName: "chunk" */ '../views/UserAdd.vue')
   },
 ];
 

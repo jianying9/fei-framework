@@ -8,7 +8,6 @@ import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.impl.PublicClaims;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fei.annotations.component.Component;
-import com.fei.app.utils.ToolUtil;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,11 +25,9 @@ public class JwtBean
     private final Map<String, Object> header = new HashMap();
 
     //最大存活时间(秒)
-    private long timeToLive = 900;
+    private final long timeToLive = 900;
 
-    private String publicKey = "fei";
-
-    private String privateKey = "fei";
+    private final String privateKey = "fei";
 
     private final Algorithm algorithm = Algorithm.HMAC256(this.privateKey);
 
@@ -41,18 +38,18 @@ public class JwtBean
         this.header.put(PublicClaims.ALGORITHM, "HS256");
     }
 
-    public String createToken(String userId, String userName)
+    public String createToken(String id, String name)
     {
         Date expireTime = new Date(System.currentTimeMillis() + this.timeToLive * 1000l);
-        return this.createToken(userId, userName, expireTime);
+        return this.createToken(id, name, expireTime);
     }
 
-    public String createToken(String userId, String userName, Date expireTime)
+    public String createToken(String id, String name, Date expireTime)
     {
         return JWT.create()
                 .withHeader(header)
-                .withClaim("userId", userId)
-                .withClaim("userName", userName)
+                .withClaim("id", id)
+                .withClaim("name", name)
                 .withExpiresAt(expireTime)
                 .sign(algorithm);
     }
@@ -64,14 +61,14 @@ public class JwtBean
             JWTVerifier verifier = JWT.require(algorithm).build();
             DecodedJWT jwt = verifier.verify(auth);
             token.auth = auth;
-            token.userId = jwt.getClaim("userId").asString();
-            token.userName = jwt.getClaim("userName").asString();
+            token.id = jwt.getClaim("id").asString();
+            token.name = jwt.getClaim("name").asString();
             token.expireTime = jwt.getExpiresAt();
             token.expired = false;
         } catch (TokenExpiredException e) {
             token.expired = true;
-            token.userId = "";
-            token.userName = "";
+            token.id = "";
+            token.name = "";
         } catch (JWTVerificationException e) {
             token = null;
         }

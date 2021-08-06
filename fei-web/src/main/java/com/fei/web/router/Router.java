@@ -48,8 +48,8 @@ public class Router
         if (auth != null && auth.isEmpty() == false) {
             token = JwtBean.INSTANCE.verifyToken(auth);
             if(token != null) {
-                bizContext.setUserId(token.userId);
-                bizContext.setUserName(token.userName);
+                bizContext.setUserId(token.id);
+                bizContext.setUserName(token.name);
             }
         }
         Request request = new Request(bizContext, token, input);

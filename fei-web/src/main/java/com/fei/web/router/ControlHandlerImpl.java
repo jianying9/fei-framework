@@ -56,8 +56,8 @@ public class ControlHandlerImpl implements RouteHandler
                 Token token = request.getToken();
                 if (token != null && token.expired == false) {
                     session = new Session();
-                    session.userId = token.userId;
-                    session.userName = token.userName;
+                    session.id = token.id;
+                    session.name = token.name;
                 }
                 params[index] = session;
             } else if (paramClass == BizContext.class) {

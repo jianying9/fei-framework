@@ -5,14 +5,18 @@ import com.fei.annotations.web.Controller;
 import com.fei.annotations.web.RequestMapping;
 import com.fei.annotations.web.RequestParam;
 import com.fei.annotations.web.ResponseParam;
-import com.fei.devops.entity.AccountEntity;
 import com.fei.app.utils.ToolUtil;
+import com.fei.devops.component.GitlabComponent;
+import com.fei.devops.component.GitlabComponent.GitlabToken;
+import com.fei.devops.component.GitlabComponent.GitlabUser;
+import com.fei.devops.entity.GitlabTokenEntity;
 import com.fei.module.EsEntityDao;
 import com.fei.web.component.JwtBean;
 import com.fei.web.component.Session;
 import com.fei.web.component.Token;
 import com.fei.web.response.Response;
 import com.fei.web.router.BizException;
+import java.io.IOException;
 import java.util.Date;
 
 /**
@@ -25,7 +29,10 @@ public class AccountController
 {
 
     @Resource
-    private EsEntityDao<AccountEntity> accountEntityDao;
+    private GitlabComponent gitlabComponent;
+
+    @Resource
+    private EsEntityDao<GitlabTokenEntity> gitlabTokenEntityDao;
 
     @Resource
     private JwtBean jwtBean;
@@ -44,47 +51,43 @@ public class AccountController
     /**
      * 登录
      *
-     * @param account
-     * @param password
+     * @param code
+     * @param redirectUri
      * @return
      * @throws BizException
      */
-    @RequestMapping(value = "/login", desc = "账号登录")
+    @RequestMapping(value = "/loginByGitlab", desc = "通过gitlab的auth code登录")
     public AuthView login(
-            @RequestParam(desc = "账号") String account,
-            @RequestParam(desc = "密码") String password
-    ) throws BizException
+            @RequestParam(desc = "code") String code,
+            @RequestParam(desc = "重定向uri") String redirectUri
+    ) throws BizException, IOException
     {
-        AccountEntity accountEntity = this.accountEntityDao.get(account);
-        if (accountEntity == null || accountEntity.enabled == false) {
-            //账号不存在
-            throw new BizException("account_error", "账号不存在");
-        } else if (accountEntity.password.equals(password) == false) {
-            //密码错误
-            throw new BizException("password_error", "密码错误");
-        } else {
-            //登录成功,生成token
-            AuthView authView = new AuthView();
-            authView.auth = this.jwtBean.createToken(accountEntity.userId, accountEntity.userName);
-            //刷新token30天有效
-            long time = System.currentTimeMillis() + 3600000l * 24l * 30l;
-            Date refreshExpireTime = new Date(time);
-            authView.refreshToken = this.jwtBean.createToken(accountEntity.userId, accountEntity.userName, refreshExpireTime);
-            return authView;
-        }
+        //通过code获取token
+        GitlabToken gitlabToken = this.gitlabComponent.getToken(code, redirectUri);
+        //获取当前用户信息
+        GitlabUser gitlabUser = this.gitlabComponent.getCurrentUser(gitlabToken);
+        //保存token
+        GitlabTokenEntity gitlabTokenEntity = ToolUtil.copy(gitlabToken, GitlabTokenEntity.class);
+        gitlabTokenEntity.id = gitlabUser.id;
+        this.gitlabTokenEntityDao.insert(gitlabTokenEntity);
+        //登录成功,生成jwt token
+        AuthView authView = new AuthView();
+        authView.auth = this.jwtBean.createToken(gitlabUser.id, gitlabUser.name);
+        //刷新token30天有效
+        long time = System.currentTimeMillis() + 3600000l * 24l * 30l;
+        Date refreshExpireTime = new Date(time);
+        authView.refreshToken = this.jwtBean.createToken(gitlabUser.id, gitlabUser.name, refreshExpireTime);
+        return authView;
     }
 
     public static class SessionView
     {
 
         @ResponseParam(desc = "用户id")
-        public String userId;
+        public String id;
 
         @ResponseParam(desc = "用户")
-        public String userName;
-
-        @ResponseParam(desc = "到期时间")
-        public Date expireDate;
+        public String name;
 
     }
 
@@ -123,7 +126,7 @@ public class AccountController
         } else {
             AuthView authView = new AuthView();
             //登录成功,生成token
-            authView.auth = this.jwtBean.createToken(token.userId, token.userName);
+            authView.auth = this.jwtBean.createToken(token.id, token.name);
             return authView;
         }
     }

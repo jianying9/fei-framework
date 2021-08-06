@@ -3,16 +3,16 @@ package com.fei.web.component;
 import java.util.Date;
 
 /**
- *
+ * token
  * @author jianying9
  */
 public class Token
 {
     public String auth;
 
-    public String userId;
+    public String id;
 
-    public String userName;
+    public String name;
 
     public Date expireTime;
 

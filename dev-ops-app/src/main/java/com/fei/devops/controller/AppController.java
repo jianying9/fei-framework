@@ -47,7 +47,7 @@ public class AppController
     public static class AppSearchView
     {
 
-        @ResponseParam(desc = "创建时间")
+        @ResponseParam(desc = "app集合")
         public List<AppView> appArray = new ArrayList();
 
     }
@@ -106,7 +106,7 @@ public class AppController
      * @return
      * @throws BizException
      */
-    @RequestMapping(value = "/add", desc = "通过refreshAuth重新获取auth")
+    @RequestMapping(value = "/add", desc = "新增app")
     public AppView add(
             @RequestParam(desc = "应用名称") String appName,
             @RequestParam(desc = "应用描述") String appDesc

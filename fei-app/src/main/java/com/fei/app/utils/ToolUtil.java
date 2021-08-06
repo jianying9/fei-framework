@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -171,14 +172,15 @@ public final class ToolUtil
         String str = sum.toString(16);
         return str;
     }
-    
+
     /**
      * byte转16进制字符
      *
      * @param textByte
      * @return
      */
-    public static String byteToHexString(byte[] textByte) {
+    public static String byteToHexString(byte[] textByte)
+    {
         StringBuilder hexString = new StringBuilder(32);
         int byteValue;
         for (byte bt : textByte) {
@@ -198,7 +200,8 @@ public final class ToolUtil
      * @param hexString
      * @return
      */
-    public static byte[] hexStringToByte(String hexString) {
+    public static byte[] hexStringToByte(String hexString)
+    {
         byte[] result = new byte[hexString.length() / 2];
         String str;
         int byteValue;
@@ -209,14 +212,15 @@ public final class ToolUtil
         }
         return result;
     }
-    
+
     /**
      * 用MD5加密
      *
      * @param str
      * @return
      */
-    public static String encryptByMd5(String str) {
+    public static String encryptByMd5(String str)
+    {
         String result = "";
         try {
             MessageDigest algorithm = MessageDigest.getInstance("MD5");
@@ -226,6 +230,33 @@ public final class ToolUtil
         } catch (NoSuchAlgorithmException e) {
         }
         return result;
+    }
+
+    public static String encryptBySHA256(String str)
+    {
+        String result = "";
+        try {
+            MessageDigest algorithm = MessageDigest.getInstance("SHA-256");
+            algorithm.reset();
+            byte[] messageDigest = algorithm.digest(str.getBytes());
+            result = byteToHexString(messageDigest);
+        } catch (NoSuchAlgorithmException e) {
+        }
+        return result;
+    }
+
+    public static String randomString(int targetStringLength)
+    {
+        int leftLimit = 48; // numeral '0'
+        int rightLimit = 122; // letter 'z'
+        Random random = new Random();
+
+        String generatedString = random.ints(leftLimit, rightLimit + 1)
+                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
+                .limit(targetStringLength)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+        return generatedString;
     }
 
     public static String format(Date date)
