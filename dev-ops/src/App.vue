@@ -29,10 +29,19 @@
     <v-main style="background: #c8ebdf">
       <router-view></router-view>
     </v-main>
-    <v-dialog v-model="dialog.show" max-width="300">
-      <v-alert style="margin: 0" border="left" colored-border type="error" elevation="2">
-        {{ dialog.msg }}
+    <v-dialog v-model="errorDialog.show" max-width="300">
+      <v-alert
+        style="margin: 0"
+        border="left"
+        colored-border
+        type="error"
+        elevation="2"
+      >
+        {{ errorDialog.msg }}
       </v-alert>
+    </v-dialog>
+    <v-dialog v-model="processDialog.show" persistent hide-overlay fullscreen transition=false>
+      <v-progress-linear indeterminate color="green" class="mb-0"></v-progress-linear>
     </v-dialog>
   </v-app>
 </template>
@@ -43,7 +52,11 @@ import http from "./assets/js/http.js";
 export default {
   name: "App",
   data: () => ({
-    dialog: {
+    errorDialog: {
+      show: false,
+      msg: "",
+    },
+    processDialog: {
       show: false,
       msg: "",
     },
@@ -70,14 +83,22 @@ export default {
     ],
   }),
   mounted: function () {
-    http.interceptors.use((bizData) => {
+    //通信遮罩处理
+    http.interceptors.before(() => {
+      this.processDialog.show = true;
+    });
+    http.interceptors.after(() => {
+      this.processDialog.show = false;
+    });
+    //通信异常结果处理
+    http.interceptors.fail((bizData) => {
       if (bizData.code === "unlogin") {
         //未登陆,跳转到登陆页面
         window.location.href = "/login.html";
       } else {
         //其它请求失败处理
-        this.dialog.msg = bizData.msg;
-        this.dialog.show = true;
+        this.errorDialog.msg = bizData.msg;
+        this.errorDialog.show = true;
       }
     });
 

@@ -11,11 +11,23 @@ const http = {
     interceptors: {
         _fail: function () {
         },
-        use: function (func) {
+        fail: function (func) {
             this._fail = func;
+        },
+        _before: function () {
+        },
+        before: function (func) {
+            this._before = func;
+        },
+        _after: function () {
+        },
+        after: function (func) {
+            this._after = func;
         }
     },
     post: async function (url, data) {
+        //开始通信
+        this.interceptors._before(url, data);
         let response = await instance({
             url: url,
             method: 'post',
@@ -56,6 +68,8 @@ const http = {
                 };
             }
         }
+        //通信结束
+        this.interceptors._after(url, data);
         //业务结果
         if (bizData.code === 'success') {
             //成功
@@ -68,6 +82,7 @@ const http = {
             //请求失败处理
             this.interceptors._fail(bizData);
         }
+
         return bizData;
     }
 };
