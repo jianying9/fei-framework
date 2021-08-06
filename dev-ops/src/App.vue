@@ -103,7 +103,7 @@ export default {
       {
         color: "blue-grey darken-2",
         icon: "mdi-account-multiple",
-        route: "/user",
+        route: "/user/list",
         title: "用户",
       },
     ],
