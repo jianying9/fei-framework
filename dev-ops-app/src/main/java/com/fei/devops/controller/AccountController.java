@@ -69,7 +69,7 @@ public class AccountController
         //保存token
         GitlabTokenEntity gitlabTokenEntity = ToolUtil.copy(gitlabToken, GitlabTokenEntity.class);
         gitlabTokenEntity.id = gitlabUser.id;
-        this.gitlabTokenEntityDao.insert(gitlabTokenEntity);
+        this.gitlabTokenEntityDao.upsert(gitlabTokenEntity);
         //登录成功,生成jwt token
         AuthView authView = new AuthView();
         authView.auth = this.jwtBean.createToken(gitlabUser.id, gitlabUser.name);

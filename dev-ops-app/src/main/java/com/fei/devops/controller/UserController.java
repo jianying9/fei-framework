@@ -153,7 +153,7 @@ public class UserController
      * @param session
      * @param name
      * @param username
-     * @param emial
+     * @param email
      * @return
      * @throws BizException
      * @throws java.io.IOException
@@ -163,14 +163,14 @@ public class UserController
             Session session,
             @RequestParam(desc = "用户名称") String name,
             @RequestParam(desc = "账号") String username,
-            @RequestParam(desc = "邮箱") String emial
+            @RequestParam(desc = "邮箱") String email
     ) throws BizException, IOException
     {
         GitlabTokenEntity gitlabTokenEntity = this.gitlabTokenEntityDao.get(session.id);
         GitlabToken gitlabToken = ToolUtil.copy(gitlabTokenEntity, GitlabToken.class);
         //
         String password = ToolUtil.getAutomicId();
-        GitlabUser gitlabUser = this.gitlabComponent.addUser(gitlabToken, emial, name, username, password);
+        GitlabUser gitlabUser = this.gitlabComponent.addUser(gitlabToken, email, name, username, password);
         UserAddView userAddView = new UserAddView();
         userAddView.id = gitlabUser.id;
         userAddView.password = password;

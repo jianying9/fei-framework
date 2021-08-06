@@ -7,21 +7,31 @@
     <v-card max-width="640" class="mx-auto">
       <v-form ref="dataForm" v-model="valid" lazy-validation class="pa-4">
         <v-text-field
-          v-model="userName"
-          :rules="userNameRules"
-          label="用户"
+          v-model="user.name"
+          :rules="rules.nameRules"
+          label="昵称"
         ></v-text-field>
         <v-text-field
-          v-model="userName"
-          :rules="accountRules"
+          v-model="user.username"
+          :rules="rules.usernameRules"
           label="账号"
         ></v-text-field>
-        <v-switch
-          color="success"
-          v-model="admin"
-          label="管理员"
-        ></v-switch>
+        <v-text-field
+          v-model="user.email"
+          :rules="rules.emailRules"
+          label="邮箱"
+        ></v-text-field>
+        <v-alert
+          v-model="alert.show"
+          border="bottom"
+          colored-border
+          type="warning"
+          elevation="2"
+        >
+          {{ alert.msg }}
+        </v-alert>
         <v-btn
+          v-show="alert.show == false"
           :disabled="!valid"
           color="success"
           class="mr-4"
@@ -36,26 +46,37 @@
 </template>
 
 <script>
-// import global from "../assets/js/global.js";
+import global from "../assets/js/global.js";
 export default {
   name: "User",
   data: () => ({
-    admin: false,
     valid: false,
-    userName: "",
-    userNameRules: [(v) => !!v || "userName is required"],
-    account: "",
-    accountRules: [(v) => !!v || "Account is required"],
-    password: "",
-    passwordRules: [(v) => !!v || "Password is required"],
+    user: {
+      name: "",
+      username: "",
+      email: "",
+    },
+    rules: {
+      nameRules: [(v) => !!v || "name is required"],
+      usernameRules: [(v) => !!v || "username is required"],
+      emailRules: [(v) => !!v || "email is required"],
+    },
+    alert: {
+      show: false,
+      msg: "",
+    },
   }),
-  mounted: function () {
-  },
+  mounted: function () {},
   methods: {
     validate: function () {
       var pass = this.$refs.dataForm.validate();
       if (pass) {
-        console.log(pass);
+        this.$http.post(global.api.user_add, this.user).then((bizData) => {
+          if (bizData.code == "success") {
+            this.alert.msg = "(只显示一次)密码:" + bizData.data.password;
+            this.alert.show = true;
+          }
+        });
       }
     },
     goBack: function () {

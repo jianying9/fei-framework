@@ -230,7 +230,7 @@ public class GitlabComponent
         try {
             responseBody = this.client.execute(request, responseHandler);
         } catch (HttpResponseException ex) {
-            throw new BizException("git_user_conflict", "用户账号或邮箱已经被使用");
+            throw new BizException("git_user_conflict", "账号或邮箱已经被使用");
         }
         return this.parseObject(responseBody, GitlabUser.class);
     }
