@@ -5,7 +5,7 @@
       <v-spacer></v-spacer>
       <v-btn class="ma-2" color="success" @click="toUserAdd()">新增</v-btn>
     </v-toolbar>
-    <v-card max-width="640" class="mx-auto">
+    <v-card v-show="userArray.length>0" max-width="640" class="mx-auto">
       <v-list>
         <template v-for="(item, index) in userArray">
           <v-list-item :key="item.username">
@@ -18,13 +18,13 @@
             >
               <v-avatar color="teal" size="36">
                 <span class="white--text text-h5">{{
-                  item.name | firstLetter
+                  item.name | firstLetterFilter
                 }}</span>
               </v-avatar>
             </v-badge>
             <v-avatar v-else color="teal" size="36" class="mr-4">
               <span class="white--text text-h5">{{
-                item.name | firstLetter
+                item.name | firstLetterFilter
               }}</span>
             </v-avatar>
             <v-list-item-content>
@@ -45,7 +45,7 @@
 <script>
 import global from "../assets/js/global.js";
 export default {
-  name: "UserList",
+  name: "userList",
   data: () => ({
     userArray: [],
   }),
@@ -53,11 +53,6 @@ export default {
     this.$http.post(global.api.user_search, {}).then((bizData) => {
       this.userArray = bizData.data.userArray;
     });
-  },
-  filters: {
-    firstLetter: function (value) {
-      return value.charAt(0).toUpperCase();
-    },
   },
   methods: {
     toUserAdd: function () {

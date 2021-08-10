@@ -28,7 +28,7 @@
 <script>
 import global from "../assets/js/global.js";
 export default {
-  name: "Home",
+  name: "home",
   data: () => ({
     appArray: [],
   }),

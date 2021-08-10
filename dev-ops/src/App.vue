@@ -106,6 +106,12 @@ export default {
         route: "/user/list",
         title: "用户",
       },
+      {
+        color: "blue-grey darken-2",
+        icon: "mdi-group",
+        route: "/group/list",
+        title: "群组",
+      },
     ],
   }),
   mounted: function () {
@@ -123,7 +129,7 @@ export default {
         window.location.href = "/login.html";
       } else {
         //其它请求失败处理
-        this.errorDialog.msg = bizData.msg;
+        this.errorDialog.msg = bizData.msg ? bizData.msg : bizData.code;
         this.errorDialog.show = true;
       }
     });

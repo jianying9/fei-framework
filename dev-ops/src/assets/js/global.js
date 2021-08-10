@@ -10,7 +10,7 @@ const api = {
     account_loginByGitlab: '/account/loginByGitlab',
     account_get: '/account/get',
     account_refresh: '/account/refresh',
-    //
+    //用户
     user_search: '/user/search',
     user_get: '/user/get',
     user_add: '/user/add',
@@ -19,6 +19,11 @@ const api = {
     app_search: '/app/search',
     app_get: '/app/get',
     app_add: '/app/add',
+    //群组
+    group_search: '/group/search',
+    group_get: '/group/get',
+    group_add: '/group/add',
+    group_member_add: '/group/member/add',
 
 };
 

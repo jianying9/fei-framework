@@ -66,7 +66,7 @@ public class RouterContext
      */
     private void checkReturnSupport(Class<?> type)
     {
-        if (type != Void.class) {
+        if (type != void.class) {
             if (ToolUtil.isBasicType(type) || type.isArray() || Collection.class.isAssignableFrom(type) || type.getPackageName().startsWith("java.")) {
                 this.logger.error("{}:{} unsupport returnType {}", currController.getClass().getName(), currMethod.getName(), type.getName());
                 throw new RuntimeException(currMethod.getName() + " unsupport returnType" + type.getName());

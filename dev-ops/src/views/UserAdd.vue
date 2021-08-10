@@ -9,7 +9,7 @@
         <v-text-field
           v-model="form.data.name"
           :rules="form.rules.nameRules"
-          label="昵称"
+          label="名称"
         ></v-text-field>
         <v-text-field
           v-model="form.data.username"
@@ -48,7 +48,7 @@
 <script>
 import global from "../assets/js/global.js";
 export default {
-  name: "UserAdd",
+  name: "userAdd",
   data: () => ({
     form: {
       valid: false,

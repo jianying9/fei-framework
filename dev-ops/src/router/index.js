@@ -12,18 +12,38 @@ const routes = [
   { path: '/', redirect: '/home' },
   {
     path: '/home',
-    name: 'Home',
+    name: 'home',
     component: () => import(/* webpackChunkName: "chunk" */ '../views/Home.vue')
   },
   {
     path: '/user/list',
-    name: 'UserList',
+    name: 'userList',
     component: () => import(/* webpackChunkName: "chunk" */ '../views/UserList.vue')
   },
   {
     path: '/user/add',
-    name: 'UserAdd',
+    name: 'userAdd',
     component: () => import(/* webpackChunkName: "chunk" */ '../views/UserAdd.vue')
+  },
+  {
+    path: '/group/list',
+    name: 'groupList',
+    component: () => import(/* webpackChunkName: "chunk" */ '../views/GroupList.vue')
+  },
+  {
+    path: '/group/add',
+    name: 'groupAdd',
+    component: () => import(/* webpackChunkName: "chunk" */ '../views/GroupAdd.vue')
+  },
+  {
+    path: '/group/:id',
+    name: 'group',
+    component: () => import(/* webpackChunkName: "chunk" */ '../views/Group.vue')
+  },
+  {
+    path: '/group/member/add/:id',
+    name: 'groupMemberAdd',
+    component: () => import(/* webpackChunkName: "chunk" */ '../views/GroupMemberAdd.vue')
   },
 ];
 
