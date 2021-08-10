@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-toolbar color="#bbe6d6" flat class="mb-2">
-      <v-toolbar-title>新增群组成员</v-toolbar-title>
+      <v-toolbar-title>新增群组成员:{{path}}</v-toolbar-title>
       <v-spacer></v-spacer>
     </v-toolbar>
     <v-card max-width="640" class="mx-auto">
@@ -30,8 +30,10 @@
           <template v-slot:item="data">
             <template>
               <v-list-item-content>
-                <v-list-item-title>{{data.item.name}}</v-list-item-title>
-                <v-list-item-subtitle>{{data.item.email}}</v-list-item-subtitle>
+                <v-list-item-title>{{ data.item.name }}</v-list-item-title>
+                <v-list-item-subtitle>{{
+                  data.item.email
+                }}</v-list-item-subtitle>
               </v-list-item-content>
             </template>
           </template>
@@ -63,6 +65,7 @@ import global from "../assets/js/global.js";
 export default {
   name: "groupMemberAdd",
   data: () => ({
+    path: "",
     userArray: [],
     accessLevelArray: [
       {
@@ -100,7 +103,15 @@ export default {
     },
   }),
   mounted: function () {
+    this.path = this.$route.params.path;
     this.form.data.id = this.$route.params.id;
+    this.$http
+      .post(global.api.group_get, {
+        id: this.$route.params.id,
+      })
+      .then((bizData) => {
+        this.path = bizData.data.path;
+      });
     //获取所有用户
     this.$http.post(global.api.user_search, {}).then((bizData) => {
       this.userArray = bizData.data.userArray;

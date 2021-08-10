@@ -51,6 +51,9 @@ export default {
         }
       });
     },
+    toGroupAdd: function () {
+      this.$router.push("/group/add");
+    },
   },
 };
 </script>

@@ -34,20 +34,18 @@
       </v-card-text>
     </v-card>
 
-    <v-card
-      v-show="group.memberArray.length > 0"
-      max-width="640"
-      class="mx-auto mt-4"
-    >
+    <v-card max-width="640" class="mx-auto mt-4">
       <v-card-title>
         <span>成员信息</span>
         <v-spacer></v-spacer>
-        <v-btn class="ma-2" color="success" @click="toGroupMemberAdd()">新增</v-btn>
+        <v-btn class="ma-2" color="success" @click="toGroupMemberAdd()"
+          >新增</v-btn
+        >
       </v-card-title>
       <v-divider></v-divider>
       <v-list>
         <template v-for="(item, index) in group.memberArray">
-          <v-list-item :key="item.id">
+          <v-list-item :key="item.username">
             <v-avatar color="teal" size="36" class="mr-4">
               <span class="white--text text-h5">{{
                 item.name | firstLetterFilter
@@ -66,6 +64,38 @@
         </template>
       </v-list>
     </v-card>
+
+    <v-card max-width="640" class="mx-auto mt-4">
+      <v-card-title>
+        <span>项目信息</span>
+        <v-spacer></v-spacer>
+        <v-btn class="ma-2" color="success" @click="toGroupProjectAdd()"
+          >新增</v-btn
+        >
+      </v-card-title>
+      <v-divider></v-divider>
+      <v-list>
+        <template v-for="(item, index) in group.projectArray">
+          <v-list-item :key="item.path">
+            <v-avatar color="teal" size="36" class="mr-4">
+              <span class="white--text text-h5">{{
+                item.name | firstLetterFilter
+              }}</span>
+            </v-avatar>
+            <v-list-item-content>
+              <v-list-item-title>{{ item.name }}</v-list-item-title>
+              <v-list-item-subtitle>{{
+                item.visibility | visibilityFilter
+              }}</v-list-item-subtitle>
+            </v-list-item-content>
+          </v-list-item>
+          <v-divider
+            v-if="index != group.projectArray.length - 1"
+            :key="index"
+          ></v-divider>
+        </template>
+      </v-list>
+    </v-card>
   </div>
 </template>
 
@@ -77,12 +107,13 @@ export default {
     group: {
       path: "",
       memberArray: [],
+      projectArray: [],
     },
   }),
   mounted: function () {
     this.group.path = this.$route.params.path;
     this.$http
-      .post(global.api.group_get, {
+      .post(global.api.group_detail, {
         id: this.$route.params.id,
       })
       .then((bizData) => {
@@ -94,8 +125,18 @@ export default {
       this.$router.push({
         name: "groupMemberAdd",
         params: {
-          id: this.group.id
-        }
+          id: this.group.id,
+          path: this.group.path,
+        },
+      });
+    },
+    toGroupProjectAdd: function () {
+      this.$router.push({
+        name: "groupProjectAdd",
+        params: {
+          id: this.group.id,
+          path: this.group.path,
+        },
       });
     },
   },

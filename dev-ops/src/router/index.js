@@ -45,6 +45,11 @@ const routes = [
     name: 'groupMemberAdd',
     component: () => import(/* webpackChunkName: "chunk" */ '../views/GroupMemberAdd.vue')
   },
+  {
+    path: '/group/projct/add/:id',
+    name: 'groupProjectAdd',
+    component: () => import(/* webpackChunkName: "chunk" */ '../views/GroupProjectAdd.vue')
+  },
 ];
 
 const router = new VueRouter({

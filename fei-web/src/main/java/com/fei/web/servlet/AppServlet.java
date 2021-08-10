@@ -54,7 +54,7 @@ public class AppServlet extends HttpServlet
         response.addHeader("Access-Control-Allow-Headers", "authorization,content-type");
         //
         String route = request.getPathInfo();
-        if (route.isEmpty() || route.equals("/")) {
+        if (route == null || route.isEmpty() || route.equals("/")) {
             //route不存在
             JSONObject output = Response.createOk();
             this.toWrite(response, output.toJSONString());

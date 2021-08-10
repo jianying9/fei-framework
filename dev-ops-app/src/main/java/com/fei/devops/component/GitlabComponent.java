@@ -525,5 +525,75 @@ public class GitlabComponent
         return this.parseObject(responseBody, GitlabMember.class);
     }
     
+    public static class GitlabProject
+    {
+
+        public String id;
+        public String name;
+        public String path;
+        public String visibility;
+        public String avatarUrl;
+        public String description;
+        
+    }
+    
+    /**
+     * 查询群组项目
+     * @param gitlabToken
+     * @param id
+     * @return
+     * @throws IOException
+     * @throws BizException 
+     */
+    public List<GitlabProject> searchGroupProject(GitlabToken gitlabToken, String id) throws IOException, BizException
+    {
+        String url = this.apiPath + "/groups/" + id + "/projects";
+        HttpGet request = this.createHttpGet(url, gitlabToken);
+        ResponseHandler<String> responseHandler = new BasicResponseHandler();
+        String responseBody;
+        try {
+            responseBody = this.client.execute(request, responseHandler);
+            
+        } catch (HttpResponseException ex) {
+            throw new BizException("gitlab_search_group_project_error", this.getErrorMsg(ex));
+        }
+        return this.parseArray(responseBody, GitlabProject.class);
+    }
+    
+    
+    /**
+     * 为群组新增项目
+     * @param gitlabToken
+     * @param id
+     * @param name
+     * @return
+     * @throws IOException
+     * @throws BizException 
+     */
+    public GitlabProject addGroupProject(GitlabToken gitlabToken, String id, String name, String description) throws IOException, BizException
+    {
+        String url = this.apiPath + "/projects";
+        HttpPost request = this.createHttpPost(url, gitlabToken);
+        Map<String, Object> dataMap = new HashMap();
+        dataMap.put("name", name);
+        dataMap.put("path", name);
+        dataMap.put("description", description);
+        dataMap.put("visibility", "internal");
+        dataMap.put("namespace_id", id);
+        String dataJson = JSON.toJSONString(dataMap);
+        HttpEntity httpEntity = new StringEntity(dataJson, "utf-8");
+        request.setEntity(httpEntity);
+        ResponseHandler<String> responseHandler = new BasicResponseHandler();
+        String responseBody;
+        try {
+            responseBody = this.client.execute(request, responseHandler);
+        } catch (HttpResponseException ex) {
+            throw new BizException("gitlab_add_group_project_error", this.getErrorMsg(ex));
+        }
+        return this.parseObject(responseBody, GitlabProject.class);
+    }
+    
+    
+    
 
 }

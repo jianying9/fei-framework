@@ -22,8 +22,10 @@ const api = {
     //群组
     group_search: '/group/search',
     group_get: '/group/get',
+    group_detail: '/group/detail',
     group_add: '/group/add',
     group_member_add: '/group/member/add',
+    group_project_add: '/group/project/add',
 
 };
 

@@ -9,6 +9,7 @@ import com.fei.app.utils.ToolUtil;
 import com.fei.devops.component.GitlabComponent;
 import com.fei.devops.component.GitlabComponent.GitlabGroup;
 import com.fei.devops.component.GitlabComponent.GitlabMember;
+import com.fei.devops.component.GitlabComponent.GitlabProject;
 import com.fei.devops.component.GitlabComponent.GitlabToken;
 import com.fei.devops.entity.GitlabTokenEntity;
 import com.fei.module.EsEntityDao;
@@ -114,6 +115,9 @@ public class GroupController
         @ResponseParam(desc = "成员集合")
         public List<MemberView> memberArray;
 
+        @ResponseParam(desc = "项目集合")
+        public List<ProjectView> projectArray;
+
     }
 
     /**
@@ -126,7 +130,24 @@ public class GroupController
      * @throws java.io.IOException
      */
     @RequestMapping(value = "/get", desc = "获取群组的详细信息")
-    public GroupDetailView get(
+    public GroupView get(
+            Session session,
+            @RequestParam(desc = "id") String id
+    ) throws BizException, IOException
+    {
+        GitlabTokenEntity gitlabTokenEntity = this.gitlabTokenEntityDao.get(session.id);
+        GitlabToken gitlabToken = ToolUtil.copy(gitlabTokenEntity, GitlabToken.class);
+        //
+        GitlabGroup gitlabGroup = this.gitlabComponent.getGroup(gitlabToken, id);
+        if (gitlabGroup == null) {
+            throw new BizException("git_group_null", "群组不存在");
+        }
+        GroupView groupView = ToolUtil.copy(gitlabGroup, GroupView.class);
+        return groupView;
+    }
+
+    @RequestMapping(value = "/detail", desc = "获取群组的详细信息")
+    public GroupDetailView detail(
             Session session,
             @RequestParam(desc = "id") String id
     ) throws BizException, IOException
@@ -146,6 +167,14 @@ public class GroupController
         for (GitlabMember gitlabMember : gitlabMemberList) {
             memberView = ToolUtil.copy(gitlabMember, MemberView.class);
             groupDetailView.memberArray.add(memberView);
+        }
+        //
+        groupDetailView.projectArray = new ArrayList();
+        List<GitlabProject> gitlabProjectList = this.gitlabComponent.searchGroupProject(gitlabToken, id);
+        ProjectView projectView;
+        for (GitlabProject gitlabProject : gitlabProjectList) {
+            projectView = ToolUtil.copy(gitlabProject, ProjectView.class);
+            groupDetailView.projectArray.add(projectView);
         }
         return groupDetailView;
     }
@@ -265,4 +294,43 @@ public class GroupController
         return memberView;
     }
 
+    public static class ProjectView
+    {
+
+        @ResponseParam(desc = "id")
+        public String id;
+
+        @ResponseParam(desc = "名称")
+        public String name;
+
+        @ResponseParam(desc = "路径")
+        public String path;
+
+        @ResponseParam(desc = "可见性")
+        public String visibility;
+
+        @ResponseParam(desc = "图标")
+        public String avatarUrl;
+
+        @ResponseParam(desc = "描述")
+        public String description;
+
+    }
+
+    @RequestMapping(value = "/project/add", desc = "群组新增项目")
+    public ProjectView addProject(
+            Session session,
+            @RequestParam(desc = "群组id") String id,
+            @RequestParam(desc = "用户id") String name,
+            @RequestParam(desc = "描述") String description
+    ) throws BizException, IOException
+    {
+        GitlabTokenEntity gitlabTokenEntity = this.gitlabTokenEntityDao.get(session.id);
+        GitlabToken gitlabToken = ToolUtil.copy(gitlabTokenEntity, GitlabToken.class);
+        //新增
+        GitlabProject gitlabProject = this.gitlabComponent.addGroupProject(gitlabToken, id, name, description);
+        ProjectView projectView = ToolUtil.copy(gitlabProject, ProjectView.class);
+        return projectView;
+
+    }
 }
