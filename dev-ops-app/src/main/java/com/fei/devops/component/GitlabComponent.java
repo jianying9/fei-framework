@@ -3,13 +3,13 @@ package com.fei.devops.component;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.apache.http.client.methods.HttpDeleteWithBody;
 import com.fei.annotations.component.Component;
 import com.fei.web.router.BizException;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.ResponseHandler;
@@ -39,6 +39,8 @@ public class GitlabComponent
     private final String appSecret = "b450f7a1920961eb0cdac64ff41a88e2cb2d2487aa9607bf01c299e51ba40fbd";
 
     private CloseableHttpClient client;
+    
+    private final String defaultBranchName = "main";
 
     public void init()
     {
@@ -65,7 +67,14 @@ public class GitlabComponent
                 sb.append(c);
             }
         }
-        return sb.toString();
+        String newKey =  sb.toString();
+        //保留字
+        if(newKey.equals("default")) {
+            newKey = "isDefault";
+        } else if(newKey.equals("protected")) {
+            newKey = "isProtected";
+        }
+        return newKey;
     }
 
     private <T> T parseObject(String text, Class<T> clazz)
@@ -119,6 +128,9 @@ public class GitlabComponent
             case 409:
                 errorMsg = "新增信息已经存在";
                 break;
+            case 404:
+                errorMsg = "目标不存在";
+                break;   
             default:
                 errorMsg = "未知错误";
         }
@@ -133,7 +145,7 @@ public class GitlabComponent
     private HttpPost createHttpPost(String url, GitlabToken gitlabToken)
     {
         HttpPost request = new HttpPost(url);
-        request.setHeader("Content-Type", "application/json;charset=UTF-8");
+        request.setHeader("Content-Type", "application/json;charset=utf-8");
         if (gitlabToken != null) {
             request.setHeader("Authorization", gitlabToken.tokenType + " " + gitlabToken.accessToken);
         }
@@ -143,7 +155,7 @@ public class GitlabComponent
     private HttpPut createHttpPut(String url, GitlabToken gitlabToken)
     {
         HttpPut request = new HttpPut(url);
-        request.setHeader("Content-Type", "application/json;charset=UTF-8");
+        request.setHeader("Content-Type", "application/json;charset=utf-8");
         if (gitlabToken != null) {
             request.setHeader("Authorization", gitlabToken.tokenType + " " + gitlabToken.accessToken);
         }
@@ -162,6 +174,16 @@ public class GitlabComponent
     private HttpDelete createHttpDelete(String url, GitlabToken gitlabToken)
     {
         HttpDelete request = new HttpDelete(url);
+        if (gitlabToken != null) {
+            request.setHeader("Authorization", gitlabToken.tokenType + " " + gitlabToken.accessToken);
+        }
+        return request;
+    }
+    
+    private HttpDeleteWithBody createHttpDeleteWithBody(String url, GitlabToken gitlabToken)
+    {
+        HttpDeleteWithBody request = new HttpDeleteWithBody(url);
+        request.setHeader("Content-Type", "application/json;charset=utf-8");
         if (gitlabToken != null) {
             request.setHeader("Authorization", gitlabToken.tokenType + " " + gitlabToken.accessToken);
         }
@@ -190,13 +212,13 @@ public class GitlabComponent
     {
         String url = this.host + "/oauth/token";
         HttpPost request = this.createHttpPost(url);
-        Map<String, Object> dataMap = new HashMap();
-        dataMap.put("client_id", this.appId);
-        dataMap.put("client_secret", this.appSecret);
-        dataMap.put("code", code);
-        dataMap.put("grant_type", "authorization_code");
-        dataMap.put("redirect_uri", redirectUri);
-        String dataJson = JSON.toJSONString(dataMap);
+        JSONObject json = new JSONObject();
+        json.put("client_id", this.appId);
+        json.put("client_secret", this.appSecret);
+        json.put("code", code);
+        json.put("grant_type", "authorization_code");
+        json.put("redirect_uri", redirectUri);
+        String dataJson = json.toJSONString();
         HttpEntity httpEntity = new StringEntity(dataJson, "utf-8");
         request.setEntity(httpEntity);
         ResponseHandler<String> responseHandler = new BasicResponseHandler();
@@ -300,13 +322,13 @@ public class GitlabComponent
     {
         String url = this.apiPath + "/users";
         HttpPost request = this.createHttpPost(url, gitlabToken);
-        Map<String, Object> dataMap = new HashMap();
-        dataMap.put("email", email);
-        dataMap.put("name", name);
-        dataMap.put("username", username);
-        dataMap.put("password", password);
-        dataMap.put("skip_confirmation", true);
-        String dataJson = JSON.toJSONString(dataMap);
+        JSONObject json = new JSONObject();
+        json.put("email", email);
+        json.put("name", name);
+        json.put("username", username);
+        json.put("password", password);
+        json.put("skip_confirmation", true);
+        String dataJson = json.toJSONString();
         HttpEntity httpEntity = new StringEntity(dataJson, "utf-8");
         request.setEntity(httpEntity);
         ResponseHandler<String> responseHandler = new BasicResponseHandler();
@@ -383,17 +405,17 @@ public class GitlabComponent
      * @throws IOException
      * @throws BizException 
      */
-    public GitlabGroup addGroup(GitlabToken gitlabToken, String name, String description) throws IOException, BizException
+    public GitlabGroup createGroup(GitlabToken gitlabToken, String name, String description) throws IOException, BizException
     {
         String url = this.apiPath + "/groups";
         HttpPost request = this.createHttpPost(url, gitlabToken);
-        Map<String, Object> dataMap = new HashMap();
-        dataMap.put("name", name);
-        dataMap.put("path", name);
-        dataMap.put("description", description);
-        dataMap.put("visibility", "public");
-        dataMap.put("project_creation_level", "developer");
-        String dataJson = JSON.toJSONString(dataMap);
+        JSONObject json = new JSONObject();
+        json.put("name", name);
+        json.put("path", name);
+        json.put("description", description);
+        json.put("visibility", "public");
+        json.put("project_creation_level", "developer");
+        String dataJson = json.toJSONString();
         HttpEntity httpEntity = new StringEntity(dataJson, "utf-8");
         request.setEntity(httpEntity);
         ResponseHandler<String> responseHandler = new BasicResponseHandler();
@@ -454,11 +476,11 @@ public class GitlabComponent
     {
         String url = this.apiPath + "/groups/" + id + "/members";
         HttpPost request = this.createHttpPost(url, gitlabToken);
-        Map<String, Object> dataMap = new HashMap();
-        dataMap.put("id", id);
-        dataMap.put("user_id", userId);
-        dataMap.put("access_level", accessLevel);
-        String dataJson = JSON.toJSONString(dataMap);
+        JSONObject json = new JSONObject();
+        json.put("id", id);
+        json.put("user_id", userId);
+        json.put("access_level", accessLevel);
+        String dataJson = json.toJSONString();
         HttpEntity httpEntity = new StringEntity(dataJson, "utf-8");
         request.setEntity(httpEntity);
         ResponseHandler<String> responseHandler = new BasicResponseHandler();
@@ -485,11 +507,11 @@ public class GitlabComponent
     {
         String url = this.apiPath + "/groups/" + id + "/members/" + userId;
         HttpPut request = this.createHttpPut(url, gitlabToken);
-        Map<String, Object> dataMap = new HashMap();
-        dataMap.put("id", id);
-        dataMap.put("user_id", userId);
-        dataMap.put("access_level", accessLevel);
-        String dataJson = JSON.toJSONString(dataMap);
+        JSONObject json = new JSONObject();
+        json.put("id", id);
+        json.put("user_id", userId);
+        json.put("access_level", accessLevel);
+        String dataJson = json.toJSONString();
         HttpEntity httpEntity = new StringEntity(dataJson, "utf-8");
         request.setEntity(httpEntity);
         ResponseHandler<String> responseHandler = new BasicResponseHandler();
@@ -566,21 +588,25 @@ public class GitlabComponent
      * @param gitlabToken
      * @param id
      * @param name
+     * @param description
      * @return
      * @throws IOException
      * @throws BizException 
      */
-    public GitlabProject addGroupProject(GitlabToken gitlabToken, String id, String name, String description) throws IOException, BizException
+    public GitlabProject createGroupProject(GitlabToken gitlabToken, String id, String name, String description) throws IOException, BizException
     {
         String url = this.apiPath + "/projects";
         HttpPost request = this.createHttpPost(url, gitlabToken);
-        Map<String, Object> dataMap = new HashMap();
-        dataMap.put("name", name);
-        dataMap.put("path", name);
-        dataMap.put("description", description);
-        dataMap.put("visibility", "internal");
-        dataMap.put("namespace_id", id);
-        String dataJson = JSON.toJSONString(dataMap);
+        JSONObject json = new JSONObject();
+        json.put("name", name);
+        json.put("path", name);
+        json.put("description", description);
+        json.put("visibility", "internal");
+        json.put("namespace_id", id);
+        //初始化main分支
+        json.put("initialize_with_readme", true);
+        json.put("default_branch", this.defaultBranchName);
+        String dataJson = json.toJSONString();
         HttpEntity httpEntity = new StringEntity(dataJson, "utf-8");
         request.setEntity(httpEntity);
         ResponseHandler<String> responseHandler = new BasicResponseHandler();
@@ -591,6 +617,200 @@ public class GitlabComponent
             throw new BizException("gitlab_add_group_project_error", this.getErrorMsg(ex));
         }
         return this.parseObject(responseBody, GitlabProject.class);
+    }
+    
+    /**
+     * 获取项目信息
+     * @param gitlabToken
+     * @param id
+     * @return
+     * @throws IOException
+     * @throws BizException 
+     */
+    public GitlabProject getProject(GitlabToken gitlabToken, String id) throws IOException, BizException
+    {
+        String url = this.apiPath + "/projects/" + id;
+        HttpGet request = this.createHttpGet(url, gitlabToken);
+        ResponseHandler<String> responseHandler = new BasicResponseHandler();
+        String responseBody;
+        try {
+            responseBody = this.client.execute(request, responseHandler);
+        } catch (HttpResponseException ex) {
+            throw new BizException("gitlab_get_project_error", this.getErrorMsg(ex));
+        }
+        return this.parseObject(responseBody, GitlabProject.class);
+    }
+    
+    public static class GitlabFile
+    {
+
+        public String id;
+        public String name;
+        public String path;
+        public String type;
+        public String mode;
+    }
+    
+    /**
+     * 获取指定项目文件列表
+     * @param gitlabToken
+     * @param id
+     * @return
+     * @throws IOException
+     * @throws BizException 
+     */
+    public List<GitlabFile> listRepositoryFile(GitlabToken gitlabToken, String id) throws IOException, BizException
+    {
+        String url = this.apiPath + "/projects/" + id + "/repository/tree?recursive=true&per_page=100";
+        HttpGet request = this.createHttpGet(url, gitlabToken);
+        ResponseHandler<String> responseHandler = new BasicResponseHandler();
+        String responseBody;
+        try {
+            responseBody = this.client.execute(request, responseHandler);
+        } catch (HttpResponseException ex) {
+            throw new BizException("gitlab_list_repository_file_error", this.getErrorMsg(ex));
+        }
+        return this.parseArray(responseBody, GitlabFile.class);
+    }
+    
+    
+    /**
+     * 读取文件文本信息
+     * @param gitlabToken
+     * @param id
+     * @param path
+     * @return
+     * @throws IOException
+     * @throws BizException 
+     */
+    public String getRepositoryFile(GitlabToken gitlabToken, String id, String path) throws IOException, BizException {
+        path = URLEncoder.encode(path, "utf-8");
+        String url = this.apiPath + "/projects/" + id + "/repository/files/" + path + "/raw";
+        HttpGet request = this.createHttpGet(url, gitlabToken);
+        ResponseHandler<String> responseHandler = new BasicResponseHandler();
+        String responseBody;
+        try {
+            responseBody = this.client.execute(request, responseHandler);
+        } catch (HttpResponseException ex) {
+            throw new BizException("gitlab_list_repository_file_error", this.getErrorMsg(ex));
+        }
+        return responseBody;
+    }
+    
+    
+    /**
+     * 新增文件
+     * @param gitlabToken
+     * @param id
+     * @param branch
+     * @param path
+     * @param content
+     * @retur
+     * @throws IOException
+     * @throws BizException 
+     */
+    public void createRepositoryFile(GitlabToken gitlabToken, String id, String branch, String path, String content) throws IOException, BizException {
+        path = URLEncoder.encode(path, "utf-8");
+        String url = this.apiPath + "/projects/" + id + "/repository/files/" + path;
+        HttpPost request = this.createHttpPost(url, gitlabToken);
+        JSONObject json = new JSONObject();
+        json.put("branch", branch);
+        json.put("content", content);
+        json.put("commit_message", "devops init");
+        String dataJson = json.toJSONString();
+        HttpEntity httpEntity = new StringEntity(dataJson, "utf-8");
+        request.setEntity(httpEntity);
+        ResponseHandler<String> responseHandler = new BasicResponseHandler();
+        try {
+            this.client.execute(request, responseHandler);
+        } catch (HttpResponseException ex) {
+            throw new BizException("gitlab_create_repository_file_error", this.getErrorMsg(ex));
+        }
+    }
+    
+    /**
+     * 删除项目文件
+     * @param gitlabToken
+     * @param id
+     * @param branch
+     * @param path
+     * @throws IOException
+     * @throws BizException 
+     */
+    public void deleteRepositoryFile(GitlabToken gitlabToken, String id, String branch, String path) throws IOException, BizException {
+        path = URLEncoder.encode(path, "utf-8");
+        String url = this.apiPath + "/projects/" + id + "/repository/files/" + path;
+        HttpDeleteWithBody request = this.createHttpDeleteWithBody(url, gitlabToken);
+        JSONObject json = new JSONObject();
+        json.put("branch", branch);
+        json.put("commit_message", "devops init");
+        String dataJson = json.toJSONString();
+        HttpEntity httpEntity = new StringEntity(dataJson, "utf-8");
+        request.setEntity(httpEntity);
+        ResponseHandler<String> responseHandler = new BasicResponseHandler();
+        try {
+            this.client.execute(request, responseHandler);
+        } catch (HttpResponseException ex) {
+            throw new BizException("gitlab_delete_repository_file_error", this.getErrorMsg(ex));
+        }
+    }
+    
+    
+    public static class GitlabBranch
+    {
+
+        public String name;
+        public boolean merged;
+        public boolean isDefault;
+        public boolean isProtected;
+        public boolean canPush;
+        public boolean developersCanPush;
+        public boolean developersCanMerge;
+    }
+    
+    /**
+     * 获取项目资源的分支列表
+     * @param gitlabToken
+     * @param id
+     * @return
+     * @throws IOException
+     * @throws BizException 
+     */
+    public List<GitlabBranch> listRepositoryBranch(GitlabToken gitlabToken, String id) throws IOException, BizException
+    {
+        String url = this.apiPath + "/projects/" + id + "/repository/branches";
+        HttpGet request = this.createHttpGet(url, gitlabToken);
+        ResponseHandler<String> responseHandler = new BasicResponseHandler();
+        String responseBody;
+        try {
+            responseBody = this.client.execute(request, responseHandler);
+        } catch (HttpResponseException ex) {
+            throw new BizException("gitlab_list_repository_branch_error", this.getErrorMsg(ex));
+        }
+        return this.parseArray(responseBody, GitlabBranch.class);
+    }
+    
+    /**
+     * 创建项目资源分支
+     * @param gitlabToken
+     * @param id
+     * @param branch
+     * @param ref
+     * @return
+     * @throws IOException
+     * @throws BizException 
+     */
+    public GitlabBranch createRepositoryBranch(GitlabToken gitlabToken, String id, String branch, String ref) throws IOException, BizException {
+        String url = this.apiPath + "/projects/" + id + "/repository/branches?ref=" + ref + "&branch=" + branch;
+        HttpPost request = this.createHttpPost(url, gitlabToken);
+        ResponseHandler<String> responseHandler = new BasicResponseHandler();
+        String responseBody;
+        try {
+            responseBody = this.client.execute(request, responseHandler);
+        } catch (HttpResponseException ex) {
+            throw new BizException("gitlab_create_repository_branch_error", this.getErrorMsg(ex));
+        }
+        return this.parseObject(responseBody, GitlabBranch.class);
     }
     
     

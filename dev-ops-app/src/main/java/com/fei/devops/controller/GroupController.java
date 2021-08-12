@@ -199,7 +199,7 @@ public class GroupController
         GitlabTokenEntity gitlabTokenEntity = this.gitlabTokenEntityDao.get(session.id);
         GitlabToken gitlabToken = ToolUtil.copy(gitlabTokenEntity, GitlabToken.class);
         //
-        GitlabGroup gitlabGroup = this.gitlabComponent.addGroup(gitlabToken, name, description);
+        GitlabGroup gitlabGroup = this.gitlabComponent.createGroup(gitlabToken, name, description);
         GroupView groupView = ToolUtil.copy(gitlabGroup, GroupView.class);
         return groupView;
     }
@@ -321,16 +321,63 @@ public class GroupController
     public ProjectView addProject(
             Session session,
             @RequestParam(desc = "群组id") String id,
-            @RequestParam(desc = "用户id") String name,
+            @RequestParam(desc = "项目模板id") String templateId,
+            @RequestParam(desc = "项目名称") String name,
             @RequestParam(desc = "描述") String description
     ) throws BizException, IOException
     {
         GitlabTokenEntity gitlabTokenEntity = this.gitlabTokenEntityDao.get(session.id);
         GitlabToken gitlabToken = ToolUtil.copy(gitlabTokenEntity, GitlabToken.class);
+        //查询模板工程信息
+        GitlabProject gitlabProjectTemplate = this.gitlabComponent.getProject(gitlabToken, templateId);
         //新增
-        GitlabProject gitlabProject = this.gitlabComponent.addGroupProject(gitlabToken, id, name, description);
-        ProjectView projectView = ToolUtil.copy(gitlabProject, ProjectView.class);
+        GitlabProject gitlabProjectNew = this.gitlabComponent.createGroupProject(gitlabToken, id, name, description);
+        //查询新增项目资源默认分支信息
+        GitlabComponent.GitlabBranch gitlabBranchDefault = null;
+        List<GitlabComponent.GitlabBranch> branchList = this.gitlabComponent.listRepositoryBranch(gitlabToken, gitlabProjectNew.id);
+        for (GitlabComponent.GitlabBranch branch : branchList) {
+            if (branch.isDefault) {
+                gitlabBranchDefault = branch;
+                break;
+            }
+        }
+        if (gitlabBranchDefault != null) {
+            //清空文件
+            List<GitlabComponent.GitlabFile> toFileList = this.gitlabComponent.listRepositoryFile(gitlabToken, gitlabProjectNew.id);
+            for (GitlabComponent.GitlabFile gitlabFile : toFileList) {
+                if (gitlabFile.type.equals("blob")) {
+                    this.gitlabComponent.deleteRepositoryFile(gitlabToken, gitlabProjectNew.id, gitlabBranchDefault.name, gitlabFile.path);
+                }
+            }
+            //导入模板项目文件
+            List<GitlabComponent.GitlabFile> formFileList = this.gitlabComponent.listRepositoryFile(gitlabToken, gitlabProjectTemplate.id);
+            for (GitlabComponent.GitlabFile gitlabFile : formFileList) {
+                if (gitlabFile.type.equals("blob")) {
+                    String content = this.gitlabComponent.getRepositoryFile(gitlabToken, gitlabProjectTemplate.id, gitlabFile.path);
+                    content = this.contentFilter(gitlabProjectNew, content);
+                    //
+                    this.gitlabComponent.createRepositoryFile(gitlabToken, gitlabProjectNew.id, gitlabBranchDefault.name, gitlabFile.path, content);
+                }
+            }
+            //创建开发分支
+            this.gitlabComponent.createRepositoryBranch(gitlabToken, gitlabProjectNew.id, "dev", gitlabBranchDefault.name);
+        }
+        //
+        ProjectView projectView = ToolUtil.copy(gitlabProjectNew, ProjectView.class);
         return projectView;
 
+    }
+
+    /**
+     * 根据项目信息，自动替换模板内容中el表达式信息
+     *
+     * @param gitlabProject
+     * @param content
+     * @return
+     */
+    private String contentFilter(GitlabProject gitlabProject, String content)
+    {
+        content = content.replaceAll("\\$\\{appName\\}", gitlabProject.name);
+        return content;
     }
 }

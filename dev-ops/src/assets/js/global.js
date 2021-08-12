@@ -26,7 +26,8 @@ const api = {
     group_add: '/group/add',
     group_member_add: '/group/member/add',
     group_project_add: '/group/project/add',
-
+    //项目
+    project_template_search: '/project/template/search',
 };
 
 const global = {
