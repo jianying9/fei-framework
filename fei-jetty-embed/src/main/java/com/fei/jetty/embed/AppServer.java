@@ -342,7 +342,7 @@ public class AppServer
     {
         int port = -1;
         for (String arg : args) {
-            if (arg.startsWith("-jetty:port=")) {
+            if (arg.startsWith("-Djetty:port=")) {
                 String[] arr = arg.split("=");
                 if (arr.length == 2) {
                     port = Integer.parseInt(arr[1]);
