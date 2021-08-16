@@ -17,7 +17,7 @@ public class AppMain
     public static void main(String[] args) throws Exception
     {
         //启动
-        AppServer appServer = new AppServer(AppMain.class, args);
+        AppServer appServer = new AppServer(AppMain.class);
         appServer.start();
     }
 

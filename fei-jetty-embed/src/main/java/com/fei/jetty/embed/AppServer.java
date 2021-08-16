@@ -17,6 +17,8 @@ import java.util.Collections;
 import java.util.EventListener;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.Servlet;
@@ -67,12 +69,9 @@ public class AppServer
      * 服务实例化
      *
      * @param mainClass
-     * @param args
      */
-    public AppServer(Class<?> mainClass, String[] args)
+    public AppServer(Class<?> mainClass)
     {
-        //端口自定义
-        port = AppServer.getPort();
         //appName
         if (mainClass.isAnnotationPresent(BootApp.class) == false) {
             throw new RuntimeException("mainClass must annotation BootApp.class");
@@ -107,6 +106,12 @@ public class AppServer
         logger.info("web应用目录:{}", webappsPath);
         logger.info("日志web应用目录:{}", logsWebappPath);
         logger.info("默认web应用目录:{}", defaultWebappPath);
+        //系统参数
+        Properties properties = System.getProperties();
+        Set<Map.Entry<Object, Object>> entrySet = properties.entrySet();
+        for (Map.Entry<Object, Object> entry : entrySet) {
+            this.logger.info("{}:{}", entry.getKey(), entry.getValue());
+        }
         //框架初始化
         AppContext.INSTANCE.setAppName(appName);
         AppContext.INSTANCE.addScanPackage(mainClass);
@@ -254,6 +259,9 @@ public class AppServer
 
     public void start()
     {
+        //
+        //端口自定义
+        port = this.getPort();
         //创建server
         final Server server = new Server();
         //监听端口
@@ -336,9 +344,8 @@ public class AppServer
 //        HttpGenerator.setJettyVersion("Zlw(3.3.3)");
     }
 
-    public static int getPort()
+    public int getPort()
     {
-        int port = 8080;
         String jettyPort = System.getProperty("jetty.port");
         if (jettyPort != null) {
             port = Integer.parseInt(jettyPort);

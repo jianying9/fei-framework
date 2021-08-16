@@ -16,7 +16,7 @@ public class AppMain
     //nohup java -jar -server -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m -Xms256m -Xmx256m -Xss256k -XX:+UseG1GC -XX:ParallelGCThreads=2 devops-app.jar >/dev/null 2>&1 &
     public static void main(String[] args) throws Exception
     {
-        AppServer appServer = new AppServer(AppMain.class, args);
+        AppServer appServer = new AppServer(AppMain.class);
         appServer.setPort(8090).start();
     }
 
