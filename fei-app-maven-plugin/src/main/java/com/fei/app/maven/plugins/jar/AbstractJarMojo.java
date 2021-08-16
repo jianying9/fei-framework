@@ -317,8 +317,7 @@ public abstract class AbstractJarMojo
                     try {
                         clazz = urlClassLoader.loadClass(className);
                     } catch (NoClassDefFoundError e) {
-                        this.getLog().error(className);
-                        //运行依赖包未加载导致类无法加载
+                        //运行依赖包未加载导致类无法加载,忽略
                     }
                     if (clazz != null && clazz.isAnnotationPresent(BootApp.class)) {
                         //appName
