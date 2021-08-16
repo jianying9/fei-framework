@@ -313,6 +313,7 @@ public abstract class AbstractJarMojo
                 this.getLog().info("find Main-Class in : " + classUrl.toString());
                 URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{classUrl}, Thread.currentThread().getContextClassLoader());
                 for (String className : classNameList) {
+                    this.getLog().info(className);
                     Class<?> clazz = urlClassLoader.loadClass(className);
                     if (clazz.isAnnotationPresent(BootApp.class)) {
                         //appName
@@ -325,6 +326,7 @@ public abstract class AbstractJarMojo
                     }
                 }
             } catch (NoClassDefFoundError ex) {
+                this.getLog().error(ex);
             } catch (MalformedURLException | ClassNotFoundException ex) {
                 this.getLog().error(ex);
             }
