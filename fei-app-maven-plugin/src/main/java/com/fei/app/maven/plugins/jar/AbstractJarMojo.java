@@ -313,9 +313,14 @@ public abstract class AbstractJarMojo
                 this.getLog().info("find Main-Class in : " + classUrl.toString());
                 URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{classUrl}, Thread.currentThread().getContextClassLoader());
                 for (String className : classNameList) {
-                    this.getLog().info(className);
-                    Class<?> clazz = urlClassLoader.loadClass(className);
-                    if (clazz.isAnnotationPresent(BootApp.class)) {
+                    Class<?> clazz = null;
+                    try {
+                        clazz = urlClassLoader.loadClass(className);
+                    } catch (NoClassDefFoundError e) {
+                        this.getLog().error(className);
+                        //运行依赖包未加载导致类无法加载
+                    }
+                    if (clazz != null && clazz.isAnnotationPresent(BootApp.class)) {
                         //appName
                         this.getLog().info("Main-Class:" + className);
                         manifestConfiguration.setMainClass(className);
@@ -325,8 +330,6 @@ public abstract class AbstractJarMojo
                         break;
                     }
                 }
-            } catch (NoClassDefFoundError ex) {
-                this.getLog().error(ex);
             } catch (MalformedURLException | ClassNotFoundException ex) {
                 this.getLog().error(ex);
             }
