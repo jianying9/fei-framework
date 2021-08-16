@@ -291,14 +291,16 @@ public final class ToolUtil
         String fileName = appName + ".properties";
         Properties properties = new Properties();
         InputStream in = ToolUtil.class.getClassLoader().getResourceAsStream(fileName);
-        try {
-            properties.load(in);
-        } catch (IOException ex) {
-            Logger logger = LoggerFactory.getLogger(AppContext.class);
-            logger.warn(fileName + " not found...");
-        }
-        for (String key : properties.stringPropertyNames()) {
-            paramaterMap.put(key, properties.getProperty(key));
+        if (in != null) {
+            try {
+                properties.load(in);
+            } catch (IOException ex) {
+                Logger logger = LoggerFactory.getLogger(AppContext.class);
+                logger.warn(fileName + " not found...");
+            }
+            for (String key : properties.stringPropertyNames()) {
+                paramaterMap.put(key, properties.getProperty(key));
+            }
         }
         return paramaterMap;
     }
