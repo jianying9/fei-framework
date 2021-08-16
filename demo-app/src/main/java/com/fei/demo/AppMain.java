@@ -8,12 +8,12 @@ import com.fei.jetty.embed.AppServer;
  *
  * @author jianying9
  */
-@BootApp("demo")
+@BootApp("demo-app")
 public class AppMain
 {
 
     //cd /data/app/demo-app
-    //nohup java -jar -server -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m -Xms256m -Xmx256m -Xss256k -XX:+UseG1GC -XX:ParallelGCThreads=2 demo-app.jar >/dev/null 2>&1 &
+    //nohup java -jar -server -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m -Xms256m -Xmx256m -Xss256k -XX:+UseG1GC -XX:ParallelGCThreads=2 -Djetty.port=8090 demo-app-main.jar >/dev/null 2>&1 &
     public static void main(String[] args) throws Exception
     {
         //启动

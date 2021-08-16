@@ -72,9 +72,7 @@ public class AppServer
     public AppServer(Class<?> mainClass, String[] args)
     {
         //端口自定义
-        if (AppServer.getPort(args) > -1) {
-            port = AppServer.getPort(args);
-        }
+        port = AppServer.getPort();
         //appName
         if (mainClass.isAnnotationPresent(BootApp.class) == false) {
             throw new RuntimeException("mainClass must annotation BootApp.class");
@@ -338,16 +336,12 @@ public class AppServer
 //        HttpGenerator.setJettyVersion("Zlw(3.3.3)");
     }
 
-    public static int getPort(String[] args)
+    public static int getPort()
     {
-        int port = -1;
-        for (String arg : args) {
-            if (arg.startsWith("-Djetty:port=")) {
-                String[] arr = arg.split("=");
-                if (arr.length == 2) {
-                    port = Integer.parseInt(arr[1]);
-                }
-            }
+        int port = 8080;
+        String jettyPort = System.getProperty("jetty.port");
+        if (jettyPort != null) {
+            port = Integer.parseInt(jettyPort);
         }
         return port;
     }
