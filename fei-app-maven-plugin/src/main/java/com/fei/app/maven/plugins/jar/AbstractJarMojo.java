@@ -324,6 +324,7 @@ public abstract class AbstractJarMojo
                         break;
                     }
                 }
+            } catch (NoClassDefFoundError ex) {
             } catch (MalformedURLException | ClassNotFoundException ex) {
                 this.getLog().error(ex);
             }
