@@ -110,7 +110,7 @@ public class AppServer
         Properties properties = System.getProperties();
         Set<Map.Entry<Object, Object>> entrySet = properties.entrySet();
         for (Map.Entry<Object, Object> entry : entrySet) {
-            this.logger.info("{}:{}", entry.getKey(), entry.getValue());
+            this.logger.info("jvm运行参数:{}:{}", entry.getKey(), entry.getValue());
         }
         //框架初始化
         AppContext.INSTANCE.setAppName(appName);
