@@ -121,11 +121,11 @@ public class GitlabComponentTest
         System.out.println(result);
     }
 
-//    @Test
+    @Test
     public void copyRepositoryFile() throws IOException, BizException
     {
         String fromId = "6";
-        String toId = "15";
+        String toId = "19";
         String appName = "java_app_test";
         GitlabProject gitlabProject = this.gitlabComponent.getProject(gitlabToken, fromId);
         //初始化项目分支

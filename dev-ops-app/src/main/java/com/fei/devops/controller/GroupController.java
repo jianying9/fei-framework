@@ -6,11 +6,14 @@ import com.fei.annotations.web.RequestMapping;
 import com.fei.annotations.web.RequestParam;
 import com.fei.annotations.web.ResponseParam;
 import com.fei.app.utils.ToolUtil;
+import com.fei.devops.Global;
 import com.fei.devops.component.GitlabComponent;
+import com.fei.devops.component.GitlabComponent.GitlabFile;
 import com.fei.devops.component.GitlabComponent.GitlabGroup;
 import com.fei.devops.component.GitlabComponent.GitlabMember;
 import com.fei.devops.component.GitlabComponent.GitlabProject;
 import com.fei.devops.component.GitlabComponent.GitlabToken;
+import com.fei.devops.component.JenkinsComponent;
 import com.fei.devops.entity.GitlabTokenEntity;
 import com.fei.module.EsEntityDao;
 import com.fei.web.component.Session;
@@ -34,7 +37,12 @@ public class GroupController
     private GitlabComponent gitlabComponent;
 
     @Resource
+    private JenkinsComponent jenkinsComponent;
+
+    @Resource
     private EsEntityDao<GitlabTokenEntity> gitlabTokenEntityDao;
+
+    private String port = "8090";
 
     public static class GroupView
     {
@@ -328,10 +336,12 @@ public class GroupController
     {
         GitlabTokenEntity gitlabTokenEntity = this.gitlabTokenEntityDao.get(session.id);
         GitlabToken gitlabToken = ToolUtil.copy(gitlabTokenEntity, GitlabToken.class);
+        //获取群组信息
+        GitlabGroup gitlabGroup = this.gitlabComponent.getGroup(gitlabToken, id);
         //查询模板工程信息
         GitlabProject gitlabProjectTemplate = this.gitlabComponent.getProject(gitlabToken, templateId);
         //新增
-        GitlabProject gitlabProjectNew = this.gitlabComponent.createGroupProject(gitlabToken, id, name, description);
+        GitlabProject gitlabProjectNew = this.gitlabComponent.createGroupProject(gitlabToken, gitlabGroup.id, name, description);
         //查询新增项目资源默认分支信息
         GitlabComponent.GitlabBranch gitlabBranchDefault = null;
         List<GitlabComponent.GitlabBranch> branchList = this.gitlabComponent.listRepositoryBranch(gitlabToken, gitlabProjectNew.id);
@@ -343,24 +353,48 @@ public class GroupController
         }
         if (gitlabBranchDefault != null) {
             //清空文件
-            List<GitlabComponent.GitlabFile> toFileList = this.gitlabComponent.listRepositoryFile(gitlabToken, gitlabProjectNew.id);
-            for (GitlabComponent.GitlabFile gitlabFile : toFileList) {
-                if (gitlabFile.type.equals("blob")) {
+            List<GitlabFile> toFileList = this.gitlabComponent.listRepositoryFile(gitlabToken, gitlabProjectNew.id);
+            for (GitlabFile gitlabFile : toFileList) {
+                if (gitlabFile.type.equals(Global.gitlabBlobFileType)) {
                     this.gitlabComponent.deleteRepositoryFile(gitlabToken, gitlabProjectNew.id, gitlabBranchDefault.name, gitlabFile.path);
                 }
             }
+
+            GitlabFile jenkinsJobGitlabFile = null;
             //导入模板项目文件
-            List<GitlabComponent.GitlabFile> formFileList = this.gitlabComponent.listRepositoryFile(gitlabToken, gitlabProjectTemplate.id);
-            for (GitlabComponent.GitlabFile gitlabFile : formFileList) {
-                if (gitlabFile.type.equals("blob")) {
-                    String content = this.gitlabComponent.getRepositoryFile(gitlabToken, gitlabProjectTemplate.id, gitlabFile.path);
-                    content = this.contentFilter(gitlabProjectNew, content);
-                    //
-                    this.gitlabComponent.createRepositoryFile(gitlabToken, gitlabProjectNew.id, gitlabBranchDefault.name, gitlabFile.path, content);
+            List<GitlabFile> formFileList = this.gitlabComponent.listRepositoryFile(gitlabToken, gitlabProjectTemplate.id);
+            for (GitlabFile gitlabFile : formFileList) {
+                if (gitlabFile.type.equals(Global.gitlabBlobFileType)) {
+                    if (gitlabFile.name.equals(Global.gitlabJenkinsJobXmlFileName)) {
+                        //不复制jenkins的任务配置
+                        jenkinsJobGitlabFile = gitlabFile;
+                    } else {
+                        String content = this.gitlabComponent.getRepositoryFile(gitlabToken, gitlabProjectTemplate.id, gitlabFile.path);
+                        content = this.contentFilter(gitlabProjectNew, content);
+                        //
+                        this.gitlabComponent.createRepositoryFile(gitlabToken, gitlabProjectNew.id, gitlabBranchDefault.name, gitlabFile.path, content);
+                    }
                 }
             }
             //创建开发分支
-            this.gitlabComponent.createRepositoryBranch(gitlabToken, gitlabProjectNew.id, "dev", gitlabBranchDefault.name);
+            String devBranch = Global.gitlabDevBranchName;
+            this.gitlabComponent.createRepositoryBranch(gitlabToken, gitlabProjectNew.id, devBranch, gitlabBranchDefault.name);
+            //如果有jenkins-job配置,则创建开发分支job
+            if (jenkinsJobGitlabFile != null) {
+                String jobTemplate = this.gitlabComponent.getRepositoryFile(gitlabToken, gitlabProjectTemplate.id, jenkinsJobGitlabFile.path);
+                String devConfigXml = this.jenkinsJobFilter(gitlabProjectNew, devBranch, jobTemplate);
+                //创建jenkins view
+                this.jenkinsComponent.createView(gitlabGroup.name);
+                //创建jenkins dev job
+                String devJobName = gitlabProjectNew.name + "-" + devBranch;
+                String devJenkinsHookUrl = this.jenkinsComponent.createViewJob(gitlabGroup.name, devJobName, devConfigXml);
+                //绑定dev Gitlab webhook
+                this.gitlabComponent.addProjectHook(gitlabToken, gitlabProjectNew.id, devJenkinsHookUrl, this.jenkinsComponent.secretToken, devBranch);
+                //创建default job
+                String defaultConfigXml = this.jenkinsJobFilter(gitlabProjectNew, gitlabBranchDefault.name, jobTemplate);
+                String defaultJobName = gitlabProjectNew.name + "-" + gitlabBranchDefault.name;
+                this.jenkinsComponent.createViewJob(gitlabGroup.name, defaultJobName, defaultConfigXml);
+            }
         }
         //
         ProjectView projectView = ToolUtil.copy(gitlabProjectNew, ProjectView.class);
@@ -378,6 +412,17 @@ public class GroupController
     private String contentFilter(GitlabProject gitlabProject, String content)
     {
         content = content.replaceAll("\\$\\{appName\\}", gitlabProject.name);
+        return content;
+    }
+
+    private String jenkinsJobFilter(GitlabProject gitlabProject, String gitBranch, String content)
+    {
+        content = content.replaceAll("\\$\\{appName\\}", gitlabProject.name);
+        content = content.replaceAll("\\$\\{description\\}", gitlabProject.description);
+        content = content.replaceAll("\\$\\{gitUrl\\}", gitlabProject.httpUrlToRepo);
+        content = content.replaceAll("\\$\\{gitBranch\\}", gitBranch);
+        content = content.replaceAll("\\$\\{secretToken\\}", this.jenkinsComponent.secretTokenEncrypted);
+        content = content.replaceAll("\\$\\{port\\}", this.port);
         return content;
     }
 }
