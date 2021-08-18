@@ -121,7 +121,7 @@ public class GitlabComponentTest
         System.out.println(result);
     }
 
-    @Test
+//    @Test
     public void copyRepositoryFile() throws IOException, BizException
     {
         String fromId = "6";
