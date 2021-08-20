@@ -11,10 +11,10 @@ import com.fei.annotations.elasticsearch.EsStream;
 public class LogStream
 {
 
-    @EsColumn(desc = "id")
+    @EsColumn(description = "id")
     public String userId;
 
-    @EsColumn(desc = "姓名")
+    @EsColumn(description = "姓名")
     public String userName;
 
 }

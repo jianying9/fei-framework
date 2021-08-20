@@ -17,16 +17,16 @@ public class AppEntity
     @EsKey(desc = "id", auto = true)
     public String appId;
 
-    @EsColumn(desc = "名称")
+    @EsColumn(description = "名称")
     public String appName;
 
-    @EsColumn(desc = "描述")
+    @EsColumn(description = "描述")
     public String appDesc;
     
-    @EsColumn(analyzer = true, desc = "关键字")
+    @EsColumn(analyzer = true, description = "关键字")
     public String keyword;
 
-    @EsColumn(desc = "时间戳")
+    @EsColumn(description = "时间戳")
     public Date timestamp;
 
 }

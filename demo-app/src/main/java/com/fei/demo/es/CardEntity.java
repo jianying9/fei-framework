@@ -19,16 +19,16 @@ public class CardEntity
     @EsKey(desc = "id", auto = true)
     public String cardId;
 
-    @EsColumn(desc = "卡片集合")
+    @EsColumn(description = "卡片集合")
     public List<Long> longList;
 
-    @EsColumn(desc = "卡片集合")
+    @EsColumn(description = "卡片集合")
     public Set<Boolean> boolSet;
 
-    @EsColumn(desc = "卡片集合")
+    @EsColumn(description = "卡片集合")
     public String[] stringArray;
 
-    @EsColumn(desc = "创建时间")
+    @EsColumn(description = "创建时间")
     public Collection<Date> dateCollection;
 
 }

@@ -40,10 +40,10 @@ public class AccountController
     public static class AuthView
     {
 
-        @ResponseParam(desc = "auth的jwt信息")
+        @ResponseParam(description = "auth的jwt信息")
         public String auth;
 
-        @ResponseParam(desc = "更新auth的jwt信息")
+        @ResponseParam(description = "更新auth的jwt信息")
         public String refreshToken;
 
     }
@@ -56,10 +56,10 @@ public class AccountController
      * @return
      * @throws BizException
      */
-    @RequestMapping(value = "/loginByGitlab", desc = "通过gitlab的auth code登录")
+    @RequestMapping(value = "/loginByGitlab", description = "通过gitlab的auth code登录")
     public AuthView login(
-            @RequestParam(desc = "code") String code,
-            @RequestParam(desc = "重定向uri") String redirectUri
+            @RequestParam(description = "code") String code,
+            @RequestParam(description = "重定向uri") String redirectUri
     ) throws BizException, IOException
     {
         //通过code获取token
@@ -83,10 +83,10 @@ public class AccountController
     public static class SessionView
     {
 
-        @ResponseParam(desc = "用户id")
+        @ResponseParam(description = "用户id")
         public String id;
 
-        @ResponseParam(desc = "用户")
+        @ResponseParam(description = "用户")
         public String name;
 
     }
@@ -97,7 +97,7 @@ public class AccountController
      * @param session
      * @return
      */
-    @RequestMapping(value = "/get", auth = true, desc = "获取当前登录信息")
+    @RequestMapping(value = "/get", auth = true, description = "获取当前登录信息")
     public SessionView get(Session session)
     {
         SessionView sessionDto = ToolUtil.copy(session, SessionView.class);
@@ -111,9 +111,9 @@ public class AccountController
      * @return
      * @throws BizException
      */
-    @RequestMapping(value = "/refresh", desc = "通过refreshAuth重新获取auth")
+    @RequestMapping(value = "/refresh", description = "通过refreshAuth重新获取auth")
     public AuthView refresh(
-            @RequestParam(desc = "刷新请求token") String refreshToken
+            @RequestParam(description = "刷新请求token") String refreshToken
     ) throws BizException
     {
         Token token = this.jwtBean.verifyToken(refreshToken);

@@ -1,30 +1,30 @@
-package com.fei.demo.es;
+package com.fei.devops.entity;
 
 import com.fei.annotations.elasticsearch.EsColumn;
 import com.fei.annotations.elasticsearch.EsEntity;
 import com.fei.annotations.elasticsearch.EsKey;
 import java.util.Date;
-import java.util.List;
 
 /**
+ * 服务器
  *
  * @author jianying9
  */
 @EsEntity
-public class UserEntity
+public class ServerEntity
 {
 
     @EsKey(desc = "id", auto = true)
-    public String userId;
+    public String id;
 
-    @EsColumn(description = "姓名")
-    public String userName;
+    @EsColumn(description = "名称")
+    public String name;
 
-    @EsColumn(description = "钱")
-    public double money;
+    @EsColumn(description = "ip")
+    public String ip;
 
-    @EsColumn(description = "是否是小孩")
-    public boolean kid;
+    @EsColumn(description = "描述")
+    public String description;
 
     @EsColumn(description = "时间戳")
     public Date timestamp;

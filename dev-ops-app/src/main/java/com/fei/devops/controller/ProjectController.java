@@ -34,7 +34,7 @@ public class ProjectController
     public static class TemplateSearchView
     {
 
-        @ResponseParam(desc = "项目模板集合")
+        @ResponseParam(description = "项目模板集合")
         public List<TemplateView> templateArray = new ArrayList();
 
     }
@@ -42,27 +42,27 @@ public class ProjectController
     public static class TemplateView
     {
 
-        @ResponseParam(desc = "id")
+        @ResponseParam(description = "id")
         public String id;
 
-        @ResponseParam(desc = "名称")
+        @ResponseParam(description = "名称")
         public String name;
 
-        @ResponseParam(desc = "路径")
+        @ResponseParam(description = "路径")
         public String path;
 
-        @ResponseParam(desc = "可见性")
+        @ResponseParam(description = "可见性")
         public String visibility;
 
-        @ResponseParam(desc = "图标")
+        @ResponseParam(description = "图标")
         public String avatarUrl;
 
-        @ResponseParam(desc = "描述")
+        @ResponseParam(description = "描述")
         public String description;
 
     }
 
-    @RequestMapping(value = "/template/search", desc = "可用项目模板")
+    @RequestMapping(value = "/template/search", description = "可用项目模板")
     public TemplateSearchView searchTemplate(
             Session session
     ) throws BizException, IOException

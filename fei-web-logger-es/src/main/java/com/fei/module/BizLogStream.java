@@ -10,37 +10,37 @@ import com.fei.annotations.elasticsearch.EsStream;
 @EsStream
 public class BizLogStream
 {
-    @EsColumn(desc = "应用名称")
+    @EsColumn(description = "应用名称")
     public String appName;
 
-    @EsColumn(desc = "地址")
+    @EsColumn(description = "地址")
     public String host;
 
-    @EsColumn(desc = "端口")
+    @EsColumn(description = "端口")
     public int port;
 
-    @EsColumn(desc = "用户id")
+    @EsColumn(description = "用户id")
     public String userId;
 
-    @EsColumn(desc = "用户")
+    @EsColumn(description = "用户")
     public String userName;
 
-    @EsColumn(desc = "业务追踪id(多个微服务调用时追踪用)")
+    @EsColumn(description = "业务追踪id(多个微服务调用时追踪用)")
     public String groupId;
 
-    @EsColumn(desc = "路由")
+    @EsColumn(description = "路由")
     public String route;
 
-    @EsColumn(desc = "执行时间")
+    @EsColumn(description = "执行时间")
     public long processTime;
 
-    @EsColumn(desc = "controller执行时间")
+    @EsColumn(description = "controller执行时间")
     public long subProcessTime;
 
-    @EsColumn(desc = "请求内容", analyzer = true)
+    @EsColumn(description = "请求内容", analyzer = true)
     public String requestBody;
 
-    @EsColumn(desc = "响应内容", analyzer = true)
+    @EsColumn(description = "响应内容", analyzer = true)
     public String responseBody;
 
 }

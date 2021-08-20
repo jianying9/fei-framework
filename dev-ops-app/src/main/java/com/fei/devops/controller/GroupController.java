@@ -47,22 +47,22 @@ public class GroupController
     public static class GroupView
     {
 
-        @ResponseParam(desc = "id")
+        @ResponseParam(description = "id")
         public String id;
 
-        @ResponseParam(desc = "名称")
+        @ResponseParam(description = "名称")
         public String name;
 
-        @ResponseParam(desc = "路径")
+        @ResponseParam(description = "路径")
         public String path;
 
-        @ResponseParam(desc = "可见级别[private,internal,public]")
+        @ResponseParam(description = "可见级别[private,internal,public]")
         public String visibility;
 
-        @ResponseParam(desc = "图标")
+        @ResponseParam(description = "图标")
         public String avatarUrl;
 
-        @ResponseParam(desc = "描述")
+        @ResponseParam(description = "描述")
         public String description;
 
     }
@@ -70,7 +70,7 @@ public class GroupController
     public static class GroupSearchView
     {
 
-        @ResponseParam(desc = "群组集合")
+        @ResponseParam(description = "群组集合")
         public List<GroupView> groupArray = new ArrayList();
 
     }
@@ -83,7 +83,7 @@ public class GroupController
      * @throws BizException
      * @throws java.io.IOException
      */
-    @RequestMapping(value = "/search", desc = "用户列表查询")
+    @RequestMapping(value = "/search", description = "用户列表查询")
     public GroupSearchView search(Session session) throws BizException, IOException
     {
         GitlabTokenEntity gitlabTokenEntity = this.gitlabTokenEntityDao.get(session.id);
@@ -102,28 +102,28 @@ public class GroupController
     public static class GroupDetailView
     {
 
-        @ResponseParam(desc = "id")
+        @ResponseParam(description = "id")
         public String id;
 
-        @ResponseParam(desc = "名称")
+        @ResponseParam(description = "名称")
         public String name;
 
-        @ResponseParam(desc = "路径")
+        @ResponseParam(description = "路径")
         public String path;
 
-        @ResponseParam(desc = "可见级别[private,internal,public]")
+        @ResponseParam(description = "可见级别[private,internal,public]")
         public String visibility;
 
-        @ResponseParam(desc = "图标")
+        @ResponseParam(description = "图标")
         public String avatarUrl;
 
-        @ResponseParam(desc = "描述")
+        @ResponseParam(description = "描述")
         public String description;
 
-        @ResponseParam(desc = "成员集合")
+        @ResponseParam(description = "成员集合")
         public List<MemberView> memberArray;
 
-        @ResponseParam(desc = "项目集合")
+        @ResponseParam(description = "项目集合")
         public List<ProjectView> projectArray;
 
     }
@@ -137,10 +137,10 @@ public class GroupController
      * @throws com.fei.web.router.BizException
      * @throws java.io.IOException
      */
-    @RequestMapping(value = "/get", desc = "获取群组的详细信息")
+    @RequestMapping(value = "/get", description = "获取群组的详细信息")
     public GroupView get(
             Session session,
-            @RequestParam(desc = "id") String id
+            @RequestParam(description = "id") String id
     ) throws BizException, IOException
     {
         GitlabTokenEntity gitlabTokenEntity = this.gitlabTokenEntityDao.get(session.id);
@@ -154,10 +154,10 @@ public class GroupController
         return groupView;
     }
 
-    @RequestMapping(value = "/detail", desc = "获取群组的详细信息")
+    @RequestMapping(value = "/detail", description = "获取群组的详细信息")
     public GroupDetailView detail(
             Session session,
-            @RequestParam(desc = "id") String id
+            @RequestParam(description = "id") String id
     ) throws BizException, IOException
     {
         GitlabTokenEntity gitlabTokenEntity = this.gitlabTokenEntityDao.get(session.id);
@@ -197,11 +197,11 @@ public class GroupController
      * @throws BizException
      * @throws java.io.IOException
      */
-    @RequestMapping(value = "/add", desc = "新增群组")
+    @RequestMapping(value = "/add", description = "新增群组")
     public GroupView add(
             Session session,
-            @RequestParam(desc = "名称") String name,
-            @RequestParam(desc = "描述") String description
+            @RequestParam(description = "名称") String name,
+            @RequestParam(description = "描述") String description
     ) throws BizException, IOException
     {
         GitlabTokenEntity gitlabTokenEntity = this.gitlabTokenEntityDao.get(session.id);
@@ -215,19 +215,19 @@ public class GroupController
     public static class MemberView
     {
 
-        @ResponseParam(desc = "id")
+        @ResponseParam(description = "id")
         public String id;
 
-        @ResponseParam(desc = "名称")
+        @ResponseParam(description = "名称")
         public String name;
 
-        @ResponseParam(desc = "账号")
+        @ResponseParam(description = "账号")
         public String username;
 
-        @ResponseParam(desc = "状态")
+        @ResponseParam(description = "状态")
         public String state;
 
-        @ResponseParam(desc = "权限")
+        @ResponseParam(description = "权限")
         public int accessLevel;
 
     }
@@ -235,15 +235,15 @@ public class GroupController
     public static class MemberSearchView
     {
 
-        @ResponseParam(desc = "成员集合")
+        @ResponseParam(description = "成员集合")
         public List<MemberView> memberArray = new ArrayList();
 
     }
 
-    @RequestMapping(value = "/searchMember", desc = "群组成员查询")
+    @RequestMapping(value = "/searchMember", description = "群组成员查询")
     public MemberSearchView searchMember(
             Session session,
-            @RequestParam(desc = "群组id") String id
+            @RequestParam(description = "群组id") String id
     ) throws BizException, IOException
     {
         GitlabTokenEntity gitlabTokenEntity = this.gitlabTokenEntityDao.get(session.id);
@@ -259,12 +259,12 @@ public class GroupController
         return memberSearchView;
     }
 
-    @RequestMapping(value = "/member/add", desc = "群组新增成员")
+    @RequestMapping(value = "/member/add", description = "群组新增成员")
     public void addMember(
             Session session,
-            @RequestParam(desc = "群组id") String id,
-            @RequestParam(desc = "用户id") List<String> userIdArray,
-            @RequestParam(desc = "权限") int accessLevel
+            @RequestParam(description = "群组id") String id,
+            @RequestParam(description = "用户id") List<String> userIdArray,
+            @RequestParam(description = "权限") int accessLevel
     ) throws BizException, IOException
     {
         GitlabTokenEntity gitlabTokenEntity = this.gitlabTokenEntityDao.get(session.id);
@@ -287,11 +287,11 @@ public class GroupController
         }
     }
 
-    @RequestMapping(value = "/member/delete", desc = "群组删除成员")
+    @RequestMapping(value = "/member/delete", description = "群组删除成员")
     public MemberView deleteMember(
             Session session,
-            @RequestParam(desc = "群组id") String id,
-            @RequestParam(desc = "用户id") String userId
+            @RequestParam(description = "群组id") String id,
+            @RequestParam(description = "用户id") String userId
     ) throws BizException, IOException
     {
         GitlabTokenEntity gitlabTokenEntity = this.gitlabTokenEntityDao.get(session.id);
@@ -305,33 +305,33 @@ public class GroupController
     public static class ProjectView
     {
 
-        @ResponseParam(desc = "id")
+        @ResponseParam(description = "id")
         public String id;
 
-        @ResponseParam(desc = "名称")
+        @ResponseParam(description = "名称")
         public String name;
 
-        @ResponseParam(desc = "路径")
+        @ResponseParam(description = "路径")
         public String path;
 
-        @ResponseParam(desc = "可见性")
+        @ResponseParam(description = "可见性")
         public String visibility;
 
-        @ResponseParam(desc = "图标")
+        @ResponseParam(description = "图标")
         public String avatarUrl;
 
-        @ResponseParam(desc = "描述")
+        @ResponseParam(description = "描述")
         public String description;
 
     }
 
-    @RequestMapping(value = "/project/add", desc = "群组新增项目")
+    @RequestMapping(value = "/project/add", description = "群组新增项目")
     public ProjectView addProject(
             Session session,
-            @RequestParam(desc = "群组id") String id,
-            @RequestParam(desc = "项目模板id") String templateId,
-            @RequestParam(desc = "项目名称") String name,
-            @RequestParam(desc = "描述") String description
+            @RequestParam(description = "群组id") String id,
+            @RequestParam(description = "项目模板id") String templateId,
+            @RequestParam(description = "项目名称") String name,
+            @RequestParam(description = "描述") String description
     ) throws BizException, IOException
     {
         GitlabTokenEntity gitlabTokenEntity = this.gitlabTokenEntityDao.get(session.id);

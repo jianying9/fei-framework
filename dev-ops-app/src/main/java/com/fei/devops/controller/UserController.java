@@ -35,22 +35,22 @@ public class UserController
     public static class UserView
     {
 
-        @ResponseParam(desc = "id")
+        @ResponseParam(description = "id")
         public String id;
 
-        @ResponseParam(desc = "名称")
+        @ResponseParam(description = "名称")
         public String name;
 
-        @ResponseParam(desc = "账号")
+        @ResponseParam(description = "账号")
         public String username;
 
-        @ResponseParam(desc = "邮箱")
+        @ResponseParam(description = "邮箱")
         public String email;
 
-        @ResponseParam(desc = "是否管理员")
+        @ResponseParam(description = "是否管理员")
         public boolean isAdmin;
 
-        @ResponseParam(desc = "状态")
+        @ResponseParam(description = "状态")
         public String state;
 
     }
@@ -58,7 +58,7 @@ public class UserController
     public static class UserSearchView
     {
 
-        @ResponseParam(desc = "用户集合")
+        @ResponseParam(description = "用户集合")
         public List<UserView> userArray = new ArrayList();
 
     }
@@ -71,7 +71,7 @@ public class UserController
      * @throws BizException
      * @throws java.io.IOException
      */
-    @RequestMapping(value = "/search", desc = "用户列表查询")
+    @RequestMapping(value = "/search", description = "用户列表查询")
     public UserSearchView search(Session session) throws BizException, IOException
     {
         GitlabTokenEntity gitlabTokenEntity = this.gitlabTokenEntityDao.get(session.id);
@@ -96,10 +96,10 @@ public class UserController
      * @throws com.fei.web.router.BizException
      * @throws java.io.IOException
      */
-    @RequestMapping(value = "/get", desc = "获取user的详细信息")
+    @RequestMapping(value = "/get", description = "获取user的详细信息")
     public UserView get(
             Session session,
-            @RequestParam(desc = "id") String id
+            @RequestParam(description = "id") String id
     ) throws BizException, IOException
     {
         GitlabTokenEntity gitlabTokenEntity = this.gitlabTokenEntityDao.get(session.id);
@@ -120,7 +120,7 @@ public class UserController
      * @throws BizException
      * @throws IOException 
      */
-    @RequestMapping(value = "/current", desc = "获取当前用户的详细信息")
+    @RequestMapping(value = "/current", description = "获取当前用户的详细信息")
     public UserView current(
             Session session
     ) throws BizException, IOException
@@ -139,10 +139,10 @@ public class UserController
     public static class UserAddView
     {
 
-        @ResponseParam(desc = "id")
+        @ResponseParam(description = "id")
         public String id;
 
-        @ResponseParam(desc = "初始密码")
+        @ResponseParam(description = "初始密码")
         public String password;
 
     }
@@ -158,12 +158,12 @@ public class UserController
      * @throws BizException
      * @throws java.io.IOException
      */
-    @RequestMapping(value = "/add", desc = "新增用户")
+    @RequestMapping(value = "/add", description = "新增用户")
     public UserAddView add(
             Session session,
-            @RequestParam(desc = "用户名称") String name,
-            @RequestParam(desc = "账号") String username,
-            @RequestParam(desc = "邮箱") String email
+            @RequestParam(description = "用户名称") String name,
+            @RequestParam(description = "账号") String username,
+            @RequestParam(description = "邮箱") String email
     ) throws BizException, IOException
     {
         GitlabTokenEntity gitlabTokenEntity = this.gitlabTokenEntityDao.get(session.id);

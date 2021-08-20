@@ -17,21 +17,21 @@ public class GitlabTokenEntity
     @EsKey(desc = "id")
     public String id;
 
-    @EsColumn(desc = "访问token")
+    @EsColumn(description = "访问token")
     public String accessToken;
 
-    @EsColumn(desc = "token类型")
+    @EsColumn(description = "token类型")
     public String tokenType;
 
-    @EsColumn(desc = "到期时间")
+    @EsColumn(description = "到期时间")
     public long expires;
 
-    @EsColumn(desc = "刷新token")
+    @EsColumn(description = "刷新token")
     public String refreshToken;
 
-    @EsColumn(desc = "创建时间")
+    @EsColumn(description = "创建时间")
     public long createdAt;
 
-    @EsColumn(desc = "时间戳")
+    @EsColumn(description = "时间戳")
     public Date timestamp;
 }

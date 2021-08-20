@@ -34,5 +34,5 @@ public @interface RequestMapping
      *
      * @return
      */
-    public String desc();
+    public String description();
 }

@@ -15,6 +15,6 @@ import java.lang.annotation.Target;
 public @interface ResponseParam
 {
 
-    public String desc();
+    public String description();
 
 }

@@ -37,39 +37,39 @@ public class UserController
         public List<UserV> userArray;
     }
 
-    @RequestParam(desc = "人")
+    @RequestParam(description = "人")
     public static class UserAddD
     {
 
-        @RequestParam(desc = "用户名称", max = 32)
+        @RequestParam(description = "用户名称", max = 32)
         public String userName;
 
-        @RequestParam(desc = "用户名称", regexp = "[男|女]")
+        @RequestParam(description = "用户名称", regexp = "[男|女]")
         public String sex;
 
-        @RequestParam(desc = "年龄", min = 1, max = 150, required = false)
+        @RequestParam(description = "年龄", min = 1, max = 150, required = false)
         public int age;
 
-        @RequestParam(desc = "描述", max = 512)
+        @RequestParam(description = "描述", max = 512)
         public String desc;
 
-        @RequestParam(desc = "标签", required = false)
+        @RequestParam(description = "标签", required = false)
         public List<String> tagList;
 
-        @RequestParam(desc = "小孩", required = false)
+        @RequestParam(description = "小孩", required = false)
         public List<UserV> childList;
 
     }
 
-//    @RequestMapping(value = "/get", desc = "用户信息获取")
-    public UserV get(@RequestParam(desc = "用户id") String userId)
+//    @RequestMapping(value = "/get", description = "用户信息获取")
+    public UserV get(@RequestParam(description = "用户id") String userId)
     {
         UserV userDto = this.userComponent.getUser(userId);
         return userDto;
     }
 
-    @RequestMapping(value = "/batchGet", auth = false, desc = "用户信息获取")
-    public UserArrayV batchGet(@RequestParam(desc = "用户id集合") List<String> userIdArray)
+    @RequestMapping(value = "/batchGet", auth = false, description = "用户信息获取")
+    public UserArrayV batchGet(@RequestParam(description = "用户id集合") List<String> userIdArray)
     {
         UserArrayV userArrayV = new UserArrayV();
         userArrayV.userArray = new ArrayList();
@@ -80,7 +80,7 @@ public class UserController
         return userArrayV;
     }
 
-//    @RequestMapping(value = "/add", desc = "用户信息获取")
+//    @RequestMapping(value = "/add", description = "用户信息获取")
     public UserV add(UserAddD userAddD)
     {
         UserV userDto = this.userComponent.addUser(userAddD);

@@ -27,7 +27,7 @@ public @interface EsColumn
      *
      * @return
      */
-    public String desc();
+    public String description();
 
     /**
      * 如果是String类型,配置是否要分词。不需要分词,用keyword存储,最长1024个字符。需要分词,用text存储,长度无限制

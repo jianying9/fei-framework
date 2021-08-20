@@ -30,16 +30,16 @@ public class AppController
     public static class AppView
     {
 
-        @ResponseParam(desc = "appId")
+        @ResponseParam(description = "appId")
         public String appId;
 
-        @ResponseParam(desc = "名称")
+        @ResponseParam(description = "名称")
         public String appName;
 
-        @ResponseParam(desc = "描述")
+        @ResponseParam(description = "描述")
         public String appDesc;
 
-        @ResponseParam(desc = "创建时间")
+        @ResponseParam(description = "创建时间")
         public Date timestamp;
 
     }
@@ -47,7 +47,7 @@ public class AppController
     public static class AppSearchView
     {
 
-        @ResponseParam(desc = "app集合")
+        @ResponseParam(description = "app集合")
         public List<AppView> appArray = new ArrayList();
 
     }
@@ -59,9 +59,9 @@ public class AppController
      * @return
      * @throws BizException
      */
-    @RequestMapping(value = "/search", desc = "应用列表查询")
+    @RequestMapping(value = "/search", description = "应用列表查询")
     public AppSearchView search(
-            @RequestParam(required = false, desc = "关键字") String keyword
+            @RequestParam(required = false, description = "关键字") String keyword
     ) throws BizException
     {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
@@ -85,9 +85,9 @@ public class AppController
      * @return
      * @throws com.fei.web.router.BizException
      */
-    @RequestMapping(value = "/get", desc = "获取app的详细信息")
+    @RequestMapping(value = "/get", description = "获取app的详细信息")
     public AppView get(
-            @RequestParam(desc = "appId") String appId
+            @RequestParam(description = "appId") String appId
     ) throws BizException
     {
         AppEntity appEntity = this.appEntityDao.get(appId);
@@ -106,10 +106,10 @@ public class AppController
      * @return
      * @throws BizException
      */
-    @RequestMapping(value = "/add", desc = "新增app")
+    @RequestMapping(value = "/add", description = "新增app")
     public AppView add(
-            @RequestParam(desc = "应用名称") String appName,
-            @RequestParam(desc = "应用描述") String appDesc
+            @RequestParam(description = "应用名称") String appName,
+            @RequestParam(description = "应用描述") String appDesc
     ) throws BizException
     {
         AppEntity appEntity = new AppEntity();

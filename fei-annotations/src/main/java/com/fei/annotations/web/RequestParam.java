@@ -23,6 +23,6 @@ public @interface RequestParam
 
     public String regexp() default "";
 
-    public String desc();
+    public String description();
 
 }
