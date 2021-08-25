@@ -112,6 +112,12 @@ export default {
         route: "/group/list",
         title: "群组",
       },
+      {
+        color: "blue-grey darken-2",
+        icon: "mdi-server",
+        route: "/node/list",
+        title: "节点",
+      },
     ],
   }),
   mounted: function () {

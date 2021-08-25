@@ -28,6 +28,10 @@ const api = {
     group_project_add: '/group/project/add',
     //项目
     project_template_search: '/project/template/search',
+    //节点
+    node_search: '/node/search',
+    node_add: '/node/add',
+    node_updatePublishOverSSH: '/node/updatePublishOverSSH',
 };
 
 const global = {
