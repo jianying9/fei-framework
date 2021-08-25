@@ -186,4 +186,20 @@ public class JenkinsComponent
         }
     }
 
+    public void updateConfig(String formData) throws IOException, BizException
+    {
+        String uri = this.host + "/configSubmit";
+        HttpPost request = new HttpPost(uri);
+        request.setHeader("Content-Type", "application/x-www-form-urlencoded");
+        HttpEntity httpEntity = new StringEntity(formData, "utf-8");
+        request.setEntity(httpEntity);
+        ResponseHandler<String> responseHandler = new BasicResponseHandler();
+        try {
+            this.client.execute(request, responseHandler, this.localContext);
+        } catch (HttpResponseException ex) {
+            throw new BizException("jenkins_updateConfig_error", this.getErrorMsg(ex));
+        }
+        
+    }
+
 }

@@ -4,7 +4,12 @@ import com.fei.annotations.component.Resource;
 import com.fei.app.test.ResourceMock;
 import com.fei.devops.AppMain;
 import com.fei.web.router.BizException;
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLDecoder;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -89,6 +94,39 @@ public class JenkinsComponentTest
                 + "  <buildWrappers/>\n"
                 + "</project>";
         this.jenkinsComponent.createViewJob("test3", "server-zlw-center-product5", configXml);
+    }
+
+//    @Test
+    public void updateConfig() throws IOException, BizException
+    {
+
+        String formData = this.getResource("/config.txt");
+        this.jenkinsComponent.updateConfig(formData);
+    }
+
+    private String getResource(String name) throws IOException
+    {
+        InputStream inputStream = this.getClass().getResourceAsStream(name);
+        ByteArrayOutputStream result = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int length;
+        while ((length = inputStream.read(buffer)) != -1) {
+            result.write(buffer, 0, length);
+        }
+        return result.toString("UTF-8");
+    }
+
+//    @Test
+    public void submitFile() throws IOException
+    {
+        String text = this.getResource("/configSubmit.txt");
+        //
+        text = URLDecoder.decode(text, "UTF-8");
+        //
+        String fileName = this.getClass().getResource("").getPath() + "config.txt";
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+            writer.write(text);
+        }
     }
 
 }
