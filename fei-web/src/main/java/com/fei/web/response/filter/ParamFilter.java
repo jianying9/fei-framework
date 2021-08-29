@@ -1,10 +1,10 @@
-package com.fei.web.router.validation;
+package com.fei.web.response.filter;
 
 /**
  *
  * @author jianying9
  */
-public interface ValidationHandler
+public interface ParamFilter
 {
 
     public String getKey();
@@ -13,6 +13,6 @@ public interface ValidationHandler
 
     public String getType();
 
-    public String validate(Object value);
+    public void filter(Object value);
 
 }

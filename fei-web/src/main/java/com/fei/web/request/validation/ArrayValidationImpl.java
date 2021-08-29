@@ -1,4 +1,4 @@
-package com.fei.web.router.validation;
+package com.fei.web.request.validation;
 
 import com.alibaba.fastjson.JSONArray;
 import java.util.List;
@@ -8,32 +8,32 @@ import java.util.List;
  *
  * @author jianying9
  */
-public class ArrayHandlerImpl implements ValidationHandler
+public class ArrayValidationImpl implements ParamValidation
 {
 
     private final String errorMsg;
     
     private final String type;
 
-    private final ValidationHandler typeValidationHandler;
+    private final ParamValidation paramValidation;
 
-    public ArrayHandlerImpl(ValidationHandler typeValidationHandler)
+    public ArrayValidationImpl(ParamValidation paramValidation)
     {
-        this.typeValidationHandler = typeValidationHandler;
-        this.errorMsg = this.typeValidationHandler.getName() + " must be array<" + this.typeValidationHandler.getType() + ">";
-        this.type = "array<" + this.typeValidationHandler.getType() + ">";
+        this.paramValidation = paramValidation;
+        this.errorMsg = this.paramValidation.getName() + " must be array<" + this.paramValidation.getType() + ">";
+        this.type = "array<" + this.paramValidation.getType() + ">";
     }
 
     @Override
     public String getKey()
     {
-        return this.typeValidationHandler.getKey();
+        return this.paramValidation.getKey();
     }
 
     @Override
     public String getName()
     {
-        return this.typeValidationHandler.getName();
+        return this.paramValidation.getName();
     }
 
     @Override
@@ -44,7 +44,7 @@ public class ArrayHandlerImpl implements ValidationHandler
             if (value instanceof JSONArray) {
                 JSONArray valueArray = (JSONArray) value;
                 for (Object subValue : valueArray) {
-                    result = this.typeValidationHandler.validate(subValue);
+                    result = this.paramValidation.validate(subValue);
                     if (result.isEmpty() == false) {
                         result = this.errorMsg;
                         break;
@@ -53,7 +53,7 @@ public class ArrayHandlerImpl implements ValidationHandler
             } else if (value instanceof List) {
                 List<Object> valueList = (List<Object>) value;
                 for (Object subValue : valueList) {
-                    result = this.typeValidationHandler.validate(subValue);
+                    result = this.paramValidation.validate(subValue);
                     if (result.isEmpty() == false) {
                         result = this.errorMsg;
                         break;

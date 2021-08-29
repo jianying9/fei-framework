@@ -1,4 +1,4 @@
-package com.fei.web.router.validation;
+package com.fei.web.request.validation;
 
 import com.alibaba.fastjson.JSONObject;
 import java.util.HashSet;
@@ -10,22 +10,22 @@ import java.util.Set;
  *
  * @author jianying9
  */
-public class ObjectHandlerImpl implements ValidationHandler
+public class ObjectValidationImpl implements ParamValidation
 {
 
     private final String key;
     private final String name;
     private final String type;
     private final String errorMsg;
-    private final Map<String, ValidationHandler> validationHandlerMap;
+    private final Map<String, ParamValidation> paramValidationMap;
 
-    public ObjectHandlerImpl(String key, String name, Map<String, ValidationHandler> validationHandlerMap)
+    public ObjectValidationImpl(String key, String name, Map<String, ParamValidation> paramValidationMap)
     {
         this.key = key;
         this.name = name;
         this.type = "object";
         this.errorMsg = this.name + " must be object";
-        this.validationHandlerMap = validationHandlerMap;
+        this.paramValidationMap = paramValidationMap;
     }
 
     @Override
@@ -49,17 +49,17 @@ public class ObjectHandlerImpl implements ValidationHandler
                 result = "";
                 JSONObject data = (JSONObject) value;
                 Object childValue;
-                ValidationHandler validationHandler;
+                ParamValidation paramValidation;
                 Set<String> keySet = new HashSet();
                 keySet.addAll(data.keySet());
-                for (String key : keySet) {
-                    validationHandler = this.validationHandlerMap.get(key);
-                    if (validationHandler == null) {
+                for (String param : keySet) {
+                    paramValidation = this.paramValidationMap.get(param);
+                    if (paramValidation == null) {
                         //没有定义,丢弃
-                        data.remove(key);
+                        data.remove(param);
                     } else {
-                        childValue = data.get(key);
-                        result = validationHandler.validate(childValue);
+                        childValue = data.get(param);
+                        result = paramValidation.validate(childValue);
                         if (result.isEmpty() == false) {
                             break;
                         }

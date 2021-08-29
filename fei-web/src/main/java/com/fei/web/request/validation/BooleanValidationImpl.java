@@ -1,29 +1,24 @@
-package com.fei.web.router.validation;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+package com.fei.web.request.validation;
 
 /**
- * 正则类型处理类
+ * boolean类型处理类
  *
  * @author jianying9
  */
-public class RegexHandlerImpl implements ValidationHandler
+public class BooleanValidationImpl implements ParamValidation
 {
 
     private final String key;
     private final String name;
     private final String type;
-    private final Pattern pattern;
     private final String errorMsg;
 
-    public RegexHandlerImpl(String key, String name, String regex)
+    public BooleanValidationImpl(String key, String name)
     {
         this.key = key;
         this.name = name;
-        this.pattern = Pattern.compile(regex);
-        this.errorMsg = this.name + " must be regex(" + regex + ")";
-        this.type = "regex(" + regex + ")";
+        this.type = "boolean";
+        this.errorMsg = this.name + " must be boolean";
     }
 
     @Override
@@ -31,10 +26,16 @@ public class RegexHandlerImpl implements ValidationHandler
     {
         String result = "";
         if (value != null) {
-            String v = value.toString();
-            Matcher matcher = this.pattern.matcher(v);
-            if (matcher.matches()) {
+            if (value instanceof Boolean) {
                 result = "";
+            } else if (value instanceof String) {
+                String v = (String) value;
+                v = v.toLowerCase();
+                if (v.equals("true") || v.equals("false")) {
+                    result = "";
+                } else {
+                    result = this.errorMsg;
+                }
             } else {
                 result = this.errorMsg;
             }

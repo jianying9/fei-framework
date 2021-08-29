@@ -1,4 +1,4 @@
-package com.fei.web.router.validation;
+package com.fei.web.request.validation;
 
 import com.fei.app.utils.ToolUtil;
 import java.util.Date;
@@ -8,7 +8,7 @@ import java.util.Date;
  *
  * @author jianying9
  */
-public class DateHandlerImpl implements ValidationHandler
+public class DateValidationImpl implements ParamValidation
 {
 
     private final String key;
@@ -16,7 +16,7 @@ public class DateHandlerImpl implements ValidationHandler
     private final String type;
     private final String errorMsg;
 
-    public DateHandlerImpl(String key, String name)
+    public DateValidationImpl(String key, String name)
     {
         this.key = key;
         this.name = name;

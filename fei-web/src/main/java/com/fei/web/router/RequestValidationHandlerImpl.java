@@ -3,13 +3,13 @@ package com.fei.web.router;
 import com.alibaba.fastjson.JSONObject;
 import com.fei.web.request.Request;
 import com.fei.web.response.Response;
-import com.fei.web.router.validation.ValidationHandler;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import com.fei.web.request.validation.ParamValidation;
 
 /**
- *
+ * 请求参数验证
  * @author jianying9
  */
 public class RequestValidationHandlerImpl implements RouteHandler
@@ -17,9 +17,9 @@ public class RequestValidationHandlerImpl implements RouteHandler
 
     private final RouteHandler nextHandler;
 
-    private final Map<String, ValidationHandler> validationHandlerMap;
+    private final Map<String, ParamValidation> validationHandlerMap;
 
-    public RequestValidationHandlerImpl(RouteHandler nextHandler, Map<String, ValidationHandler> validationHandlerMap)
+    public RequestValidationHandlerImpl(RouteHandler nextHandler, Map<String, ParamValidation> validationHandlerMap)
     {
         this.nextHandler = nextHandler;
         this.validationHandlerMap = validationHandlerMap;
@@ -31,7 +31,7 @@ public class RequestValidationHandlerImpl implements RouteHandler
         Response response;
         JSONObject data = request.getData();
         Object childValue;
-        ValidationHandler validationHandler;
+        ParamValidation validationHandler;
         //丢弃没有定义的参数
         Set<String> keySet = new HashSet();
         keySet.addAll(data.keySet());
@@ -44,7 +44,7 @@ public class RequestValidationHandlerImpl implements RouteHandler
         }
         //验证
         String result = "";
-        for (Map.Entry<String, ValidationHandler> entry : this.validationHandlerMap.entrySet()) {
+        for (Map.Entry<String, ParamValidation> entry : this.validationHandlerMap.entrySet()) {
             childValue = data.get(entry.getKey());
             validationHandler = entry.getValue();
             result = validationHandler.validate(childValue);

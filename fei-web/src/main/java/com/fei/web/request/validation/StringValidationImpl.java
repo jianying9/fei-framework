@@ -1,11 +1,11 @@
-package com.fei.web.router.validation;
+package com.fei.web.request.validation;
 
 /**
  * 字符类型处理类
  *
  * @author jianying9
  */
-public final class StringHandlerImpl implements ValidationHandler
+public final class StringValidationImpl implements ParamValidation
 {
 
     private final long max;
@@ -15,7 +15,7 @@ public final class StringHandlerImpl implements ValidationHandler
     private final String type;
     private final String errorMsg;
 
-    public StringHandlerImpl(String key, String name, long max, long min)
+    public StringValidationImpl(String key, String name, long max, long min)
     {
         this.key = key;
         this.name = name;

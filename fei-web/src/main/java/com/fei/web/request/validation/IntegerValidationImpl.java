@@ -1,11 +1,11 @@
-package com.fei.web.router.validation;
+package com.fei.web.request.validation;
 
 /**
  * 数字类型处理类
  *
  * @author jianying9
  */
-public final class IntegerHandlerImpl implements ValidationHandler
+public final class IntegerValidationImpl implements ParamValidation
 {
 
     private final String key;
@@ -16,7 +16,7 @@ public final class IntegerHandlerImpl implements ValidationHandler
     private final String errorMsg;
     private final boolean limit;
 
-    public IntegerHandlerImpl(String key, String name, long max, long min)
+    public IntegerValidationImpl(String key, String name, long max, long min)
     {
         this.key = key;
         this.name = name;
