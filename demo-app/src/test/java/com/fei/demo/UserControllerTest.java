@@ -6,7 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.fei.annotations.component.Resource;
 import com.fei.demo.controller.UserController;
-import com.fei.demo.controller.UserController.UserV;
+import com.fei.demo.controller.UserController.UserView;
 import com.fei.app.test.ResourceMock;
 import com.fei.web.test.RouterMock;
 import org.junit.After;
@@ -63,11 +63,11 @@ public class UserControllerTest
     public void get2()
     {
         String userId = "1";
-        UserV userV = this.userController.get(userId);
-        System.out.println(JSON.toJSONString(userV, SerializerFeature.PrettyFormat));
+        UserView userView = this.userController.get(userId);
+        System.out.println(JSON.toJSONString(userView, SerializerFeature.PrettyFormat));
     }
 
-    @Test
+//    @Test
     public void batchGet()
     {
         JSONObject input = new JSONObject();
@@ -79,6 +79,29 @@ public class UserControllerTest
         input.put("userIdArray", array);
         input.put("userId", 999);
         routerMock.perform("/user/batchGet", input, this.auth);
+    }
+    
+//    @Test
+    public void add()
+    {
+        JSONObject input = new JSONObject();
+        input.put("userName", "xxxx");
+        input.put("sex", "男");
+        input.put("age", 12);
+        input.put("desc", "坏人一个");
+        //
+        JSONArray tagList = new JSONArray();
+        tagList.add("爱钱");
+        tagList.add("无情");
+        input.put("tagList", tagList);
+        //
+        JSONObject child = new JSONObject();
+        child.put("userName", "yyyy");
+        child.put("sex", "男");
+        JSONArray childList = new JSONArray();
+        childList.add(child);
+        input.put("childList", childList);
+        routerMock.perform("/user/add", input, this.auth);
     }
 
 }

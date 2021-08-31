@@ -46,7 +46,6 @@ public class ArrayValidationImpl implements ParamValidation
                 for (Object subValue : valueArray) {
                     result = this.paramValidation.validate(subValue);
                     if (result.isEmpty() == false) {
-                        result = this.errorMsg;
                         break;
                     }
                 }
@@ -55,7 +54,6 @@ public class ArrayValidationImpl implements ParamValidation
                 for (Object subValue : valueList) {
                     result = this.paramValidation.validate(subValue);
                     if (result.isEmpty() == false) {
-                        result = this.errorMsg;
                         break;
                     }
                 }

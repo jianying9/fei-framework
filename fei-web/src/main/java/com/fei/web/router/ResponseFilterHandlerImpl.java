@@ -31,7 +31,7 @@ public class ResponseFilterHandlerImpl implements RouteHandler
     {
         Response response = this.nextHandler.processRequest(request);
         //删除多余的响应参数
-        JSONObject data = request.getData();
+        JSONObject data = response.getData();
         Object childValue;
         ParamFilter paramFilter;
         Set<String> keySet = new HashSet();

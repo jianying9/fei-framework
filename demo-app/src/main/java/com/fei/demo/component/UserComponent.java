@@ -1,8 +1,8 @@
 package com.fei.demo.component;
 
 import com.fei.annotations.component.Component;
-import com.fei.demo.controller.UserController.UserAddD;
-import com.fei.demo.controller.UserController.UserV;
+import com.fei.demo.controller.UserController.UserAddRequest;
+import com.fei.demo.controller.UserController.UserView;
 import com.fei.app.utils.ToolUtil;
 
 /**
@@ -13,9 +13,9 @@ import com.fei.app.utils.ToolUtil;
 public class UserComponent
 {
 
-    public UserV getUser(String userId)
+    public UserView getUser(String userId)
     {
-        UserV userDto = new UserV();
+        UserView userDto = new UserView();
         userDto.userId = userId;
         userDto.userName = "name1";
         if (userId.equals("1") == false) {
@@ -26,9 +26,9 @@ public class UserComponent
         return userDto;
     }
 
-    public UserV addUser(UserAddD userAddDto)
+    public UserView addUser(UserAddRequest userAddDto)
     {
-        UserV userDto = ToolUtil.copy(userAddDto, UserV.class);
+        UserView userDto = ToolUtil.copy(userAddDto, UserView.class);
         userDto.userId = "3444";
         return userDto;
     }

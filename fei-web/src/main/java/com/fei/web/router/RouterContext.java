@@ -23,11 +23,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import com.fei.annotations.web.RequestParam;
+import com.fei.annotations.web.ResponseParam;
 import com.fei.web.request.validation.DateValidationImpl;
 import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.fei.web.request.validation.ParamValidation;
+import com.fei.web.response.filter.ArrayFilterImpl;
+import com.fei.web.response.filter.BasicFilterImpl;
+import com.fei.web.response.filter.ObjectFilterImpl;
+import com.fei.web.response.filter.ParamFilter;
 
 /**
  * 路由对象上下文
@@ -48,8 +53,6 @@ public class RouterContext
     private Object currController = null;
 
     private Method currMethod = null;
-
-    private Parameter currParameter = null;
 
     public void add(String route, Object controller, Method method, boolean auth)
     {
@@ -83,6 +86,8 @@ public class RouterContext
         this.checkReturnSupport(returnType);
         //业务方法执行
         RouteHandler routeHandler = new ControlHandlerImpl(route, controller, method);
+        //返回数据过滤
+        routeHandler = this.createResponseFilterImpl(routeHandler, returnType);
         //参数验证
         routeHandler = this.createRequestValidationImpl(routeHandler, method);
         //用户验证
@@ -99,11 +104,9 @@ public class RouterContext
         Parameter[] parameterArray = method.getParameters();
         Class<?> paramClass;
         Map<String, ParamValidation> allMap = new HashMap();
-        //校验-输入对象和输出对象只能是
         for (Parameter parameter : parameterArray) {
             paramClass = parameter.getType();
             this.currClassLinkList.clear();
-            this.currParameter = parameter;
             if (parameter.isAnnotationPresent(RequestParam.class)) {
                 if (ToolUtil.isBasicType(paramClass)) {
                     //参数为基础类型
@@ -162,8 +165,8 @@ public class RouterContext
             paramValidation = new DateValidationImpl(key, name);
         } else {
             //不支持类型
-            this.logger.error("{}:{}:{} unsupport parameterType {}", currController.getClass().getName(), currMethod.getName(), this.currParameter.getName(), type.getName());
-            throw new RuntimeException(this.currParameter.getName() + " unsupport parameterType" + type.getName());
+            this.logger.error("{}:{}:{} unsupport parameterType {}", currController.getClass().getName(), currMethod.getName(), name, type.getName());
+            throw new RuntimeException(name + " unsupport parameterType" + type.getName());
         }
         //是否需要非空判断
         if (requestParam.required()) {
@@ -220,16 +223,16 @@ public class RouterContext
                         if (ToolUtil.isBasicType(type)) {
                             //参数为基础类型
                             paramValidation = this.createBasicValidation(type, field.getName(), paramName, requestParam);
-                        } else if (Collection.class.isAssignableFrom(paramClass)) {
+                        } else if (Collection.class.isAssignableFrom(type)) {
                             //参数为集合类型
                             Type generictype = field.getGenericType();
                             ParameterizedType listGenericType = (ParameterizedType) generictype;
                             Type[] listActualTypeArguments = listGenericType.getActualTypeArguments();
                             Class<?> subType = (Class<?>) listActualTypeArguments[0];
                             paramValidation = this.createCollectionValidation(subType, field.getName(), paramName, requestParam);
-                        } else if (paramClass.isArray()) {
+                        } else if (type.isArray()) {
                             //数组
-                            Class<?> componentType = paramClass.getComponentType();
+                            Class<?> componentType = type.getComponentType();
                             paramValidation = this.createCollectionValidation(componentType, field.getName(), paramName, requestParam);
                         } else {
                             //对象
@@ -247,6 +250,133 @@ public class RouterContext
             this.currClassLinkList.add(paramClass);
         }
         return paramValidationMap;
+    }
+
+    private RouteHandler createResponseFilterImpl(RouteHandler routeHandler, Class<?> returnType)
+    {
+        this.currClassLinkList.clear();
+        Map<String, ParamFilter> paramFilterMap = new HashMap();
+        //
+        String paramName;
+        Class<?> type;
+        Field[] fields = returnType.getDeclaredFields();
+        ParamFilter paramFilter;
+        ResponseParam responseParam;
+        for (Field field : fields) {
+            if (Modifier.isStatic(field.getModifiers()) == false && Modifier.isFinal(field.getModifiers()) == false) {
+                if (field.isAnnotationPresent(ResponseParam.class)) {
+                    responseParam = field.getAnnotation(ResponseParam.class);
+                    paramName = field.getName();
+                    type = field.getType();
+                    if (ToolUtil.isBasicType(type)) {
+                        //参数为基础类型
+                        paramFilter = this.createBasicFilter(type, field.getName(), paramName, responseParam);
+                    } else if (Collection.class.isAssignableFrom(type)) {
+                        //参数为集合类型
+                        Type generictype = field.getGenericType();
+                        ParameterizedType listGenericType = (ParameterizedType) generictype;
+                        Type[] listActualTypeArguments = listGenericType.getActualTypeArguments();
+                        Class<?> subType = (Class<?>) listActualTypeArguments[0];
+                        paramFilter = this.createCollectionFilter(subType, field.getName(), paramName, responseParam);
+                    } else if (type.isArray()) {
+                        //数组
+                        Class<?> componentType = type.getComponentType();
+                        paramFilter = this.createCollectionFilter(componentType, field.getName(), paramName, responseParam);
+                    } else {
+                        //对象
+                        Map<String, ParamFilter> subFilterMap = this.createObjectFilterMap(paramName, type);
+                        paramFilter = new ObjectFilterImpl(field.getName(), paramName, subFilterMap);
+                    }
+                    paramFilterMap.put(paramFilter.getKey(), paramFilter);
+                }
+            }
+        }
+        routeHandler = new ResponseFilterHandlerImpl(routeHandler, paramFilterMap);
+        return routeHandler;
+    }
+
+    private ParamFilter createBasicFilter(Class<?> type, String key, String name, ResponseParam responseParam)
+    {
+        ParamFilter paramFilter;
+        if (type == boolean.class || type == Boolean.class) {
+            paramFilter = new BasicFilterImpl(key, name, "boolean");
+        } else if (type == long.class || type == Long.class || int.class == type || type == Integer.class || short.class == type || type == Short.class) {
+            paramFilter = new BasicFilterImpl(key, name, "integer");
+        } else if (type == double.class || type == Double.class || type == float.class || type == Float.class || Number.class.isAssignableFrom(type)) {
+            paramFilter = new BasicFilterImpl(key, name, "number");
+        } else if (type == String.class) {
+            paramFilter = new BasicFilterImpl(key, name, "string");
+        } else if (type == Date.class) {
+            paramFilter = new BasicFilterImpl(key, name, "date");
+        } else {
+            //不支持类型
+            this.logger.error("{}:{}:{} unsupport responseType {}", currController.getClass().getName(), currMethod.getName(), name, type.getName());
+            throw new RuntimeException(this.currMethod.getName() + "unsupport responseType" + type.getName());
+        }
+        return paramFilter;
+    }
+
+    private ParamFilter createCollectionFilter(Class<?> type, String key, String name, ResponseParam responseParam)
+    {
+        ParamFilter paramFilter;
+        if (ToolUtil.isBasicType(type)) {
+            //参数为原始类型
+            paramFilter = this.createBasicFilter(type, key, name, responseParam);
+        } else {
+            //对象类型
+            Map<String, ParamFilter> subFilterMap = this.createObjectFilterMap(name, type);
+            paramFilter = new ObjectFilterImpl(key, name, subFilterMap);
+        }
+        paramFilter = new ArrayFilterImpl(paramFilter);
+        return paramFilter;
+    }
+
+    private Map<String, ParamFilter> createObjectFilterMap(String parentName, Class<?> paramClass)
+    {
+        Map<String, ParamFilter> paramFilterMap = new HashMap();
+        //
+        if (this.currClassLinkList.contains(paramClass) == false) {
+            String paramName;
+            Class<?> type;
+            Field[] fields = paramClass.getDeclaredFields();
+            ParamFilter paramFilter;
+            ResponseParam responseParam;
+            for (Field field : fields) {
+                if (Modifier.isStatic(field.getModifiers()) == false && Modifier.isFinal(field.getModifiers()) == false) {
+                    if (field.isAnnotationPresent(ResponseParam.class)) {
+                        responseParam = field.getAnnotation(ResponseParam.class);
+                        if (parentName.isEmpty()) {
+                            paramName = field.getName();
+                        } else {
+                            paramName = parentName + "." + field.getName();
+                        }
+                        type = field.getType();
+                        if (ToolUtil.isBasicType(type)) {
+                            //参数为基础类型
+                            paramFilter = this.createBasicFilter(type, field.getName(), paramName, responseParam);
+                        } else if (Collection.class.isAssignableFrom(type)) {
+                            //参数为集合类型
+                            Type generictype = field.getGenericType();
+                            ParameterizedType listGenericType = (ParameterizedType) generictype;
+                            Type[] listActualTypeArguments = listGenericType.getActualTypeArguments();
+                            Class<?> subType = (Class<?>) listActualTypeArguments[0];
+                            paramFilter = this.createCollectionFilter(subType, field.getName(), paramName, responseParam);
+                        } else if (type.isArray()) {
+                            //数组
+                            Class<?> componentType = paramClass.getComponentType();
+                            paramFilter = this.createCollectionFilter(componentType, field.getName(), paramName, responseParam);
+                        } else {
+                            //对象
+                            Map<String, ParamFilter> subFilterMap = this.createObjectFilterMap(paramName, type);
+                            paramFilter = new ObjectFilterImpl(field.getName(), paramName, subFilterMap);
+                        }
+                        paramFilterMap.put(paramFilter.getKey(), paramFilter);
+                    }
+                }
+            }
+            this.currClassLinkList.add(paramClass);
+        }
+        return paramFilterMap;
     }
 
     public Router get(String route)
