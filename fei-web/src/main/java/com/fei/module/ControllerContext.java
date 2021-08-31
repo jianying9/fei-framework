@@ -81,7 +81,7 @@ public class ControllerContext implements ModuleContext
                     if (auth == false) {
                         auth = requestMapping.auth();
                     }
-                    routerContext.add(route, controller, method, auth);
+                    routerContext.add(route, control.name(), requestMapping.description(), controller, method, auth);
                 }
             }
         }

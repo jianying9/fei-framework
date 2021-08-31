@@ -54,9 +54,9 @@ public class RouterContext
 
     private Method currMethod = null;
 
-    public void add(String route, Object controller, Method method, boolean auth)
+    public void add(String route, String group, String description, Object controller, Method method, boolean auth)
     {
-        Router router = this.create(route, controller, method, auth);
+        Router router = this.create(route, group, description, controller, method, auth);
         //注册到bean
         BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
         beanContext.add(this.name, router.getRoute(), router);
@@ -77,7 +77,7 @@ public class RouterContext
         }
     }
 
-    private Router create(String route, Object controller, Method method, boolean auth)
+    private Router create(String route, String group, String description, Object controller, Method method, boolean auth)
     {
         this.currController = controller;
         this.currMethod = method;
@@ -97,7 +97,7 @@ public class RouterContext
             routeHandler = new AuthHandlerImpl(routeHandler);
         }
         //
-        Router router = new Router(routeHandler, requestValidationHandlerImpl.getParamValidationMap(), responseFilterHandlerImpl.getParamFilterMap());
+        Router router = new Router(routeHandler, requestValidationHandlerImpl.getParamValidationMap(), responseFilterHandlerImpl.getParamFilterMap(), auth, group, description);
         return router;
     }
 

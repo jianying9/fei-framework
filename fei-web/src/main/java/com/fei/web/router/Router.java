@@ -20,17 +20,26 @@ import java.util.Map;
 public class Router
 {
 
+    private final boolean auth;
+
+    private final String group;
+
+    private final String description;
+
     private final Map<String, ParamValidation> paramValidationMap;
 
     private final Map<String, ParamFilter> paramFilterMap;
 
     private final RouteHandler routeHandler;
 
-    public Router(RouteHandler routeHandler, Map<String, ParamValidation> paramValidationMap, Map<String, ParamFilter> paramFilterMap)
+    public Router(RouteHandler routeHandler, Map<String, ParamValidation> paramValidationMap, Map<String, ParamFilter> paramFilterMap, boolean auth, String group, String description)
     {
         this.routeHandler = routeHandler;
         this.paramValidationMap = paramValidationMap;
         this.paramFilterMap = paramFilterMap;
+        this.auth = auth;
+        this.group = group;
+        this.description = description;
     }
 
     public String getRoute()
@@ -103,6 +112,10 @@ public class Router
         JSONObject output = new JSONObject();
         output.put("requestArray", requestArray);
         output.put("responseArray", responseArray);
+        output.put("route", this.routeHandler.getRoute());
+        output.put("auth", this.auth);
+        output.put("group", this.group);
+        output.put("description", this.description);
         return output.toJSONString();
     }
 
