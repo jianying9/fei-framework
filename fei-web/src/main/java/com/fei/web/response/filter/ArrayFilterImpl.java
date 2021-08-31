@@ -1,6 +1,7 @@
 package com.fei.web.response.filter;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import java.util.List;
 
 /**
@@ -55,6 +56,23 @@ public class ArrayFilterImpl implements ParamFilter
     public String getType()
     {
         return this.type;
+    }
+
+    @Override
+    public String getDescrption()
+    {
+        return this.paramFilter.getDescrption();
+    }
+
+    @Override
+    public JSONArray getApi()
+    {
+        JSONArray array = this.paramFilter.getApi();
+        if (false == array.isEmpty()) {
+            JSONObject object = array.getJSONObject(0);
+            object.put("type", this.type);
+        }
+        return array;
     }
 
 }

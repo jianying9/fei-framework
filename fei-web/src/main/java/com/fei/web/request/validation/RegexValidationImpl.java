@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
  *
  * @author jianying9
  */
-public class RegexValidationImpl implements ParamValidation
+public class RegexValidationImpl extends AbstractParamValidation implements ParamValidation
 {
 
     private final String key;
@@ -16,11 +16,13 @@ public class RegexValidationImpl implements ParamValidation
     private final String type;
     private final Pattern pattern;
     private final String errorMsg;
+    private final String description;
 
-    public RegexValidationImpl(String key, String name, String regex)
+    public RegexValidationImpl(String key, String name, String regex, String description)
     {
         this.key = key;
         this.name = name;
+        this.description = description;
         this.pattern = Pattern.compile(regex);
         this.errorMsg = this.name + " must be regex(" + regex + ")";
         this.type = "regex(" + regex + ")";
@@ -58,6 +60,12 @@ public class RegexValidationImpl implements ParamValidation
     public String getType()
     {
         return this.type;
+    }
+
+    @Override
+    public String getDescrption()
+    {
+        return this.description;
     }
 
 }

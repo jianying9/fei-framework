@@ -1,5 +1,8 @@
 package com.fei.web.request.validation;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+
 /**
  * 非空通用类型处理
  *
@@ -46,6 +49,23 @@ public class RequiredValidationImpl implements ParamValidation
     public String getType()
     {
         return this.paramValidation.getType();
+    }
+
+    @Override
+    public String getDescrption()
+    {
+        return this.paramValidation.getDescrption();
+    }
+
+    @Override
+    public JSONArray getApi()
+    {
+        JSONArray array = this.paramValidation.getApi();
+        if (false == array.isEmpty()) {
+            JSONObject object = array.getJSONObject(0);
+            object.put("required", true);
+        }
+        return array;
     }
 
 }

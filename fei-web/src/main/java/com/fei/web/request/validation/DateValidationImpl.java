@@ -8,18 +8,20 @@ import java.util.Date;
  *
  * @author jianying9
  */
-public class DateValidationImpl implements ParamValidation
+public class DateValidationImpl extends AbstractParamValidation implements ParamValidation
 {
 
     private final String key;
     private final String name;
     private final String type;
+    private final String description;
     private final String errorMsg;
 
-    public DateValidationImpl(String key, String name)
+    public DateValidationImpl(String key, String name, String description)
     {
         this.key = key;
         this.name = name;
+        this.description = description;
         this.errorMsg = this.name + " must be date";
         this.type = "date[yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||millis]";
     }
@@ -71,6 +73,12 @@ public class DateValidationImpl implements ParamValidation
     public String getType()
     {
         return this.type;
+    }
+
+    @Override
+    public String getDescrption()
+    {
+        return this.description;
     }
 
 }

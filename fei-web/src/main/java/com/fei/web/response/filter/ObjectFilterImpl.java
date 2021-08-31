@@ -1,5 +1,6 @@
 package com.fei.web.response.filter;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import java.util.HashSet;
 import java.util.Map;
@@ -16,12 +17,14 @@ public class ObjectFilterImpl implements ParamFilter
     private final String key;
     private final String name;
     private final String type;
+    private final String description;
     private final Map<String, ParamFilter> paramFilterMap;
 
-    public ObjectFilterImpl(String key, String name, Map<String, ParamFilter> paramFilterMap)
+    public ObjectFilterImpl(String key, String name, Map<String, ParamFilter> paramFilterMap, String description)
     {
         this.key = key;
         this.name = name;
+        this.description = description;
         this.type = "object";
         this.paramFilterMap = paramFilterMap;
     }
@@ -66,6 +69,30 @@ public class ObjectFilterImpl implements ParamFilter
     public String getType()
     {
         return this.type;
+    }
+
+    @Override
+    public String getDescrption()
+    {
+        return this.description;
+    }
+
+    @Override
+    public JSONArray getApi()
+    {
+        JSONObject object = new JSONObject();
+        object.put("name", this.getName());
+        object.put("type", this.getType());
+        object.put("description", this.getDescrption());
+        JSONArray array = new JSONArray();
+        array.add(object);
+        //子参数
+        JSONArray subArray;
+        for (ParamFilter paramFilter : this.paramFilterMap.values()) {
+            subArray = paramFilter.getApi();
+            array.addAll(subArray);
+        }
+        return array;
     }
 
 }

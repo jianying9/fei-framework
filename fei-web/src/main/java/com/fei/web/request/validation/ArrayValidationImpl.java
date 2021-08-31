@@ -1,6 +1,7 @@
 package com.fei.web.request.validation;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import java.util.List;
 
 /**
@@ -12,7 +13,7 @@ public class ArrayValidationImpl implements ParamValidation
 {
 
     private final String errorMsg;
-    
+
     private final String type;
 
     private final ParamValidation paramValidation;
@@ -68,6 +69,23 @@ public class ArrayValidationImpl implements ParamValidation
     public String getType()
     {
         return this.type;
+    }
+
+    @Override
+    public String getDescrption()
+    {
+        return this.paramValidation.getDescrption();
+    }
+
+    @Override
+    public JSONArray getApi()
+    {
+        JSONArray array = this.paramValidation.getApi();
+        if (false == array.isEmpty()) {
+            JSONObject object = array.getJSONObject(0);
+            object.put("type", this.type);
+        }
+        return array;
     }
 
 }

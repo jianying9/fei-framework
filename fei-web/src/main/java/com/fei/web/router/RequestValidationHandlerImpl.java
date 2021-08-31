@@ -10,6 +10,7 @@ import com.fei.web.request.validation.ParamValidation;
 
 /**
  * 请求参数验证
+ *
  * @author jianying9
  */
 public class RequestValidationHandlerImpl implements RouteHandler
@@ -17,12 +18,17 @@ public class RequestValidationHandlerImpl implements RouteHandler
 
     private final RouteHandler nextHandler;
 
-    private final Map<String, ParamValidation> validationHandlerMap;
+    private final Map<String, ParamValidation> paramValidationMap;
 
-    public RequestValidationHandlerImpl(RouteHandler nextHandler, Map<String, ParamValidation> validationHandlerMap)
+    public RequestValidationHandlerImpl(RouteHandler nextHandler, Map<String, ParamValidation> paramValidationMap)
     {
         this.nextHandler = nextHandler;
-        this.validationHandlerMap = validationHandlerMap;
+        this.paramValidationMap = paramValidationMap;
+    }
+
+    public Map<String, ParamValidation> getParamValidationMap()
+    {
+        return this.paramValidationMap;
     }
 
     @Override
@@ -36,7 +42,7 @@ public class RequestValidationHandlerImpl implements RouteHandler
         Set<String> keySet = new HashSet();
         keySet.addAll(data.keySet());
         for (String key : keySet) {
-            validationHandler = this.validationHandlerMap.get(key);
+            validationHandler = this.paramValidationMap.get(key);
             if (validationHandler == null) {
                 //没有定义,丢弃
                 data.remove(key);
@@ -44,7 +50,7 @@ public class RequestValidationHandlerImpl implements RouteHandler
         }
         //验证
         String result = "";
-        for (Map.Entry<String, ParamValidation> entry : this.validationHandlerMap.entrySet()) {
+        for (Map.Entry<String, ParamValidation> entry : this.paramValidationMap.entrySet()) {
             childValue = data.get(entry.getKey());
             validationHandler = entry.getValue();
             result = validationHandler.validate(childValue);

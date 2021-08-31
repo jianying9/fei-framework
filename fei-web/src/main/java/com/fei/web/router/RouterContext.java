@@ -87,19 +87,21 @@ public class RouterContext
         //业务方法执行
         RouteHandler routeHandler = new ControlHandlerImpl(route, controller, method);
         //返回数据过滤
-        routeHandler = this.createResponseFilterImpl(routeHandler, returnType);
+        ResponseFilterHandlerImpl responseFilterHandlerImpl = this.createResponseFilterImpl(routeHandler, returnType);
+        routeHandler = responseFilterHandlerImpl;
         //参数验证
-        routeHandler = this.createRequestValidationImpl(routeHandler, method);
+        RequestValidationHandlerImpl requestValidationHandlerImpl = this.createRequestValidationImpl(routeHandler, method);
+        routeHandler = requestValidationHandlerImpl;
         //用户验证
         if (auth) {
             routeHandler = new AuthHandlerImpl(routeHandler);
         }
         //
-        Router router = new Router(routeHandler);
+        Router router = new Router(routeHandler, requestValidationHandlerImpl.getParamValidationMap(), responseFilterHandlerImpl.getParamFilterMap());
         return router;
     }
 
-    private RouteHandler createRequestValidationImpl(RouteHandler routeHandler, Method method)
+    private RequestValidationHandlerImpl createRequestValidationImpl(RouteHandler routeHandler, Method method)
     {
         Parameter[] parameterArray = method.getParameters();
         Class<?> paramClass;
@@ -136,8 +138,7 @@ public class RouterContext
                 allMap.putAll(map);
             }
         }
-        routeHandler = new RequestValidationHandlerImpl(routeHandler, allMap);
-        return routeHandler;
+        return new RequestValidationHandlerImpl(routeHandler, allMap);
     }
 
     /**
@@ -150,19 +151,19 @@ public class RouterContext
     {
         ParamValidation paramValidation;
         if (type == boolean.class || type == Boolean.class) {
-            paramValidation = new BooleanValidationImpl(key, name);
+            paramValidation = new BooleanValidationImpl(key, name, requestParam.description());
         } else if (type == long.class || type == Long.class || int.class == type || type == Integer.class || short.class == type || type == Short.class) {
-            paramValidation = new IntegerValidationImpl(key, name, requestParam.max(), requestParam.min());
+            paramValidation = new IntegerValidationImpl(key, name, requestParam.max(), requestParam.min(), requestParam.description());
         } else if (type == double.class || type == Double.class || type == float.class || type == Float.class || Number.class.isAssignableFrom(type)) {
-            paramValidation = new NumberValidationImpl(key, name, requestParam.max(), requestParam.min());
+            paramValidation = new NumberValidationImpl(key, name, requestParam.max(), requestParam.min(), requestParam.description());
         } else if (type == String.class) {
             if (requestParam.regexp().isEmpty()) {
-                paramValidation = new StringValidationImpl(key, name, requestParam.max(), requestParam.min());
+                paramValidation = new StringValidationImpl(key, name, requestParam.max(), requestParam.min(), requestParam.description());
             } else {
-                paramValidation = new RegexValidationImpl(key, name, requestParam.regexp());
+                paramValidation = new RegexValidationImpl(key, name, requestParam.regexp(), requestParam.description());
             }
         } else if (type == Date.class) {
-            paramValidation = new DateValidationImpl(key, name);
+            paramValidation = new DateValidationImpl(key, name, requestParam.description());
         } else {
             //不支持类型
             this.logger.error("{}:{}:{} unsupport parameterType {}", currController.getClass().getName(), currMethod.getName(), name, type.getName());
@@ -190,7 +191,7 @@ public class RouterContext
         } else {
             //对象类型
             Map<String, ParamValidation> subValidationMap = this.createObjectValidationMap(name, type);
-            paramValidation = new ObjectValidationImpl(key, name, subValidationMap);
+            paramValidation = new ObjectValidationImpl(key, name, subValidationMap, requestParam.description());
         }
         paramValidation = new ArrayValidationImpl(paramValidation);
         //是否需要非空判断
@@ -237,7 +238,7 @@ public class RouterContext
                         } else {
                             //对象
                             Map<String, ParamValidation> subValidationMap = this.createObjectValidationMap(paramName, type);
-                            paramValidation = new ObjectValidationImpl(field.getName(), paramName, subValidationMap);
+                            paramValidation = new ObjectValidationImpl(field.getName(), paramName, subValidationMap, requestParam.description());
                             //是否需要非空判断
                             if (requestParam.required()) {
                                 paramValidation = new RequiredValidationImpl(paramValidation);
@@ -252,7 +253,7 @@ public class RouterContext
         return paramValidationMap;
     }
 
-    private RouteHandler createResponseFilterImpl(RouteHandler routeHandler, Class<?> returnType)
+    private ResponseFilterHandlerImpl createResponseFilterImpl(RouteHandler routeHandler, Class<?> returnType)
     {
         this.currClassLinkList.clear();
         Map<String, ParamFilter> paramFilterMap = new HashMap();
@@ -285,29 +286,28 @@ public class RouterContext
                     } else {
                         //对象
                         Map<String, ParamFilter> subFilterMap = this.createObjectFilterMap(paramName, type);
-                        paramFilter = new ObjectFilterImpl(field.getName(), paramName, subFilterMap);
+                        paramFilter = new ObjectFilterImpl(field.getName(), paramName, subFilterMap, responseParam.description());
                     }
                     paramFilterMap.put(paramFilter.getKey(), paramFilter);
                 }
             }
         }
-        routeHandler = new ResponseFilterHandlerImpl(routeHandler, paramFilterMap);
-        return routeHandler;
+        return new ResponseFilterHandlerImpl(routeHandler, paramFilterMap);
     }
 
     private ParamFilter createBasicFilter(Class<?> type, String key, String name, ResponseParam responseParam)
     {
         ParamFilter paramFilter;
         if (type == boolean.class || type == Boolean.class) {
-            paramFilter = new BasicFilterImpl(key, name, "boolean");
+            paramFilter = new BasicFilterImpl(key, name, "boolean", responseParam.description());
         } else if (type == long.class || type == Long.class || int.class == type || type == Integer.class || short.class == type || type == Short.class) {
-            paramFilter = new BasicFilterImpl(key, name, "integer");
+            paramFilter = new BasicFilterImpl(key, name, "integer", responseParam.description());
         } else if (type == double.class || type == Double.class || type == float.class || type == Float.class || Number.class.isAssignableFrom(type)) {
-            paramFilter = new BasicFilterImpl(key, name, "number");
+            paramFilter = new BasicFilterImpl(key, name, "number", responseParam.description());
         } else if (type == String.class) {
-            paramFilter = new BasicFilterImpl(key, name, "string");
+            paramFilter = new BasicFilterImpl(key, name, "string", responseParam.description());
         } else if (type == Date.class) {
-            paramFilter = new BasicFilterImpl(key, name, "date");
+            paramFilter = new BasicFilterImpl(key, name, "date", responseParam.description());
         } else {
             //不支持类型
             this.logger.error("{}:{}:{} unsupport responseType {}", currController.getClass().getName(), currMethod.getName(), name, type.getName());
@@ -325,7 +325,7 @@ public class RouterContext
         } else {
             //对象类型
             Map<String, ParamFilter> subFilterMap = this.createObjectFilterMap(name, type);
-            paramFilter = new ObjectFilterImpl(key, name, subFilterMap);
+            paramFilter = new ObjectFilterImpl(key, name, subFilterMap, responseParam.description());
         }
         paramFilter = new ArrayFilterImpl(paramFilter);
         return paramFilter;
@@ -368,7 +368,7 @@ public class RouterContext
                         } else {
                             //对象
                             Map<String, ParamFilter> subFilterMap = this.createObjectFilterMap(paramName, type);
-                            paramFilter = new ObjectFilterImpl(field.getName(), paramName, subFilterMap);
+                            paramFilter = new ObjectFilterImpl(field.getName(), paramName, subFilterMap, responseParam.description());
                         }
                         paramFilterMap.put(paramFilter.getKey(), paramFilter);
                     }

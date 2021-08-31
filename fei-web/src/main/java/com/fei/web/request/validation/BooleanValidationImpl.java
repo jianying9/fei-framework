@@ -5,18 +5,20 @@ package com.fei.web.request.validation;
  *
  * @author jianying9
  */
-public class BooleanValidationImpl implements ParamValidation
+public class BooleanValidationImpl extends AbstractParamValidation implements ParamValidation
 {
 
     private final String key;
     private final String name;
+    private final String description;
     private final String type;
     private final String errorMsg;
 
-    public BooleanValidationImpl(String key, String name)
+    public BooleanValidationImpl(String key, String name, String description)
     {
         this.key = key;
         this.name = name;
+        this.description = description;
         this.type = "boolean";
         this.errorMsg = this.name + " must be boolean";
     }
@@ -59,6 +61,12 @@ public class BooleanValidationImpl implements ParamValidation
     public String getType()
     {
         return this.type;
+    }
+
+    @Override
+    public String getDescrption()
+    {
+        return this.description;
     }
 
 }

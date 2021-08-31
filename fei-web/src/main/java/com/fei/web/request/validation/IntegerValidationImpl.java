@@ -5,21 +5,23 @@ package com.fei.web.request.validation;
  *
  * @author jianying9
  */
-public final class IntegerValidationImpl implements ParamValidation
+public final class IntegerValidationImpl extends AbstractParamValidation implements ParamValidation
 {
 
     private final String key;
     private final String name;
     private final String type;
+    private final String description;
     private final long max;
     private final long min;
     private final String errorMsg;
     private final boolean limit;
 
-    public IntegerValidationImpl(String key, String name, long max, long min)
+    public IntegerValidationImpl(String key, String name, long max, long min, String description)
     {
         this.key = key;
         this.name = name;
+        this.description = description;
         if (max == Long.MAX_VALUE && min == 0) {
             //无大小限制
             this.limit = false;
@@ -83,6 +85,12 @@ public final class IntegerValidationImpl implements ParamValidation
     public String getType()
     {
         return type;
+    }
+
+    @Override
+    public String getDescrption()
+    {
+        return this.description;
     }
 
 }

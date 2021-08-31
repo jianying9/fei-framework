@@ -26,6 +26,11 @@ public class ResponseFilterHandlerImpl implements RouteHandler
         this.paramFilterMap = paramFilterMap;
     }
 
+    public Map<String, ParamFilter> getParamFilterMap()
+    {
+        return paramFilterMap;
+    }
+
     @Override
     public Response processRequest(Request request)
     {

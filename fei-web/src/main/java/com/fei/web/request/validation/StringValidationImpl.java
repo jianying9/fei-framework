@@ -5,7 +5,7 @@ package com.fei.web.request.validation;
  *
  * @author jianying9
  */
-public final class StringValidationImpl implements ParamValidation
+public final class StringValidationImpl extends AbstractParamValidation implements ParamValidation
 {
 
     private final long max;
@@ -14,11 +14,13 @@ public final class StringValidationImpl implements ParamValidation
     private final String name;
     private final String type;
     private final String errorMsg;
+    private final String description;
 
-    public StringValidationImpl(String key, String name, long max, long min)
+    public StringValidationImpl(String key, String name, long max, long min, String description)
     {
         this.key = key;
         this.name = name;
+        this.description = description;
         if (max == Long.MAX_VALUE) {
             max = 512;
         }
@@ -65,6 +67,12 @@ public final class StringValidationImpl implements ParamValidation
     public String getType()
     {
         return type;
+    }
+
+    @Override
+    public String getDescrption()
+    {
+        return this.description;
     }
 
 }

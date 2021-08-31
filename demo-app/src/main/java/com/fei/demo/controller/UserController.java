@@ -51,7 +51,7 @@ public class UserController
         @RequestParam(description = "用户名称", max = 32)
         public String userName;
 
-        @RequestParam(description = "用户名称", regexp = "[男|女]")
+        @RequestParam(description = "性别", regexp = "[男|女]")
         public String sex;
 
         @RequestParam(description = "年龄", min = 1, max = 120)
@@ -76,7 +76,7 @@ public class UserController
         public String userName;
 
         @RequestParam(description = "性别")
-//        @ResponseParam(description = "性别")
+        @ResponseParam(description = "性别")
         public String sex;
     }
 
