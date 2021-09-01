@@ -48,10 +48,7 @@ public class AppServlet extends HttpServlet
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException
     {
-        //跨域设置
-        response.addHeader("Access-Control-Allow-Origin", "*");
-        response.addHeader("Access-Control-Allow-Methods", "*");
-        response.addHeader("Access-Control-Allow-Headers", "authorization,content-type");
+        this.setResponseHeader(response);
         //
         String route = request.getPathInfo();
         if (route == null || route.isEmpty() || route.equals("/")) {
@@ -130,6 +127,12 @@ public class AppServlet extends HttpServlet
     @Override
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
     {
+        this.setResponseHeader(response);
+    }
+
+    private void setResponseHeader(HttpServletResponse response)
+    {
+        //跨域设置
         response.addHeader("Access-Control-Allow-Origin", "*");
         response.addHeader("Access-Control-Allow-Methods", "*");
         response.addHeader("Access-Control-Allow-Headers", "authorization,content-type");
