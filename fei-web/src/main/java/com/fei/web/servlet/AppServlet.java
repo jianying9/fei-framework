@@ -55,9 +55,15 @@ public class AppServlet extends HttpServlet
         //
         String route = request.getPathInfo();
         if (route == null || route.isEmpty() || route.equals("/")) {
-            //route不存在
-            JSONObject output = Response.createOk();
-            this.toWrite(response, output.toJSONString());
+            String _api = request.getParameter("_api");
+            if ("true".equals(_api)) {
+                JSONObject output = RouterContext.INSTANCE.getApi();
+                this.toWrite(response, output.toJSONString());
+            } else {
+                //route不存在
+                JSONObject output = Response.createOk();
+                this.toWrite(response, output.toJSONString());
+            }
         } else {
             Router router = RouterContext.INSTANCE.get(route);
             if (router == null) {
@@ -114,7 +120,7 @@ public class AppServlet extends HttpServlet
     {
         response.setCharacterEncoding("utf-8");
         response.setContentType("application/json");
-        try ( PrintWriter printWriter = response.getWriter()) {
+        try (PrintWriter printWriter = response.getWriter()) {
             printWriter.write(jsonStr);
             printWriter.flush();
         } catch (IOException e) {

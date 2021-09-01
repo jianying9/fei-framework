@@ -1,5 +1,7 @@
 package com.fei.web.router;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.fei.app.bean.BeanContext;
 import com.fei.app.context.AppContext;
 import com.fei.app.utils.ToolUtil;
@@ -33,6 +35,8 @@ import com.fei.web.response.filter.ArrayFilterImpl;
 import com.fei.web.response.filter.BasicFilterImpl;
 import com.fei.web.response.filter.ObjectFilterImpl;
 import com.fei.web.response.filter.ParamFilter;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * 路由对象上下文
@@ -383,6 +387,36 @@ public class RouterContext
     {
         BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
         return beanContext.get(this.name, route);
+    }
+
+    public JSONObject getApi()
+    {
+        BeanContext beanContext = AppContext.INSTANCE.getBeanContext();
+        Map<String, Object> routerMap = beanContext.get(name);
+        JSONArray routerArray = new JSONArray();
+        Set<String> groupSet = new HashSet();
+        Router router;
+        JSONObject routerApi;
+        String group;
+        for (Object obj : routerMap.values()) {
+            router = (Router) obj;
+            routerApi = router.getApi();
+            routerArray.add(routerApi);
+            //
+            group = routerApi.getString("group");
+            if (group == null || group.isEmpty()) {
+                group = "unknown";
+            }
+            groupSet.add(group);
+        }
+        //
+        JSONArray groupArray = new JSONArray();
+        groupArray.addAll(groupSet);
+        //
+        JSONObject output = new JSONObject();
+        output.put("routerArray", routerArray);
+        output.put("groupArray", groupArray);
+        return output;
     }
 
 }

@@ -54,10 +54,12 @@ public class Router
         String _api = input.getString("_api");
         if ("true".equals(_api)) {
             //执行接口描述
-            reponseBody = this.processApi();
+            JSONObject output = this.getApi();
+            reponseBody = output.toJSONString();
         } else {
             //执行业务
             reponseBody = this.processBiz(input, auth);
+
         }
         return reponseBody;
     }
@@ -98,7 +100,7 @@ public class Router
         return reponseBody;
     }
 
-    private String processApi()
+    public JSONObject getApi()
     {
         JSONArray requestArray = new JSONArray();
         for (ParamValidation paramValidation : this.paramValidationMap.values()) {
@@ -116,7 +118,7 @@ public class Router
         output.put("auth", this.auth);
         output.put("group", this.group);
         output.put("description", this.description);
-        return output.toJSONString();
+        return output;
     }
 
     @Override
