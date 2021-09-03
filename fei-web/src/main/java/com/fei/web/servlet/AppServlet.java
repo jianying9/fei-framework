@@ -49,10 +49,46 @@ public class AppServlet extends HttpServlet
             throws ServletException, IOException
     {
         this.setResponseHeader(response);
+        //读取输入数据
+        String contentType = request.getContentType();
+        JSONObject input = null;
+        if (contentType != null && contentType.contains("application/json")) {
+            // 读取json
+            BufferedReader br = new BufferedReader(new InputStreamReader(request.getInputStream(), "utf-8"));
+            String line;
+            StringBuilder sb = new StringBuilder();
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+            try {
+                Object obj = JSON.parse(sb.toString());
+                if (obj instanceof JSONObject) {
+                    input = (JSONObject) obj;
+                }
+            } catch (JSONException e) {
+                this.logger.warn("json error:{}:{}", e.getMessage(), line);
+            }
+        } else {
+            //读取传统数据
+            input = new JSONObject();
+            Enumeration<String> names = request.getParameterNames();
+            String name;
+            String value;
+            while (names.hasMoreElements()) {
+                name = names.nextElement();
+                value = request.getParameter(name);
+                value = ToolUtil.trim(value);
+                input.put(name, value);
+            }
+        }
+        //执行
+        if (input == null) {
+            input = new JSONObject();
+        }
         //
         String route = request.getPathInfo();
         if (route == null || route.isEmpty() || route.equals("/")) {
-            String _api = request.getParameter("_api");
+            String _api = input.getString("_api");
             if ("true".equals(_api)) {
                 JSONObject output = RouterContext.INSTANCE.getApi();
                 this.toWrite(response, output.toJSONString());
@@ -68,42 +104,6 @@ public class AppServlet extends HttpServlet
                 JSONObject output = Response.createNotfound(route);
                 this.toWrite(response, output.toJSONString());
             } else {
-                //读取输入数据
-                String contentType = request.getContentType();
-                JSONObject input = null;
-                if (contentType != null && contentType.contains("application/json")) {
-                    // 读取json
-                    BufferedReader br = new BufferedReader(new InputStreamReader(request.getInputStream(), "utf-8"));
-                    String line;
-                    StringBuilder sb = new StringBuilder();
-                    while ((line = br.readLine()) != null) {
-                        sb.append(line);
-                    }
-                    try {
-                        Object obj = JSON.parse(sb.toString());
-                        if (obj instanceof JSONObject) {
-                            input = (JSONObject) obj;
-                        }
-                    } catch (JSONException e) {
-                        this.logger.warn("json error:{}:{}", e.getMessage(), line);
-                    }
-                } else {
-                    //读取传统数据
-                    input = new JSONObject();
-                    Enumeration<String> names = request.getParameterNames();
-                    String name;
-                    String value;
-                    while (names.hasMoreElements()) {
-                        name = names.nextElement();
-                        value = request.getParameter(name);
-                        value = ToolUtil.trim(value);
-                        input.put(name, value);
-                    }
-                }
-                //执行
-                if (input == null) {
-                    input = new JSONObject();
-                }
                 //获取auth信息
                 String auth = request.getHeader("Authorization");
                 String content = router.processRequest(input, auth);

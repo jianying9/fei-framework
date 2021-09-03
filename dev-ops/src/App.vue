@@ -118,6 +118,12 @@ export default {
         route: "/node/list",
         title: "节点",
       },
+      {
+        color: "blue-grey darken-2",
+        icon: "mdi-api",
+        route: "/api/list",
+        title: "接口",
+      },
     ],
   }),
   mounted: function () {

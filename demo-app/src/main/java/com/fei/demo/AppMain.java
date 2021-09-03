@@ -18,7 +18,7 @@ public class AppMain
     {
         //启动
         AppServer appServer = new AppServer(AppMain.class);
-        appServer.setPort(8090).start();
+        appServer.setPort(8091).start();
     }
 
 }

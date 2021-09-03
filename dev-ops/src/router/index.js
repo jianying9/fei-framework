@@ -52,13 +52,23 @@ const routes = [
   },
   {
     path: '/node/list',
-    name: 'groupList',
+    name: 'nodeList',
     component: () => import(/* webpackChunkName: "chunk" */ '../views/NodeList.vue')
   },
   {
     path: '/node/add',
     name: 'nodeAdd',
     component: () => import(/* webpackChunkName: "chunk" */ '../views/NodeAdd.vue')
+  },
+  {
+    path: '/api/list',
+    name: 'apiList',
+    component: () => import(/* webpackChunkName: "chunk" */ '../views/ApiList.vue')
+  },
+  {
+    path: '/api/content/:route',
+    name: 'apiContent',
+    component: () => import(/* webpackChunkName: "chunk" */ '../views/ApiContent.vue')
   },
 ];
 
