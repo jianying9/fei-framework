@@ -141,7 +141,12 @@ public final class ToolUtil
     public final static String getAutomicId()
     {
         String uuid = UUID.randomUUID().toString().replaceAll("-", "");
-        BigInteger uuidNumber = new BigInteger(uuid, 16);
+        return encodeAutomicId(uuid);
+    }
+    
+    public final static String encodeAutomicId(String id)
+    {
+        BigInteger uuidNumber = new BigInteger(id, 16);
         BigInteger baseSize = BigInteger.valueOf(base57.length);
         StringBuilder automicId = new StringBuilder();
         BigInteger[] fracAndRemainder;
@@ -149,13 +154,6 @@ public final class ToolUtil
             fracAndRemainder = uuidNumber.divideAndRemainder(baseSize);
             automicId.append(base57[fracAndRemainder[1].intValue()]);
             uuidNumber = fracAndRemainder[0];
-        }
-        if (automicId.length() < 22) {
-            //小于22位,补充base57[0]
-            int padding = 22 - automicId.length();
-            for (int i = 0; i < padding; i++) {
-                automicId.append(base57[0]);
-            }
         }
         return automicId.toString();
     }
